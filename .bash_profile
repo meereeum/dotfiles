@@ -1,6 +1,9 @@
 # editors
+#alias python="echo 'use haskell!'"
 export EDITOR=/usr/bin/vi
 e() { open -a Emacs "$@"; }
+# touche = touch + emacs
+touche() { touch "$@"; e "$@"; }
 
 # various profiles
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
@@ -20,6 +23,14 @@ alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(whi
 alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
 alias cpy='copy'
 
+
+# http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
+alias rm='bash ~/dotfiles/safe_rm.sh'
+alias cp='cp -i'
+alias mv='mv -i'
+
+
+alias vlc='open -a VLC'
 
 
 # history
