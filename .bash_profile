@@ -18,8 +18,9 @@ alias rc='cd /Volumes/Media/workspace/rc'
 if [[ "$OSTYPE != "linux-gnu" ]]; then
 	alias vlc='open -a VLC'
 	# copy to clipboard without trailing \n
-	#alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo' 
-	#alias cpy='copy'
+	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo' 
+	alias cpy='copy'
+fi
 
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
@@ -66,6 +67,7 @@ else
 	#if [ -f $(brew --prefix)/etc/bash_completion ]; then
 	#    . $(brew --prefix)/etc/bash_completion
 	#  fi
+fi
 
 
 
