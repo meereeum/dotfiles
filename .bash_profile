@@ -15,7 +15,7 @@ alias editvim='vi ~/.vimrc && source ~/.vimrc'
 # aliasing
 alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
-if [[ "$OSTYPE != "linux-gnu" ]]; then
+if [[ "$OSTYPE" != "linux-gnu" ]]; then
 	alias vlc='open -a VLC'
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo' 
@@ -52,7 +52,7 @@ export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 # Path thangs
 
 # added by Anaconda2 2.4.1 installer
-if [[ "$OSTYPE == "linux-gnu" ]]; then
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
 	export PATH="/home/miriam/anaconda2/bin:$PATH"
 	export PYTHONPATH="/home/miriam/anaconda2/bin/python"
 else
