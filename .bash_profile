@@ -1,10 +1,10 @@
 # detect os
 if [[ "$OSTYPE" = "linux-gnu" ]]; then
 	linux=1
-	echo "hey there, debian"
+	#echo "hey there, debian"
 else
 	linux=0
-	echo "hey there, osx"
+	#echo "hey there, osx"
 fi
 
 
