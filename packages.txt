@@ -1,0 +1,15 @@
+firmware-b43-installer
+sudo
+git
+vlc
+emacs
+exfat-fuse exfat-utils
+libgcrypt11-dev
+vpnc
+resolvconf
+hfsutils hfsplus
+sshfs
+texlive
+texstudio
+xzdec
+vim-gui-common
