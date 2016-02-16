@@ -1,8 +1,23 @@
+# detect os
+if [[ "$OSTYPE" = "linux-gnu" ]]; then
+	linux=1
+	echo "hey there, debian"
+else
+	linux=0
+	echo "hey there, osx"
+fi
+
+
 # editors
 #alias python="echo 'use haskell!'"
 export EDITOR=/usr/bin/vi
-#e() { open -a Emacs "$@"; } #osx
-e() { emacs "$@"; } #linux
+
+if (($linux)); then
+	e() { emacs "$@"; }
+else
+	e() { open -a Emacs "$@"; }
+fi
+
 # touche = touch + emacs
 touche() { touch "$@"; e "$@"; }
 
@@ -15,12 +30,20 @@ alias editvim='vi ~/.vimrc && source ~/.vimrc'
 # aliasing
 alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
-if [[ "$OSTYPE" != "linux-gnu" ]]; then
+
+# osx only
+if ((!$linux)); then
 	alias vlc='open -a VLC'
+
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo' 
 	alias cpy='copy'
 fi
+
+
+# list all packages from ```$ apt-get install```, in historical order
+# inspired by http://askubuntu.com/questions/17823/how-to-list-all-installed-packages
+alias pkgs='( zcat $( ls -tr /var/log/apt/history.log*.gz ) ; cat /var/log/apt/history.log ) | egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | egrep "^Commandline: apt-get install" | cut -d" " -f1,2,3 --complement'
 
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
@@ -52,7 +75,7 @@ export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 # Path thangs
 
 # added by Anaconda2 2.4.1 installer
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
+if (($linux)); then
 	export PATH="/home/miriam/anaconda2/bin:$PATH"
 	export PYTHONPATH="/home/miriam/anaconda2/bin/python"
 else
