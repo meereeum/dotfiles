@@ -24,7 +24,6 @@ touche() { touch "$@"; e "$@"; }
 
 # various profiles
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
-alias editvim='vi ~/.vimrc && source ~/.vimrc'
 
 
 # aliasing
