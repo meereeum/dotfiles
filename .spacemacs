@@ -34,7 +34,7 @@ values."
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
-     spell-checking
+     ;; spell-checking
      syntax-checking
      version-control
      )
@@ -44,6 +44,7 @@ values."
    ;; configuration in `dotspacemacs/config'.
    dotspacemacs-additional-packages '(
                                       key-chord
+                                      beacon
                                       )
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
@@ -221,6 +222,9 @@ layers configuration. You are free to put any user code."
   ;;(add-hook 'prog-mode-hook #'linum-mode)
   (spacemacs/toggle-golden-ratio-on)
   (setq-default dotspacemacs-configuration-layers '(auto-completion))
+  (setq-default dotspacemacs-configuration-layers
+                '((spell-checking :variables spell-checking-enable-by-default nil)))
+  (beacon-mode 1)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
