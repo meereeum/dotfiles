@@ -14,6 +14,7 @@ export EDITOR=/usr/bin/vi
 
 if (($linux)); then
 	e() { emacs "$@"; }
+	#e() { emacsclient -nc "$@"; }
 else
 	e() { open -a Emacs "$@"; }
 fi
@@ -35,14 +36,31 @@ if ((!$linux)); then
 	alias vlc='open -a VLC'
 
 	# copy to clipboard without trailing \n
-	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo' 
+	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
 	alias cpy='copy'
 fi
 
 
 # list all packages from ```$ apt-get install```, in historical order
 # inspired by http://askubuntu.com/questions/17823/how-to-list-all-installed-packages
-alias pkgs='( zcat $( ls -tr /var/log/apt/history.log*.gz ) ; cat /var/log/apt/history.log ) | egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | egrep "^Commandline: apt-get install" | cut -d" " -f1,2,3 --complement'
+#alias pkgs='( zcat $( ls -tr /var/log/apt/history.log*.gz ) ; cat /var/log/apt/history.log ) | egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | egrep "^Commandline: apt-get install" | cut -d" " -f1,2,3 --complement'
+
+pkgs() {
+    # find all packages uninstalled via ```$ apt-get remove```
+    uninstalled=$( ( zcat $( ls -tr /var/log/apt/history.log*.gz ); cat /var/log/apt/history.log ) | \
+                       egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+                       # combination sed/grep for removed pkg names
+                       sed -nr "s/^Commandline: apt-get.*remove //p" | \
+                       # transform into regex to grep out
+                       tr "\n " "|" | sed "s/|$//" )
+
+    ( zcat $( ls -tr /var/log/apt/history.log*.gz ); cat /var/log/apt/history.log ) | \
+        egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
+        # combination sed/grep for all installed pkgs names
+        sed -n "s/^Commandline: apt-get.*install //p" | \
+        # grep out uninstalled
+        egrep -v $uninstalled
+}
 
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
