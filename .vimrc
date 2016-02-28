@@ -5,9 +5,6 @@ if filereadable('/etc/debian_version')
 else
 	inoremap jk <Esc>  
 	inoremap kj <Esc>
-
-	" osx clipboard sharing
-	set clipboard=unnamed
 endif
 
 
@@ -21,3 +18,7 @@ set hlsearch
 set showmatch
 " how many tenths of a second to blink when matching
 set mat=2
+
+" yank into system clipboard
+set clipboard=unnamed
+set clipboard=unnamedplus
