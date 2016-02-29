@@ -13,8 +13,8 @@ fi
 export EDITOR=/usr/bin/vi
 
 if (($linux)); then
-	e() { emacs "$@"; }
-	#e() { emacsclient -nc "$@"; }
+	#e() { emacs "$@"; }
+	e() { emacsclient --alternate-editor="" -nc "$@"; }
 else
 	e() { open -a Emacs "$@"; }
 fi
@@ -43,23 +43,27 @@ fi
 
 # list all packages from ```$ apt-get install```, in historical order
 # inspired by http://askubuntu.com/questions/17823/how-to-list-all-installed-packages
-#alias pkgs='( zcat $( ls -tr /var/log/apt/history.log*.gz ) ; cat /var/log/apt/history.log ) | egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | egrep "^Commandline: apt-get install" | cut -d" " -f1,2,3 --complement'
 
 pkgs() {
     # find all packages uninstalled via ```$ apt-get remove```
-    uninstalled=$( ( zcat $( ls -tr /var/log/apt/history.log*.gz ); cat /var/log/apt/history.log ) | \
-                       egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
-                       # combination sed/grep for removed pkg names
-                       sed -nr "s/^Commandline: apt-get.*remove //p" | \
-                       # transform into regex to grep out
-                       tr "\n " "|" | sed "s/|$//" )
+    # redirect errors if no gzipped history log to /dev/null
+    uninstalled=$( \
+        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null ) 2>/dev/null; \
+          cat /var/log/apt/history.log ) | \
+            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+            # combination sed/grep for removed pkg names, minus -options
+            sed -nr "s/^Commandline: apt-get remove (-. )?//p" | \
+            # transform into regex to grep out
+            tr "\n " "|" | sed "s/|$//" \
+               )
 
-    ( zcat $( ls -tr /var/log/apt/history.log*.gz ); cat /var/log/apt/history.log ) | \
-        egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
-        # combination sed/grep for all installed pkgs names
-        sed -n "s/^Commandline: apt-get.*install //p" | \
-        # grep out uninstalled
-        egrep -v $uninstalled
+    ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
+      cat /var/log/apt/history.log ) | \
+        #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+        # combination sed/grep for all installed pkgs names, minus -options
+        sed -nr "s/^Commandline: apt-get install (-. )?//p" | \
+        # grep out uninstalled (unless empty)
+        egrep -v ${uninstalled:-NADA_MUCHO};
 }
 
 
