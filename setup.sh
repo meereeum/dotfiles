@@ -6,6 +6,8 @@ for f in bash_profile gitconfig spacemacs vimrc screenrc
 	ln -s ~/dotfiles/.${f} ~/.${f}
 done
 
+# ye olde spacemacs
+git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 
 instructions="
 TODO:
