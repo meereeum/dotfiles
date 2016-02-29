@@ -3,4 +3,5 @@
 	name = Miriam Shiffman
 	email = meereeum@gmail.com
 [credential]
+	username = meereeum
 	helper = cache --timeout=3600
