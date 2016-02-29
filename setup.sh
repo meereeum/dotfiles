@@ -1,9 +1,10 @@
 #!/usr/bin/bash
 
 # simlink
-for f in bash_profile gitconfig spacemacs vimrc screenrc
-	do rm ~/.${f}
-	ln -s ~/dotfiles/.${f} ~/.${f}
+dotfiles=$( ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" )
+for f in $dotfiles
+	do rm ~/${f}
+	ln -s ~/dotfiles/${f} ~/${f}
 done
 
 # ye olde spacemacs
