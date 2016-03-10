@@ -30,10 +30,16 @@ alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 # aliasing
 alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
+alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
+math() { bc -l <<< "$@"; }
 
 # osx only
 if ((!$linux)); then
 	alias vlc='open -a VLC'
+	alias chrome='open -a /Applications/Google\ Chrome.app'
+	alias ffox='open -a /Applications/Firefox.app/'
+	alias phil='chrome "https://docs.google.com/document/d/1Bcfz3Tl_T78nx9VLnOyoyn4rrvpjFH2ol8PJ9JMk97U/edit";
+			open -a Skype; open -a Evernote'
 
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
