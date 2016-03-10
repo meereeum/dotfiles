@@ -49,28 +49,29 @@ fi
 
 # list all packages from ```$ apt-get install```, in historical order
 # inspired by http://askubuntu.com/questions/17823/how-to-list-all-installed-packages
-
-pkgs() {
+if [[ "$OSTYPE" = "linux-gnu" ]]; then
     # find all packages uninstalled via ```$ apt-get remove```
     # redirect errors if no gzipped history log to /dev/null
-    uninstalled=$( \
-        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null ) 2>/dev/null; \
-          cat /var/log/apt/history.log ) | \
-            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
-            # combination sed/grep for removed pkg names, minus -options
-            sed -nr "s/^Commandline: apt-get remove (-. )?//p" | \
-            # transform into regex to grep out
-            tr "\n " "|" | sed "s/|$//" \
-               )
+    pkgs() {
+        uninstalled=$( \
+            ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
+            cat /var/log/apt/history.log ) | \
+                #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+                # combination sed/grep for removed pkg names, minus -options
+                sed -nr "s/^Commandline: apt-get remove (-. )?//p" | \
+                # transform into regex to grep out
+                tr "\n " "|" | sed "s/|$//" \
+                )
 
-    ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
-      cat /var/log/apt/history.log ) | \
-        #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
-        # combination sed/grep for all installed pkgs names, minus -options
-        sed -nr "s/^Commandline: apt-get install (-. )?//p" | \
-        # grep out uninstalled (unless empty)
-        egrep -v ${uninstalled:-NADA_MUCHO};
-}
+        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
+        cat /var/log/apt/history.log ) | \
+            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+            # combination sed/grep for all installed pkgs names, minus -options
+            sed -nr "s/^Commandline: apt-get install (-. )?//p" | \
+            # grep out uninstalled (unless empty)
+            egrep -v ${uninstalled:-NADA_MUCHO};
+    }
+fi
 
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
