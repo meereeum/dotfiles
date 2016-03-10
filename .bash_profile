@@ -90,8 +90,10 @@ alias mv='mv -i'
 
 # history
 
-HISTSIZE=5000
+HISTSIZE=100000 # 10^6
 HISTFILESIZE=10000
+# ignore 2 letter commands, variants of ls, pwd
+export HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
 # append rather than overrwriting history (which would only save last closed bash sesh)
 shopt -s histappend
 # make commands executed in one shell immediately accessible in history of others
