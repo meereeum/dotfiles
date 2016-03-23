@@ -32,6 +32,7 @@ alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
 math() { bc -l <<< "$@"; }
+tom_owes=$(ls '/Volumes/Media/Documents/txt/tom_owes')
 
 # osx only
 if ((!$linux)); then
