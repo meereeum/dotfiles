@@ -215,9 +215,9 @@ layers configuration. You are free to put any user code."
   (require 'key-chord)
   (key-chord-mode 1)
   (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+  ;; ---------------------------------------------------------------------------
   (setq python-shell-virtualenv-path "~/anaconda2/")
   (setq python-shell-interpreter "~/anaconda2/bin/python")
-  ;; ---------------------------------------------------------------------------
   ;; Add line nums
   ;;(add-hook 'prog-mode-hook #'linum-mode)
   (spacemacs/toggle-golden-ratio-on)
@@ -225,6 +225,12 @@ layers configuration. You are free to put any user code."
   (setq-default dotspacemacs-configuration-layers
                 '((spell-checking :variables spell-checking-enable-by-default nil)))
   (beacon-mode 1)
+  ;; enable copy/paste from system clipboard in visual mode
+  (fset 'evil-visual-update-x-selection 'ignore)
+
+  ;; persistent highlighting is annoying
+  ;; (define-key evil-normal-state-map (kbd "RET")
+  ;;   'evil-search-highlight-persist-remove-all)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
