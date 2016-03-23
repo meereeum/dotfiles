@@ -114,8 +114,8 @@ else
 	export PYTHONPATH="/Users/miriamshiffman/anaconda2/bin/python"
 
 	# added for homebrew, coreutils
-	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH" #osx
-	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH" #osx
+	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
+	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 	export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
 
 	#if [ -f $(brew --prefix)/etc/bash_completion ]; then
@@ -134,6 +134,7 @@ alias brown='ssh -X uqmschif@10.168.48.9'
 alias gillard='ssh -X uqmschif@10.168.48.17'
 alias menzies='ssh -X uqmschif@10.168.48.16'
 alias frazer='ssh -X uqmschif@10.168.48.13'
+alias curtin='ssh -X uqmschif@10.168.48.21'
 
 # for faster X11 connection
 alias fastfrazer='ssh -Y -C -o CompressionLevel=9 -c arcfour,blowfish-cbc uqmschif@10.168.48.13'
