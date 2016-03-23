@@ -5,7 +5,7 @@ for file in "$@"; do
 
         # Target exists and can be moved to Trash safely
         if [ ! -e ~/.Trash/"${file}" ]; then
-            mv "${file}" ~/.Trash
+            mv "${file}" ~/.Trash/
 
             # Target exists and conflicts with target in Trash
         elif [ -e ~/.Trash/"${file}" ]; then
@@ -22,7 +22,7 @@ for file in "$@"; do
             mv "${file}" ~/.Trash/"${file}".$i
         fi
 
-        # Target doesn’t exist, return error
+        # Target doesn't exist, return error
     else
         echo "rm: ${file}: No such file or directory";
     fi
