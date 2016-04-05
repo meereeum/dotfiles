@@ -32,7 +32,7 @@ alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
 math() { bc -l <<< "$@"; }
-tom_owes=$(ls '/Volumes/Media/Documents/txt/tom_owes')
+tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
 
 # osx only
 if ((!$linux)); then
@@ -104,6 +104,10 @@ export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 
 # Path thangs
+
+# fix CURL certificates path
+# http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
+export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 # added by Anaconda2 2.4.1 installer
 if (($linux)); then
