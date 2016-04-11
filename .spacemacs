@@ -25,12 +25,12 @@ values."
      ;; ----------------------------------------------------------------
      auto-completion
      ;; better-defaults
-     emacs-lisp
+     ;;emacs-lisp
      git
      osx
      python
-     ;; markdown
-     ;; org
+     ;;markdown
+     ;;org
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
@@ -217,7 +217,7 @@ layers configuration. You are free to put any user code."
   (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
   ;; ---------------------------------------------------------------------------
   (setq python-shell-virtualenv-path "~/anaconda2/")
-  (setq python-shell-interpreter "~/anaconda2/bin/python")
+  (setq python-shell-interpreter "~/anaconda2/bin/ipython")
   ;; Add line nums
   ;;(add-hook 'prog-mode-hook #'linum-mode)
   (spacemacs/toggle-golden-ratio-on)
@@ -227,10 +227,16 @@ layers configuration. You are free to put any user code."
   (beacon-mode 1)
   ;; enable copy/paste from system clipboard in visual mode
   (fset 'evil-visual-update-x-selection 'ignore)
-
+  ;; automatically run inferior python process
+  ;;(add-hook 'python-mode 'run-python)
   ;; persistent highlighting is annoying
   ;; (define-key evil-normal-state-map (kbd "RET")
   ;;   'evil-search-highlight-persist-remove-all)
+  ;;(setq-default helm-mode-handle-completion-in-region nil)
+  ;; (setq helm-mode-no-completion-in-region-in-modes
+  ;;       '(circe-channel-mode
+  ;;         circe-query-mode
+  ;;         circe-server-mode)))
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
