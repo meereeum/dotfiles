@@ -20,3 +20,4 @@ libcanberra-gtk-module
 libblas-dev liblapack-dev gfortran
 freetype* python-pip python-dev python-numpy python-scipy python-matplotlib
 python-pip python-dev python-virtualenv
+trash-cli
