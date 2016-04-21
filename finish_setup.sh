@@ -4,8 +4,8 @@ if (($linux)); then
 
 	# install apt-get packages
 	while read line
-		#do sudo apt-get install -y ${line}
-		do sudo apt-get install ${line}
+		do sudo apt-get install -y ${line}
+		#do sudo apt-get install ${line}
 	done < packages.txt
 
 	# update uq vpn profile

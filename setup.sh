@@ -7,9 +7,11 @@ for f in $dotfiles
 	ln -s ~/dotfiles/${f} ~/${f}
 done
 
+echo "source ~/.bash_profile" >> ~/.bashrc
+source ~/.bash_profile
+
 # ye olde spacemacs
 git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
-
 
 instructions="
 TODO:
@@ -22,7 +24,7 @@ add miriam to #User privilege specification
 
 (2) install b43-firmware for wifi
 $ vi /etc/apt/sources.list
-append 'non-free' to every deb line
+append 'non-free contrib' to every deb line
 ( don't forget to remove l8r )
 $ apt-get update
 
@@ -31,9 +33,7 @@ $ exit
 $ bash finish_setup.sh
 "
 
-
 if (($linux)); then
-	echo "source ~/.bash_profile" >> ~/.bashrc
 	sudo mkdir /Volumes
 	sudo mkdir /Volumes/Media
 
