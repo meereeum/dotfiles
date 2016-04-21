@@ -217,7 +217,8 @@ layers configuration. You are free to put any user code."
   (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
   ;; ---------------------------------------------------------------------------
   (setq python-shell-virtualenv-path "~/anaconda2/")
-  (setq python-shell-interpreter "~/anaconda2/bin/ipython")
+  (setq python-shell-interpreter "~/anaconda2/bin/python")
+  (add-hook 'python-mode-hook 'anaconda-mode)
   ;; Add line nums
   ;;(add-hook 'prog-mode-hook #'linum-mode)
   (spacemacs/toggle-golden-ratio-on)
