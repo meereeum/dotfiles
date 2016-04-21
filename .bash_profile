@@ -23,11 +23,8 @@ fi
 touche() { touch "$@"; e "$@"; }
 
 
-# various profiles
-alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
-
-
 # aliasing
+alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
@@ -105,6 +102,9 @@ export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 
 # Path thangs
+
+# succinct cmd line (working dir only)
+export PS1=" \W \$ "
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
