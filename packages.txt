@@ -1,5 +1,5 @@
-sudo
 git
+sudo
 vlc
 emacs
 exfat-fuse exfat-utils
@@ -12,7 +12,6 @@ texlive
 texstudio
 xzdec
 vim-gui-common
-firmware-b43-installer
 texlive-latex-extra
 transmission
 python-pip
@@ -21,3 +20,4 @@ libblas-dev liblapack-dev gfortran
 freetype* python-pip python-dev python-numpy python-scipy python-matplotlib
 python-pip python-dev python-virtualenv
 trash-cli
+firmware-b43-installer
