@@ -6,6 +6,11 @@ else
     TRASHDIR="~/.Trash"
 fi
 
+if [ ! -e ${TRASHDIR} ]; then
+    touch foo
+    trash foo
+fi
+
 
 for file in "$@"; do
     if [ -e "${file}" ]; then
