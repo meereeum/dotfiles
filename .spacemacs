@@ -27,6 +27,7 @@ values."
      ;; better-defaults
      ;;emacs-lisp
      git
+     latex
      osx
      python
      ;;markdown
@@ -239,6 +240,16 @@ layers configuration. You are free to put any user code."
   ;;         circe-query-mode
   ;;         circe-server-mode)))
   )
+;; latex stuff
+;; full doc previews
+(add-hook 'doc-view-mode-hook 'auto-revert-mode)
+;; auto-fill
+dotspacemacs-configuration-layers '(
+                                    (latex :variables latex-enable-auto-fill t))
+;; folding
+dotspacemacs-configuration-layers '(
+                                    (latex :variables latex-enable-folding t))
+
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
