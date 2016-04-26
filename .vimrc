@@ -20,5 +20,7 @@ set showmatch
 set mat=2
 
 " yank into system clipboard
-set clipboard=unnamed
-set clipboard=unnamedplus
+set clipboard=autoselect,unnamed,unnamedplus
+
+" make backspace work
+set backspace=2
