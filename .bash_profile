@@ -108,7 +108,9 @@ export PS1=" \W \$ "
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
-export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+if (($linux)); then
+	export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+fi
 
 # added by Anaconda2 2.4.1 installer
 if (($linux)); then
