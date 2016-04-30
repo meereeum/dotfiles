@@ -27,6 +27,7 @@ touche() { touch "$@"; e "$@"; }
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
+alias wk='cd /Volumes/Media/workspace'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
 alias tensorboard='python ~/anaconda2/pkgs/tensorflow-0.7.1-py27_1/lib/python2.7/site-packages/tensorflow/tensorboard/backend/tensorboard.py'
 math() { bc -l <<< "$@"; }
