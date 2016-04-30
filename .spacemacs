@@ -30,8 +30,8 @@ values."
      latex
      osx
      python
-     ;;markdown
-     ;;org
+     markdown
+     org
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
@@ -239,16 +239,23 @@ layers configuration. You are free to put any user code."
   ;;       '(circe-channel-mode
   ;;         circe-query-mode
   ;;         circe-server-mode)))
+
+  ;; latex stuff
+  ;; full doc previews
+  (add-hook 'doc-view-mode-hook 'auto-revert-mode)
+  ;; auto-fill
+  dotspacemacs-configuration-layers '((latex :variables latex-enable-auto-fill t))
+  ;; folding
+  dotspacemacs-configuration-layers '((latex :variables latex-enable-folding t))
+
+  ;; from http://blog.sjas.de/posts/spacemacs-essentials.html
+  ;; syntax highlighting for markdown
+  (autoload 'markdown-mode "markdown-mode"
+    "Major mode for editing Markdown files" t)
+  (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+  ;; font too large
+  (set-face-attribute 'default nil :height 100)
   )
-;; latex stuff
-;; full doc previews
-(add-hook 'doc-view-mode-hook 'auto-revert-mode)
-;; auto-fill
-dotspacemacs-configuration-layers '(
-                                    (latex :variables latex-enable-auto-fill t))
-;; folding
-dotspacemacs-configuration-layers '(
-                                    (latex :variables latex-enable-folding t))
 
 
 ;; Do not write anything past this comment. This is where Emacs will
