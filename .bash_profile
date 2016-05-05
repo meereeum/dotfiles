@@ -44,12 +44,15 @@ if ((!$linux)); then
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
 	alias cpy='copy'
+else
+	# mass xdg-open
+	open(){ for f in "$@"; do xdg-open $f; done; }
 fi
 
 
 # list all packages from ```$ apt-get install```, in historical order
 # inspired by http://askubuntu.com/questions/17823/how-to-list-all-installed-packages
-if [[ "$OSTYPE" = "linux-gnu" ]]; then
+if (($linux)); then
     # find all packages uninstalled via ```$ apt-get remove```
     # redirect errors if no gzipped history log to /dev/null
     pkgs() {
