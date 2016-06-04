@@ -29,9 +29,13 @@ alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
 alias wk='cd /Volumes/Media/workspace'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
-alias tensorboard='python ~/anaconda2/pkgs/tensorflow-0.7.1-py27_1/lib/python2.7/site-packages/tensorflow/tensorboard/backend/tensorboard.py'
+#alias tensorboard='python ~/anaconda2/pkgs/tensorflow-0.7.1-py27_1/lib/python2.7/site-packages/tensorflow/tensorboard/backend/tensorboard.py'
 math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
+
+# conda envs
+alias p3='source activate py35'
+alias d='source deactivate'
 
 # osx only
 if ((!$linux)); then
