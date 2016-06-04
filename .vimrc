@@ -24,3 +24,10 @@ set clipboard=autoselect,unnamed,unnamedplus
 
 " make backspace work
 set backspace=2
+
+" http://blog.http417.com/2016/06/go-go-gadget-vim-command-magic-quick.html
+" Fast JSON formatting
+command JsonFmtAll %!python3 -m json.tool
+command -range JsonFmt <line1>,<line2>!python3 -m json.tool
+nnoremap & :JsonFmtAll<CR>
+vnoremap & :JsonFmt<CR>
