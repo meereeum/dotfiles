@@ -48,9 +48,14 @@ if ((!$linux)); then
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
 	alias cpy='copy'
+
+# linux only
 else
+	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
+	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
+
 	# mass xdg-open
-	open(){ for f in "$@"; do xdg-open $f; done; }
+	open(){ for f in "$@"; do xdg-open $f &> /dev/null; done }
 fi
 
 
@@ -100,7 +105,7 @@ alias mv='mv -i'
 HISTSIZE=100000 # 10^6
 HISTFILESIZE=10000
 # ignore 2 letter commands, variants of ls, pwd
-export HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
+#export HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
 # append rather than overrwriting history (which would only save last closed bash sesh)
 shopt -s histappend
 # make commands executed in one shell immediately accessible in history of others
