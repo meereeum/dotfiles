@@ -1,4 +1,3 @@
-git
 sudo
 vlc
 emacs
@@ -21,3 +20,7 @@ freetype* python-pip python-dev python-numpy python-scipy python-matplotlib
 python-pip python-dev python-virtualenv
 trash-cli
 firmware-b43-installer
+zip
+markdown
+feh
+google-chrome-stable
