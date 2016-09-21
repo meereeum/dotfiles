@@ -24,3 +24,8 @@ zip
 markdown
 feh
 google-chrome-stable
+xmonad xmobar
+dmenu
+gnome-panel
+gnuplot
+screen
