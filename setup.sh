@@ -28,6 +28,12 @@ append 'non-free contrib' to every deb line
 ( don't forget to remove l8r )
 $ apt-get update
 
+(3) fix connectivity ?!
+(via http://brontosaurusrex.github.io/postbang/#!index.md)
+$ vi /etc/NetworkManager/NetworkManager.conf
+change "managed = true"
+$ service network-manager restart
+
 $ exit
 
 $ bash finish_setup.sh
