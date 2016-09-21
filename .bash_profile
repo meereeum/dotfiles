@@ -28,10 +28,16 @@ alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
 alias wk='cd /Volumes/Media/workspace'
+alias mit='cd /Volumes/Media/Documents/mit'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
 #alias tensorboard='python ~/anaconda2/pkgs/tensorflow-0.7.1-py27_1/lib/python2.7/site-packages/tensorflow/tensorboard/backend/tensorboard.py'
+
 math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
+tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
+
+# markdown -> man page
+md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
 alias p3='source activate py35'
@@ -102,8 +108,8 @@ alias mv='mv -i'
 
 # history
 
-HISTSIZE=100000 # 10^6
-HISTFILESIZE=10000
+HISTSIZE=1000000 # 10^7
+HISTFILESIZE=100000 # 10^6
 # ignore 2 letter commands, variants of ls, pwd
 #export HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
 # append rather than overrwriting history (which would only save last closed bash sesh)
