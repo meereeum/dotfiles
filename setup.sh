@@ -28,6 +28,12 @@ append 'non-free contrib' to every deb line
 ( don't forget to remove l8r )
 $ apt-get update
 
+(3) fix connectivity ?!
+(via http://brontosaurusrex.github.io/postbang/#!index.md)
+$ vi /etc/NetworkManager/NetworkManager.conf
+change "managed = true"
+$ service network-manager restart
+
 $ exit
 
 $ bash finish_setup.sh
@@ -39,8 +45,9 @@ if (($linux)); then
 
 	# anaconda
 	wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda2-2.5.0-Linux-x86_64.sh
-	bash Anaconda2-2.5.0-Linux-x86_64.sh
+	yes | bash Anaconda2-2.5.0-Linux-x86_64.sh
 	rm Anaconda2-2.5.0-Linux-x86_64.sh
+
 	yes | conda create -n py35 python=3.5 anaconda
 
 	echo "$instructions"
