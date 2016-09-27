@@ -41,6 +41,7 @@ if (($linux)); then
 	wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda2-2.5.0-Linux-x86_64.sh
 	bash Anaconda2-2.5.0-Linux-x86_64.sh
 	rm Anaconda2-2.5.0-Linux-x86_64.sh
+	yes | conda create -n py35 python=3.5 anaconda
 
 	echo "$instructions"
 fi
