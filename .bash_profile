@@ -36,6 +36,8 @@ math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
 tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
 
+# pandoc
+eval "$(pandoc --bash-completion)"
 # markdown -> man page
 md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
