@@ -227,7 +227,9 @@ layers configuration. You are free to put any user code."
 	(spacemacs/toggle-spelling-checking-off)
 	(spacemacs/toggle-syntax-checking-off)
 
-	(setq-default dotspacemacs-configuration-layers '(auto-completion))
+  (setq-default dotspacemacs-configuration-layers '(auto-completion))
+
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 	;; disable flyspell by default
 	(setq-default dotspacemacs-configuration-layers
@@ -274,7 +276,7 @@ layers configuration. You are free to put any user code."
 
   (add-hook 'python-mode-hook (lambda () (setq indent-tabs-mode t)))
 	;; python mode tabs / auto-spacing
-	;; (setq python-indent-offset 4)
+  (setq python-indent-offset 4)
 	;; (setq-default indent-tabs-mode t)
 
 	;; (add-hook 'python-mode-hook 'guess-style-guess-tabs-mode)
