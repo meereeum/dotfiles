@@ -36,6 +36,19 @@ math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
 tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
 
+# terminal tab title
+# via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
+t ()
+{
+  TITLE=$@;
+  TITLE_CAP=$(echo "$TITLE" | tr '[:lower:]' '[:upper:]');
+  echo -en "\033]0;|| $TITLE_CAP ||\a ";
+}
+
+
+
+# pandoc
+eval "$(pandoc --bash-completion)"
 # markdown -> man page
 md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
