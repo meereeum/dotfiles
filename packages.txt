@@ -29,3 +29,4 @@ dmenu
 gnome-panel
 gnuplot
 screen
+hfsprogs
