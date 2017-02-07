@@ -31,3 +31,6 @@ command JsonFmtAll %!python3 -m json.tool
 command -range JsonFmt <line1>,<line2>!python3 -m json.tool
 nnoremap & :JsonFmtAll<CR>
 vnoremap & :JsonFmt<CR>
+
+" 80 char line widths
+" set textwidth=80
