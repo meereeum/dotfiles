@@ -225,15 +225,17 @@ layers configuration. You are free to put any user code."
 	;;(add-hook 'prog-mode-hook #'linum-mode)
 	(spacemacs/toggle-golden-ratio-on)
 	(spacemacs/toggle-spelling-checking-off)
-	(spacemacs/toggle-syntax-checking-off)
+	;; (spacemacs/toggle-syntax-checking-off)
 
   (setq-default dotspacemacs-configuration-layers '(auto-completion))
 
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 	;; disable flyspell by default
-	(setq-default dotspacemacs-configuration-layers
-								'((spell-checking :variables spell-checking-enable-by-default nil)))
+	;; (setq-default dotspacemacs-configuration-layers
+	;; 							'((spell-checking :variables spell-checking-enable-by-default nil)))
+  ;; (setq-default spell-checking-enable-by-default nil)
+  (setq-default spacemacs/toggle-spelling-checking-off)
 
 	;; Remove fly-spell for markdown and text-files.
 	(remove-hook 'text-mode-hook 'enable-flyspell-mode)
@@ -272,11 +274,27 @@ layers configuration. You are free to put any user code."
 	(add-hook 'markdown-mode-hook 'pandoc-mode)
 
 	;; font too large
-	(set-face-attribute 'default nil :height 100)
+	;; (set-face-attribute 'default nil :height 100)
+	(set-face-attribute 'default nil :height 80)
 
   (add-hook 'python-mode-hook (lambda () (setq indent-tabs-mode t)))
+
+  ;; plz work
+  ;; http://stackoverflow.com/questions/37845243/python-indentation-in-spacemacs-with-hard-tabs-is-off
+  (setq-default python-indent-offset 4)
+  (setq-default python-indent-levels '(0 4))
+  (setq-default evil-shift-width 4)
+
+	(add-hook 'python-mode-hook
+	          (lambda ()
+              (setq-default python-indent-offset 4)
+              (setq-default python-indent-levels '(0 4))
+	            (add-to-list 'write-file-functions 'delete-trailing-whitespace)
+              (setq-default evil-shift-width 4)
+	            ))
+
 	;; python mode tabs / auto-spacing
-  (setq python-indent-offset 4)
+  ;; (setq python-indent-offset 4)
 	;; (setq-default indent-tabs-mode t)
 
 	;; (add-hook 'python-mode-hook 'guess-style-guess-tabs-mode)

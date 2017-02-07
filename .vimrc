@@ -22,6 +22,11 @@ set mat=2
 " yank into system clipboard
 set clipboard=autoselect,unnamed,unnamedplus
 
+" OR via tmp file (if no vim-gui-common)
+let mapleader=","
+vmap <Leader>y :w! /tmp/vi_clip<CR>
+vmap <Leader>p :r! cat /tmp/vi_clip<CR>
+
 " make backspace work
 set backspace=2
 
