@@ -243,7 +243,7 @@ layers configuration. You are free to put any user code."
 	;; enable copy/paste from system clipboard in visual mode
 	(fset 'evil-visual-update-x-selection 'ignore)
 	;; automatically run inferior python process
-	;;(add-hook 'python-mode 'run-python)
+	(add-hook 'python-mode 'run-python)
 	;; persistent highlighting is annoying
 	;; (define-key evil-normal-state-map (kbd "RET")
 	;;   'evil-search-highlight-persist-remove-all)
