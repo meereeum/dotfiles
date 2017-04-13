@@ -1,10 +1,14 @@
 #!/usr/bin/bash
 
 # simlink
-dotfiles=$( ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" )
-for f in $dotfiles
-	do rm ~/${f}
-	ln -s ~/dotfiles/${f} ~/${f}
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
+
+for f in $DOTFILES
+        do rm ~/${f}
+        ln -s ${DIR}/${f} ~/${f}
+        echo "~/${f} --> ${DIR}/${f}"
 done
 
 echo "source ~/.bash_profile" >> ~/.bashrc
