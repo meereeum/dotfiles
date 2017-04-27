@@ -41,10 +41,25 @@ if (($linux)); then
 	sudo mkdir /Volumes
 	sudo mkdir /Volumes/Media
 
-	# anaconda
-	wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda2-2.5.0-Linux-x86_64.sh
-	bash Anaconda2-2.5.0-Linux-x86_64.sh
-	rm Anaconda2-2.5.0-Linux-x86_64.sh
-
 	echo "$instructions"
+fi
+
+
+# anaconda
+
+OS=${OSTYPE//[0-9.]/}
+if [[ $OS == "darwin" ]]; then
+        SYS="MacOSX"
+else
+        SYS="Linux"
+fi
+
+CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-${SYS}-x86_64.sh"
+
+wget $CONDA -O ~/conda.sh && \
+	bash ~/conda.sh -b && \ # silent install
+                {
+                        rm ~/conda.sh
+                        yes | conda create -n py36 python=3.6 anaconda
+                }
 fi

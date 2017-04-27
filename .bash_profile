@@ -34,7 +34,7 @@ math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
 
 # conda envs
-alias p3='source activate py35'
+alias p3='source activate py36'
 alias d='source deactivate'
 
 # osx only
