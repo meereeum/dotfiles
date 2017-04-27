@@ -14,9 +14,9 @@ export EDITOR=/usr/bin/vi
 
 if (($linux)); then
 	#e() { emacs "$@"; }
-	e() { emacsclient --alternate-editor="" -nc "$@"; }
+	e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 else
-	e() { open -a Emacs "$@"; }
+	e() { open -a Emacs "$@" & disown; }
 fi
 
 # touche = touch + emacs
@@ -28,10 +28,34 @@ alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 alias rc='cd /Volumes/Media/workspace/rc'
 alias wk='cd /Volumes/Media/workspace'
+alias mit='cd /Volumes/Media/Documents/mit'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
-#alias tensorboard='python ~/anaconda2/pkgs/tensorflow-0.7.1-py27_1/lib/python2.7/site-packages/tensorflow/tensorboard/backend/tensorboard.py'
+#alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
+alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
+
 math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
+tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
+tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
+
+# rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
+
+
+# terminal tab title
+# via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
+t ()
+{
+  TITLE=$@;
+  TITLE_CAP=$(echo "$TITLE" | tr '[:lower:]' '[:upper:]');
+  echo -en "\033]0;|| $TITLE_CAP ||\a ";
+}
+
+
+
+# pandoc
+eval "$(pandoc --bash-completion)"
+# markdown -> man page
+md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
 alias p3='source activate py36'
@@ -55,7 +79,7 @@ else
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
 
 	# mass xdg-open
-	open(){ for f in "$@"; do xdg-open $f &> /dev/null; done }
+	open(){ for f in "$@"; do xdg-open $f &> /dev/null & disown; done }
 fi
 
 
@@ -102,8 +126,8 @@ alias mv='mv -i'
 
 # history
 
-HISTSIZE=100000 # 10^6
-HISTFILESIZE=10000
+HISTSIZE=1000000 # 10^7
+HISTFILESIZE=100000 # 10^6
 # ignore 2 letter commands, variants of ls, pwd
 #export HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
 # append rather than overrwriting history (which would only save last closed bash sesh)
@@ -111,7 +135,8 @@ shopt -s histappend
 # make commands executed in one shell immediately accessible in history of others
 # i.e. append, then clear, then reload file
 export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
-
+# ignore duplicates
+export HISTCONTROL=erasedups
 
 
 # Path thangs

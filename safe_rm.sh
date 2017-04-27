@@ -3,7 +3,7 @@
 if (($linux)); then
     TRASHDIR="/home/miriam/.local/share/Trash/files"
 else
-    TRASHDIR="~/.Trash"
+    TRASHDIR="/Users/miriamshiffman/.Trash"
 fi
 
 if [ ! -e ${TRASHDIR} ]; then

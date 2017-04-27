@@ -24,3 +24,14 @@ zip
 markdown
 feh
 google-chrome-stable
+xmonad xmobar
+dmenu
+gnome-panel
+gnuplot
+screen
+hfsprogs
+-y curl
+apt-transport-https
+tmux
+arandr
+libav-tools
