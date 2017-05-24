@@ -151,13 +151,7 @@ if (($linux)); then
 fi
 
 # added by Anaconda2 2.4.1 installer
-if (($linux)); then
-	export PATH="/home/miriam/anaconda2/bin:$PATH"
-	export PYTHONPATH="/home/miriam/anaconda2/bin/python"
-else
-	export PATH="/Users/miriamshiffman/anaconda2/bin:$PATH"
-	export PYTHONPATH="/Users/miriamshiffman/anaconda2/bin/python"
-
+if ((!$linux)); then
 	# added for homebrew, coreutils
 	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
@@ -167,8 +161,8 @@ else
 	#    . $(brew --prefix)/etc/bash_completion
 	#  fi
 fi
-
-
+export PATH="${HOME}/anaconda2/bin:$PATH"
+export PYTHONPATH="${HOME}/anaconda2/bin/python"
 
 # ACE
 
@@ -207,3 +201,9 @@ alias downfrazer='sudo umount ~/srv/frazer'
 # http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
 alias vuq='sudo vpnc uq'
 alias vdc='sudo vpnc-disconnect'
+
+# autocomplete screen
+complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
+
+# make tensorflow work, if server
+#export QT_QPA_PLATFORM=offscreen
