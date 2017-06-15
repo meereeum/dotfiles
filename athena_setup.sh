@@ -62,7 +62,13 @@ fi
 CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-${SYS}-x86_64.sh" 
 DEST="/Volumes/THAWSPACE${HOME}/conda"
 
-if [ ! -e ${DEST} ]; then
+if [ ! -e ${DEST}/bin/python ]; then
+
+        # get rid of leftover dir
+        if [ -e ${DEST} ]; then
+            rm -r ${DEST}
+        fi
+
 	wget $CONDA -O ~/conda.sh && \
 		bash ~/conda.sh -b -p ${DEST} && \ # silent install
 		{
@@ -83,6 +89,13 @@ if [[ $OS == "darwin" ]]; then # built-in emacs is hella old
 		sudo chown -R $(whoami) /usr/local/var/homebrew
 		brew install emacs --with-cocoa
 	fi
+# also pandoc
+	if [[ ! $(brew list | grep pandoc | wc -l) -eq 1 ]]; then
+		brew install pandoc
+		sudo ln -s /usr/local/Cellar/pandoc/1.19.2.1/bin/pandoc /usr/local/bin/pandoc
+	fi
+else
+	sudo apt-get install pandoc
 fi
 
 FROM="/Volumes/THAWSPACE${HOME}/.emacs.d"
