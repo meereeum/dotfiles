@@ -1,5 +1,7 @@
 #!/bin/bash
 
+OS=${OSTYPE//[0-9.]/}
+
 # simlink
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -45,6 +47,7 @@ DEST="${DEST}/user.js"
 echo 'user_pref("browser.search.defaultenginename", "Google");' > "${DEST}"
 echo 'user_pref("browser.search.defaultenginename.US", "data:text/plain,browser.search.defaultenginename.US=Google");' >> "${DEST}"
 echo 'user_pref("browser.search.order.1", "Google");' >> "${DEST}"
+echo 'user_pref("browser.search.order.US.1", "data:text/plain,browser.search.order.US.1=Google");' >> "${DEST}"
 
 # don't ask about default browser
 echo 'user_pref("browser.shell.checkDefaultBrowser", "false")' >> "${DEST}"
@@ -52,7 +55,6 @@ echo 'user_pref("browser.shell.checkDefaultBrowser", "false")' >> "${DEST}"
 
 # conda
 
-OS=${OSTYPE//[0-9.]/}
 if [[ $OS == "darwin" ]]; then
 	SYS="MacOSX"
 else
