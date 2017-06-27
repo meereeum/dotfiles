@@ -1,15 +1,20 @@
 #!/bin/sh
 
 if (($linux)); then
-    TRASHDIR="/home/miriam/.local/share/Trash/files"
+
+    TRASHDIR="${HOME}/.local/share/Trash/files"
+
+    if [ ! -e ${TRASHDIR} ]; then
+        touch foo
+        trash foo
+    fi
+
 else
-    TRASHDIR="/Users/miriamshiffman/.Trash"
+
+    TRASHDIR="${HOME}/.Trash"
+
 fi
 
-if [ ! -e ${TRASHDIR} ]; then
-    touch foo
-    trash foo
-fi
 
 
 for file in "$@"; do
