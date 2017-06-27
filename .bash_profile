@@ -127,16 +127,42 @@ alias mv='mv -i'
 # history
 
 HISTSIZE=1000000 # 10^7
-HISTFILESIZE=100000 # 10^6
+#HISTFILESIZE=100000 # 10^6
+HISTFILESIZE=$HISTSIZE
+
 # ignore 2 letter commands, variants of ls, pwd
-#export HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
+#HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
+HISTIGNORE="?:??:pwd"
+
 # append rather than overrwriting history (which would only save last closed bash sesh)
 shopt -s histappend
 # make commands executed in one shell immediately accessible in history of others
 # i.e. append, then clear, then reload file
-export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+#export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 # ignore duplicates
-export HISTCONTROL=erasedups
+#HISTCONTROL=erasedups
+HISTCONTROL=ignorespace:ignoredups
+
+# via https://unix.stackexchange.com/questions/1288/preserve-bash-history-in-multiple-terminal-windows
+
+_bash_history_sync() {
+  builtin history -a         #1
+  HISTFILESIZE=$HISTSIZE     #2
+  builtin history -c         #3
+  builtin history -r         #4
+}
+
+history() {                  #5
+  _bash_history_sync
+  builtin history "$@"
+}
+
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
+
+# reedit a history substitution line if it failed
+shopt -s histreedit
+# edit a recalled history line before executing
+shopt -s histverify
 
 
 # Path thangs
