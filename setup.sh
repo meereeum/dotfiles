@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # symlink
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -18,7 +18,6 @@ source ~/.bash_profile
 git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 
 
-# anaconda
 OS=${OSTYPE//[0-9.]/}
 if [[ $OS == "darwin" ]]; then
         SYS="MacOSX"
@@ -26,6 +25,15 @@ else
         SYS="Linux"
 fi
 
+
+# homebrew
+if [[ $SYS == "MacOSX" ]]; then
+	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+	brew install wget
+fi
+
+
+# anaconda
 CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-${SYS}-x86_64.sh"
 
 wget $CONDA -O ~/conda.sh && \
@@ -34,7 +42,6 @@ wget $CONDA -O ~/conda.sh && \
                         rm ~/conda.sh
                         yes | conda create -n py36 python=3.6 anaconda
                 }
-fi
 
 
 instructions="
