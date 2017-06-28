@@ -20,8 +20,12 @@ if (($linux)); then
 else
 
 	# install brew packages
+	brew tap railwaycat/emacsmacport # for emacs-mac
+
 	while read line
 		do brew install ${line}
 	done < packages_brew.txt
+
+	brew linkapps emacs-mac
 
 fi
