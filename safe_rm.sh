@@ -36,11 +36,13 @@ for file in "$@"; do
             done
 
             # Move to the Trash with non-conflicting name
-            mv "${file}" "${TRASHDIR}/${file}.{$i}"
+            mv "${file}" "${TRASHDIR}/${file}.${i}"
         fi
 
         # Target doesn't exist, return error
     else
-        echo "rm: ${file}: No such file or directory";
+        if [[ "${file}" != "-r" ]]; then # ignore options to `rm`
+            echo "rm: ${file}: No such file or directory";
+        fi
     fi
 done
