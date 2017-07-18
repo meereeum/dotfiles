@@ -218,14 +218,20 @@ layers configuration. You are free to put any user code."
 	(key-chord-mode 1)
 	(key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
 	;; ---------------------------------------------------------------------------
-	(setq python-shell-virtualenv-path "~/anaconda2/")
-	(setq python-shell-interpreter "~/anaconda2/bin/python")
+	(setq python-shell-virtualenv-path ${HOME}"/anaconda2/")
+	(setq python-shell-interpreter ${HOME}"/anaconda2/bin/python")
 	(add-hook 'python-mode-hook 'anaconda-mode)
+	(add-hook 'python-mode-hook 'anaconda-eldoc-mode) ;; docs
 	;; Add line nums
 	;;(add-hook 'prog-mode-hook #'linum-mode)
 	(spacemacs/toggle-golden-ratio-on)
 	(spacemacs/toggle-spelling-checking-off)
 	;; (spacemacs/toggle-syntax-checking-off)
+
+	;; tramp - via https://sriramkswamy.github.io/dotemacs/
+	(setq tramp-default-method "ssh"
+	      tramp-backup-directory-alist backup-directory-alist
+	      tramp-ssh-controlmaster-options "ssh")
 
   (setq-default dotspacemacs-configuration-layers '(auto-completion))
 
