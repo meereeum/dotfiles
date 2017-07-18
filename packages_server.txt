@@ -7,3 +7,6 @@ libqt5core5a
 qtbase5-dev
 xorg openbox
 dvipng texlive-latex-extra texlive-fonts-recommended
+vpnc
+libgcrypt11-dev resolvconf
+vim-gui-common
