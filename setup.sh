@@ -1,17 +1,48 @@
-#!/usr/bin/bash
+#!/bin/bash
 
-# simlink
-dotfiles=$( ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" )
-for f in $dotfiles
-	do rm ~/${f}
-	ln -s ~/dotfiles/${f} ~/${f}
+# symlink
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
+
+for f in $DOTFILES
+        do rm ~/${f}
+        ln -s ${DIR}/${f} ~/${f}
+        echo "~/${f} --> ${DIR}/${f}"
 done
 
 echo "source ~/.bash_profile" >> ~/.bashrc
 source ~/.bash_profile
 
+
 # ye olde spacemacs
 git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+
+
+OS=${OSTYPE//[0-9.]/}
+if [[ $OS == "darwin" ]]; then
+        SYS="MacOSX"
+else
+        SYS="Linux"
+fi
+
+
+# homebrew
+if [[ $SYS == "MacOSX" ]]; then
+	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+	brew install wget
+fi
+
+
+# anaconda
+CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-${SYS}-x86_64.sh"
+
+wget $CONDA -O ~/conda.sh && \
+	bash ~/conda.sh -b && \ # silent install
+                {
+                        rm ~/conda.sh
+                        yes | conda create -n py36 python=3.6 anaconda
+                }
+
 
 instructions="
 TODO:
@@ -42,13 +73,6 @@ $ bash finish_setup.sh
 if (($linux)); then
 	sudo mkdir /Volumes
 	sudo mkdir /Volumes/Media
-
-	# anaconda
-	wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda2-2.5.0-Linux-x86_64.sh
-	yes | bash Anaconda2-2.5.0-Linux-x86_64.sh
-	rm Anaconda2-2.5.0-Linux-x86_64.sh
-
-	yes | conda create -n py35 python=3.5 anaconda
 
 	echo "$instructions"
 fi

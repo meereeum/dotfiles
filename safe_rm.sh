@@ -1,15 +1,20 @@
 #!/bin/sh
 
 if (($linux)); then
-    TRASHDIR="/home/miriam/.local/share/Trash/files"
+
+    TRASHDIR="${HOME}/.local/share/Trash/files"
+
+    if [ ! -e ${TRASHDIR} ]; then
+        touch foo
+        trash foo
+    fi
+
 else
-    TRASHDIR="/Users/miriamshiffman/.Trash"
+
+    TRASHDIR="${HOME}/.Trash"
+
 fi
 
-if [ ! -e ${TRASHDIR} ]; then
-    touch foo
-    trash foo
-fi
 
 
 for file in "$@"; do
@@ -31,11 +36,13 @@ for file in "$@"; do
             done
 
             # Move to the Trash with non-conflicting name
-            mv "${file}" "${TRASHDIR}/${file}.{$i}"
+            mv "${file}" "${TRASHDIR}/${file}.${i}"
         fi
 
         # Target doesn't exist, return error
     else
-        echo "rm: ${file}: No such file or directory";
+        if [[ "${file}" != "-r" ]]; then # ignore options to `rm`
+            echo "rm: ${file}: No such file or directory";
+        fi
     fi
 done

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 if (($linux)); then
 
@@ -16,4 +16,16 @@ if (($linux)); then
 	# https://github.com/rg3/youtube-dl
 	sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
 	sudo chmod a+rx /usr/local/bin/youtube-dl
+
+else
+
+	# install brew packages
+	brew tap railwaycat/emacsmacport # for emacs-mac
+
+	while read line
+		do brew install ${line}
+	done < packages_brew.txt
+
+	brew linkapps emacs-mac
+
 fi
