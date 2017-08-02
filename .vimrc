@@ -20,7 +20,7 @@ set showmatch
 set mat=2
 
 " yank into system clipboard
-set clipboard=autoselect,unnamed,unnamedplus
+set clipboard+=autoselect,unnamed,unnamedplus
 
 " OR via tmp file (if no vim-gui-common)
 let mapleader=","
@@ -36,3 +36,6 @@ command JsonFmtAll %!python3 -m json.tool
 command -range JsonFmt <line1>,<line2>!python3 -m json.tool
 nnoremap & :JsonFmtAll<CR>
 vnoremap & :JsonFmt<CR>
+
+" 80 char line widths
+" set textwidth=80

@@ -39,7 +39,7 @@ wget $CONDA -O ~/conda.sh && \
 while read line
         do sudo apt-get install -y ${line}
         #do sudo apt-get install ${line}
-done < packages_server.txt
+done < packages/packages_server.txt
 
 
 # comment out lines
