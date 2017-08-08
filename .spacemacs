@@ -28,16 +28,17 @@ values."
 		 ;;emacs-lisp
 		 git
 		 latex
-		 osx
-		 python
 		 markdown
-		 pandoc
 		 org
+		 osx
+		 pandoc
+		 python
 		 (shell :variables
 						shell-default-height 30
 						shell-default-position 'bottom)
 		 spell-checking
-		 syntax-checking
+		 ;; syntax-checking
+		 (syntax-checking :variables syntax-checking-enable-by-default nil) ;; default off
 		 version-control
 		 )
 	 ;; List of additional packages that will be installed without being
