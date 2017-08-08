@@ -2,11 +2,11 @@
 
 if (($linux)); then
 
-	# install apt-get packages
+	# install apt-get packages/packages
 	while read line
 		do sudo apt-get install -y ${line}
 		#do sudo apt-get install ${line}
-	done < packages.txt
+	done < packages/packages.txt
 
 	# update uq vpn profile
 	cp template_uq.conf uq.conf
@@ -24,7 +24,7 @@ else
 
 	while read line
 		do brew install ${line}
-	done < packages_brew.txt
+	done < packages/packages_brew.txt
 
 	brew linkapps emacs-mac
 
