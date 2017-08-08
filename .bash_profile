@@ -165,30 +165,36 @@ shopt -s histreedit
 shopt -s histverify
 
 
-# Path thangs
-
 # succinct cmd line (working dir only)
 export PS1=" \W \$ "
+
+
+# Path thangs
+
+# added by Anaconda2 2.4.1 installer
+export PATH="${HOME}/anaconda2/bin:$PATH"
+export PYTHONPATH="${HOME}/anaconda2/bin/python"
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
 if (($linux)); then
 	export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-fi
-
-# added by Anaconda2 2.4.1 installer
-if ((!$linux)); then
+else
 	# added for homebrew, coreutils
 	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-	export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+	MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+
+	alias vi='/usr/local/bin/vim' # homebrew version
+
+	# latex
+	PATH="/Library/TeX/texbin/:$PATH"
 
 	#if [ -f $(brew --prefix)/etc/bash_completion ]; then
 	#    . $(brew --prefix)/etc/bash_completion
 	#  fi
 fi
-export PATH="${HOME}/anaconda2/bin:$PATH"
-export PYTHONPATH="${HOME}/anaconda2/bin/python"
+
 
 # ACE
 
