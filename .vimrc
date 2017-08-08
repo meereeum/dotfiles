@@ -20,7 +20,7 @@ set showmatch
 set mat=2
 
 " yank into system clipboard
-set clipboard=autoselect,unnamed,unnamedplus
+set clipboard+=autoselect,unnamed,unnamedplus
 
 " OR via tmp file (if no vim-gui-common)
 let mapleader=","
