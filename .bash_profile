@@ -16,7 +16,12 @@ if (($linux)); then
 	#e() { emacs "$@"; }
 	e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 else
-	e() { open -a Emacs "$@" & disown; }
+	#e() { open -a Emacs "$@" & disown; }
+	e() { emacs "$@" & disown; }
+
+	# internet tabs --> file
+	tabs() { now=$( date +%y%m%d ); for app in "google chrome" safari firefox; do osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}; done; }
+
 fi
 
 # touche = touch + emacs
