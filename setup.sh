@@ -43,6 +43,18 @@ wget $CONDA -O ~/conda.sh && \
                         yes | conda create -n py36 python=3.6 anaconda
                 }
 
+# vim for jupyter
+mkdir -p $(jupyter --data-dir)/nbextensions
+cd $(jupyter --data-dir)/nbextensions
+git clone https://github.com/lambdalisue/jupyter-vim-binding vim_binding
+
+CUSTOM="~/.jupyter/custom"
+mkdir -p $CUSTOM
+for f in jupyter/*; do
+  ln -s ${DIR}/${f} ${CUSTOM}
+  echo "${CUSTOM}/${f} --> ${DIR}/${f}"
+done
+
 
 instructions="
 TODO:
