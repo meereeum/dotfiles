@@ -44,8 +44,8 @@ done < packages/packages_server.txt
 
 # comment out lines
 
-sed -ri .tmp 's/^(.*pandoc)/#\1/' ${HOME}/.bash_profile
-sed -ri .tmp 's/^(.*safe_rm)/#\1/' ${HOME}/.bash_profile
+sed -ri'.tmp' --follow-symlinks 's/^(.*pandoc)/#\1/' ${HOME}/.bash_profile
+sed -ri'.tmp' --follow-symlinks 's/^(.*safe_rm)/#\1/' ${HOME}/.bash_profile
 
 if [ -e ${HOME}/.bash_profile.tmp ]; then
 	rm ${HOME}/.bash_profile.tmp
