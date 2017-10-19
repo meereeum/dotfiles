@@ -113,8 +113,8 @@ ln -s $FROM $TO && \
 
 # set ~/.spacemacs python path
 
-sed -Ei .tmp 's@(python-shell-virtualenv-path).*@\1 "/Volumes/THAWSPACE/Users/shiffman/conda")@' ${HOME}/.spacemacs
-sed -Ei .tmp 's@(python-shell-interpreter).*@\1 "/Volumes/THAWSPACE/Users/shiffman/conda/bin/python")@' ${HOME}/.spacemacs
+sed -Ei'.tmp' --follow-symlinks 's@(python-shell-virtualenv-path).*@\1 "/Volumes/THAWSPACE/Users/shiffman/conda")@' ${HOME}/.spacemacs
+sed -Ei'.tmp' --follow-symlinks 's@(python-shell-interpreter).*@\1 "/Volumes/THAWSPACE/Users/shiffman/conda/bin/python")@' ${HOME}/.spacemacs
 
 if [ -e ${HOME}/.spacemacs.tmp ]; then
 	rm ${HOME}/.spacemacs.tmp

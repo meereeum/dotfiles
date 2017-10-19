@@ -22,24 +22,24 @@ source $HOME/.bash_profile
 
 CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-Linux-x86_64.sh" 
 
-wget $CONDA -O ~/conda.sh && \
-	bash ~/conda.sh -b && \ # silent install
-	{
-		rm ~/conda.sh
-
-		export PATH="${HOME}/anaconda2/bin:$PATH"
-		export PYTHONPATH="${HOME}/anaconda2/bin/python"
-
-		yes | conda create -n py36 python=3.6 anaconda
-	}
-
+#wget $CONDA -O ~/conda.sh && \
+#	bash ~/conda.sh -b && \ # silent install
+#	{
+#		rm ~/conda.sh
+#
+#		export PATH="${HOME}/anaconda2/bin:$PATH"
+#		export PYTHONPATH="${HOME}/anaconda2/bin/python"
+#
+#		yes | conda create -n py36 python=3.6 anaconda
+#	}
+#
 
 # minimal pkgs
 
-while read line
-        do sudo apt-get install -y ${line}
+#while read line
+#        do sudo apt-get install -y ${line}
         #do sudo apt-get install ${line}
-done < packages/packages_server.txt
+#done < packages/packages_server.txt
 
 
 # comment out lines
