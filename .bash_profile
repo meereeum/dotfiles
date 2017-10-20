@@ -44,7 +44,10 @@ tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 
 # universalish / v possibly nonrobust way to query ip address
-ip() { ifconfig | awk '/inet[^c]*cast/ {print $2}' | sed 's/addr://'; }
+# this is local (not public) ip
+#ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
+# instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
+alias ip='dig +short myip.opendns.com @resolver1.opendns.com'
 
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
 
