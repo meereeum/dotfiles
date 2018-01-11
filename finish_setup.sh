@@ -29,3 +29,5 @@ else
 	brew linkapps emacs-mac
 
 fi
+
+mkdir ~/.vim/.{backup,swp,undo}

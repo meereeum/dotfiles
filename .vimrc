@@ -39,3 +39,9 @@ vnoremap & :JsonFmt<CR>
 
 " 80 char line widths
 " set textwidth=80
+
+" https://coderwall.com/p/sdhfug/vim-swap-backup-and-undo-files
+" cleaner swap, backup, undo files
+set undodir=~/.vim/.undo//
+set backupdir=~/.vim/.backup//
+set directory=~/.vim/.swp//
