@@ -38,11 +38,13 @@ alias mit='cd /Volumes/Media/Documents/mit'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
+alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 
 math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
 tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
+lunch() { ipython /Volumes/Media/mit-lunch/get_menu.py "$@"; }
 
 # universalish / v possibly nonrobust way to query ip address
 # this is local (not public) ip
@@ -78,6 +80,11 @@ if ((!$linux)); then
 	alias vlc='open -a VLC'
 	alias chrome='open -a /Applications/Google\ Chrome.app'
 	alias ffox='open -a /Applications/Firefox.app/'
+
+        for x in gcc g++; do
+           alias $x=$( ls /usr/local/Cellar/gcc/*/bin/${x}* |
+                       grep ${x}-[0-9] | tail -n1); done
+
 	alias phil='chrome "https://docs.google.com/document/d/1Bcfz3Tl_T78nx9VLnOyoyn4rrvpjFH2ol8PJ9JMk97U/edit";
 			open -a Skype; open -a Evernote'
 
@@ -196,14 +203,16 @@ else
 	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
 	MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+	MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 
 	alias vi='/usr/local/bin/vim' # homebrew version
 
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
 
-	#if [ -f $(brew --prefix)/etc/bash_completion ]; then
-	#    . $(brew --prefix)/etc/bash_completion
+        # brew autocomplete
+	#if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
+	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
 fi
 
