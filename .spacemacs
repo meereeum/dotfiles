@@ -18,6 +18,7 @@ values."
 	 ;; of a list then all discovered layers will be installed.
 	 dotspacemacs-configuration-layers
 	 '(
+     html
 		 ;; ----------------------------------------------------------------
 		 ;; Example of useful layers you may want to use right away.
 		 ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -254,8 +255,8 @@ layers configuration. You are free to put any user code."
 	;; automatically run inferior python process
 	(add-hook 'python-mode 'run-python)
 	;; persistent highlighting is annoying
-	;; (define-key evil-normal-state-map (kbd "RET")
-	;;   'evil-search-highlight-persist-remove-all)
+	(define-key evil-normal-state-map (kbd "RET")
+	  'evil-search-highlight-persist-remove-all)
 	;;(setq-default helm-mode-handle-completion-in-region nil)
 	;; (setq helm-mode-no-completion-in-region-in-modes
 	;;       '(circe-channel-mode
@@ -281,17 +282,18 @@ layers configuration. You are free to put any user code."
 	(add-hook 'markdown-mode-hook 'pandoc-mode)
 
 	;; font too large
-	(set-face-attribute 'default nil :height 110)
+	(set-face-attribute 'default nil :height 114)
+	;; (set-face-attribute 'default nil :height 80)
 
   ;; plz work
   ;; http://stackoverflow.com/questions/37845243/python-indentation-in-spacemacs-with-hard-tabs-is-off
-  ;; (setq-default python-indent-offset 4)
-  ;; (setq-default python-indent-levels '(0 4))
 
-	(setq indent-tabs-mode t) ;; local values in this buffer
+  ;; local values in this buffer
+	(setq indent-tabs-mode nil) ;; nil for spaces, t for tabs
 	(setq evil-shift-width 4)
 	(setq standard-indent 4)
 
+	;; python mode tabs / auto-spacing
 	(add-hook 'python-mode-hook
 	          (lambda ()
               (setq-default python-indent-offset 4)
