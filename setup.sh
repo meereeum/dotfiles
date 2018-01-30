@@ -13,6 +13,8 @@ done
 echo "source ~/.bash_profile" >> ~/.bashrc
 source ~/.bash_profile
 
+# vim dir
+mkdir -p .vim/{.swp,.backup,.undo}
 
 # ye olde spacemacs
 git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d

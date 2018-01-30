@@ -19,6 +19,9 @@ done
 echo "source ~/.bash_profile" >> ~/.bashrc
 source $HOME/.bash_profile
 
+# vim dir
+mkdir -p .vim/{.swp,.backup,.undo}
+
 
 # shiff folder
 

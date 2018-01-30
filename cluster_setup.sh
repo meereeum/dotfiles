@@ -18,6 +18,10 @@ echo "source ~/.bash_profile" >> ~/.bashrc
 source $HOME/.bash_profile
 
 
+# vim dir
+mkdir -p .vim/{.swp,.backup,.undo}
+
+
 # conda
 
 CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-Linux-x86_64.sh" 
