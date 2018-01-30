@@ -40,7 +40,8 @@ wget $CONDA -O ~/conda.sh && \
 	bash ~/conda.sh -b && \ # silent install
                 {
                         rm ~/conda.sh
-                        yes | conda create -n py36 python=3.6 anaconda
+                        #yes | conda create -n py36 python=3.6 anaconda
+                        yes | conda env create -f packages/conda_py36.yml
                 }
 
 # vim for jupyter
