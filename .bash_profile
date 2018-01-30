@@ -174,7 +174,7 @@ alias mv='mv -i'
 
 # history
 
-HISTSIZE=1000000 # 10^7
+HISTSIZE="INFINITE" # via https://superuser.com/questions/479726/how-to-get-infinite-command-history-in-bash
 #HISTFILESIZE=100000 # 10^6
 HISTFILESIZE=$HISTSIZE
 
@@ -212,6 +212,8 @@ shopt -s histreedit
 # edit a recalled history line before executing
 shopt -s histverify
 
+# extended regex - e.g. $ ls !(*except_this)
+shopt -s extglob
 
 # succinct cmd line (working dir only)
 export PS1=" \W \$ "
