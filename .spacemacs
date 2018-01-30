@@ -301,15 +301,38 @@ layers configuration. You are free to put any user code."
 							(add-to-list 'write-file-functions 'delete-trailing-whitespace)
               (setq-default evil-shift-width 4)
               (setq-default tab-width 4)
-              (setq-default indent-tabs-mode t) ;; nil for spaces, t for tabs
+              (setq-default indent-tabs-mode nil);; t) ;; nil for spaces, t for tabs
 							;; (setq-default py-indent-tabs-mode t)
 	            ))
-
-	;; python mode tabs / auto-spacing
-
 	;; (add-hook 'python-mode-hook 'guess-style-guess-tabs-mode)
 	;; (add-hook 'python-mode-hook (lambda ()
 	;;                               (guess-style-guess-tab-width)))
+
+  ;; fix lockfiles
+  ;; https://github.com/syl20bnr/spacemacs/issues/5186
+  ;; (setq recentf-save-file (format "/tmp/recentf.%s" (emacs-pid)))
+
+  ;; https://sriramkswamy.github.io/dotemacs/
+  ;; better autosave
+  ;; Backups at .tmp folder in the current folder
+  (setq backup-by-copying t      ; don't clobber symlinks
+        backup-directory-alist
+        '(("." . "~/.tmp"))      ; don't litter my fs tree
+        delete-old-versions t
+        kept-new-versions 6
+        kept-old-versions 2
+        version-control t)       ; use versioned backups
+  (setq auto-save-file-name-transforms `((".*", temporary-file-directory t))
+        create-lockfiles nil)
+  (setq-default create-lockfiles nil)
+
+  ;; better sentences
+  (setq sentence-end-double-space nil)
+  ;; pdfs
+  (setq doc-view-continuous t)
+
+  ;; center line
+
 )
 
 
