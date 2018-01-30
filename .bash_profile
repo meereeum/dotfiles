@@ -18,7 +18,9 @@ if (($linux)); then
 else
 	#e() { open -a Emacs "$@" & disown; }
 	#e() { emacs "$@" & disown; }
-         e() { /usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
+        #e() { /Applications/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
+        #e() { /usr/local/Cellar/emacs-mac/emacs-25.2-z-mac-6.5/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
+        e() { /usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
 
 	# internet tabs --> file
 	tabs() { now=$( date +%y%m%d ); for app in "google chrome" safari firefox; do osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}; done; }
@@ -32,9 +34,9 @@ touche() { touch "$@"; e "$@"; }
 # aliasing
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
-alias rc='cd /Volumes/Media/workspace/rc'
-alias wk='cd /Volumes/Media/workspace'
-alias mit='cd /Volumes/Media/Documents/mit'
+alias rc='cd /Volumes/Media/wkspace/rc'
+alias wk='cd /Volumes/Media/wkspace'
+alias mit='cd /Volumes/Media/mit'
 alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
@@ -44,7 +46,10 @@ math() { bc -l <<< "$@"; }
 tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
 tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
-lunch() { ipython /Volumes/Media/mit-lunch/get_menu.py "$@"; }
+
+alias python3="${HOME}/anaconda2/envs/py36/bin/python"
+lunch() { python3 /Volumes/Media/wkspace/mit-lunch/get_menu.py "$@"; }
+movies() { python3 /Volumes/Media/wkspace/cinematic/get_movies.py "$@"; }
 
 # universalish / v possibly nonrobust way to query ip address
 # this is local (not public) ip
@@ -53,6 +58,26 @@ lunch() { ipython /Volumes/Media/mit-lunch/get_menu.py "$@"; }
 alias ip='dig +short myip.opendns.com @resolver1.opendns.com'
 
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
+
+# add appropriate suffix to unspecified file
+suffix()
+{
+  for f in "$@"; do
+    #SUFF=$( file --extension "$f" | awk -F':' '{print $2}' | awk -F'/' '{print $1}' | xargs) &&
+    SUFF=$( file -b "$f" | awk '{print $1}' ) &&
+
+    if [[ "${SUFF}" = "ASCII" ]]; then SUFF='txt'; fi
+
+    if [[ "${SUFF}" = "???" ]]; then
+       echo 'suffix: filetype unknown'
+    elif [[ "${f##*.}" =~ ("${SUFF,,}"|"${SUFF^^}") ]]; then
+       echo "suffix: $f -> \"\""
+    else
+       echo "suffix: $f -> $f.${SUFF,,}"
+       mv "$f" "$f.${SUFF,,}"
+    fi
+  done
+}
 
 
 # terminal tab title
@@ -82,6 +107,10 @@ if ((!$linux)); then
 	alias ffox='open -a /Applications/Firefox.app/'
 
         for x in gcc g++; do
+           #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${x}* | grep ${x}-[0-9] | tail -n1)
+           #alias $x=$GPATH
+           #sudo ln -s $GPATH /usr/local/bin/${x}
+        #done
            alias $x=$( ls /usr/local/Cellar/gcc/*/bin/${x}* |
                        grep ${x}-[0-9] | tail -n1); done
 
