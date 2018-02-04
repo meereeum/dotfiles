@@ -1,4 +1,5 @@
 #!/bin/bash
+set -u # don't delete my hd plz
 
 OS=${OSTYPE//[0-9.]/}
 
@@ -8,25 +9,24 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
 
-for f in $DOTFILES
-	do if [ -f ~/${f} ]; then # clobber
-		rm ~/${f}
-	fi
+for f in $DOTFILES; do
+        [ ! -f ~/${f} ] || rm ~/${f} # clobber
 	ln -s ${DIR}/${f} ~/${f} && \
 		echo "~/${f} --> ${DIR}/${f}"
 done
 
-echo "source ~/.bash_profile" >> ~/.bashrc
-source $HOME/.bash_profile
+echo "source ~/.bash_profile" >> "${HOME}/.bashrc"
+source "${HOME}/.bash_profile"
+
 
 # vim dir
-mkdir -p .vim/{.swp,.backup,.undo}
+mkdir -p "${HOME}/.vim/{.swp,.backup,.undo}"
 
 
 # shiff folder
 
-FROM="$HOME/Desktop/$(whoami)"
-TO="$HOME/shiff"
+FROM="${HOME}/Desktop/$(whoami)"
+TO="${HOME}/shiff"
 
 if [ -h ${TO} ]; then # true if file exists & is a symbolic link
 	rm ${TO}
@@ -70,17 +70,16 @@ DEST="/Volumes/THAWSPACE${HOME}/conda"
 if [ ! -e ${DEST}/bin/python ]; then
 
         # get rid of leftover dir
-        if [ -e ${DEST} ]; then
-            rm -r ${DEST}
-        fi
+	[ ! -e ${DEST} ] || rm -r ${DEST}
 
+	# silent install
 	wget $CONDA -O ~/conda.sh && \
-		bash ~/conda.sh -b -p ${DEST} && \ # silent install
+		bash ~/conda.sh -b -p ${DEST} && \
 		{
 			rm ~/conda.sh
 	
-			export PATH="$DEST/bin:$PATH"
-			export PYTHONPATH="$DEST/bin/python"
+			export PATH="${DEST}/bin:${PATH}"
+			export PYTHONPATH="${DEST}/bin/python"
 	
 			yes | conda create -n py36 python=3.6 anaconda
 		}
@@ -104,13 +103,12 @@ else
 fi
 
 FROM="/Volumes/THAWSPACE${HOME}/.emacs.d"
-TO="$HOME/.emacs.d"
+TO="${HOME}/.emacs.d"
 
-if [ ! -e ${FROM} ]; then
-	git clone https://github.com/syl20bnr/spacemacs $FROM
-fi
+# already exists or clone
+[ -e ${FROM} ] || git clone https://github.com/syl20bnr/spacemacs ${FROM}
 
-ln -s $FROM $TO && \
+ln -s ${FROM} ${TO} && \
 	echo "${TO} --> ${FROM}"
 
 

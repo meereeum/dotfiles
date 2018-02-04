@@ -1,4 +1,5 @@
 #!/bin/bash
+set -u # don't delete my hd plz
 
 if (($linux)); then
 
@@ -35,5 +36,3 @@ else
 	done < packages/packages_brew.txt
 
 fi
-
-mkdir ~/.vim/.{backup,swp,undo}
