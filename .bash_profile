@@ -13,8 +13,9 @@ fi
 export EDITOR=/usr/bin/vi
 
 if (($linux)); then
+	e() { emacs "$@" 2>&1 > /dev/null & disown; }
 	#e() { emacs "$@"; }
-	e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
+	#e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 else
 	#e() { open -a Emacs "$@" & disown; }
 	#e() { emacs "$@" & disown; }
@@ -64,14 +65,17 @@ suffix()
 {
   for f in "$@"; do
     #SUFF=$( file --extension "$f" | awk -F':' '{print $2}' | awk -F'/' '{print $1}' | xargs) &&
-    SUFF=$( file -b "$f" | awk '{print $1}' ) &&
+    SUFF=$( file -b "$f" | awk '{print $1}' ) && \
 
     if [[ "${SUFF}" = "ASCII" ]]; then SUFF='txt'; fi
 
+    # unknown
     if [[ "${SUFF}" = "???" ]]; then
        echo 'suffix: filetype unknown'
+    # already suffixed
     elif [[ "${f##*.}" =~ ("${SUFF,,}"|"${SUFF^^}") ]]; then
        echo "suffix: $f -> \"\""
+    # suffix
     else
        echo "suffix: $f -> $f.${SUFF,,}"
        mv "$f" "$f.${SUFF,,}"
@@ -123,7 +127,11 @@ if ((!$linux)); then
 
 # linux only
 else
+	alias iceweasel='firefox 2>&1 > /dev/null & disown'
+	#alias iceweasel='/usr/lib/iceweasel 2>&1 > /dev/null & disown'
+
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
+
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
 
 	# mass xdg-open
@@ -291,3 +299,6 @@ complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(scree
 
 # make tensorflow work, if server
 #export QT_QPA_PLATFORM=offscreen
+
+# make theanify work
+export MKL_THREADING_LAYER=GNU
