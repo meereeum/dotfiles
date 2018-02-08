@@ -24,6 +24,10 @@ else
 	# homebrew
 	OUTFILE="packages_brew.txt"
 	brew list > "${PKGDIR}/${OUTFILE}"
+	echo "updated: ${PKGDIR}/${OUTFILE}"
+
+	OUTFILE="packages_brew_cask.txt"
+	brew cask list > "${PKGDIR}/${OUTFILE}"
 fi &&
 
 echo "updated: ${PKGDIR}/${OUTFILE}"

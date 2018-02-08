@@ -40,3 +40,16 @@ fi
 
 # reveal-md
 npm install -g reveal-md
+
+
+instructions="
+TODO:
+
+(1) install firefox [ plus ublock, ghostery, zotero plugin ]
+
+(2) install mactex
+
+(3) build tf for hardware optimizations ?
+"
+
+echo "$instructions"

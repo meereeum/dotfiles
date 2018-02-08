@@ -12,6 +12,7 @@ fi
 #alias python="echo 'use haskell!'"
 export EDITOR=/usr/bin/vi
 
+#e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 if (($linux)); then
 	e() { emacs "$@" 2>&1 > /dev/null & disown; }
 	#e() { emacs "$@"; }
@@ -19,13 +20,8 @@ if (($linux)); then
 else
 	#e() { open -a Emacs "$@" & disown; }
 	#e() { emacs "$@" & disown; }
-        #e() { /Applications/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
-        #e() { /usr/local/Cellar/emacs-mac/emacs-25.2-z-mac-6.5/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
-        e() { /usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
-
-	# internet tabs --> file
-	tabs() { now=$( date +%y%m%d ); for app in "google chrome" safari firefox; do osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}; done; }
-
+  #e() { /Applications/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
+  e() { /usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
 fi
 
 # touche = touch + emacs
@@ -33,24 +29,27 @@ touche() { touch "$@"; e "$@"; }
 
 
 # aliasing
+
+MEDIA="${HOME}"
+
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
-alias rc='cd /Volumes/Media/wkspace/rc'
-alias wk='cd /Volumes/Media/wkspace'
-alias mit='cd /Volumes/Media/mit'
-alias quotes='vi /Volumes/Media/Documents/txt/quotes.txt'
+# alias rc='cd ${MEDIA}/wkspace/rc'
+alias wk='cd ${MEDIA}/wkspace'
+# alias mit='cd ${MEDIA}/mit'
+# alias quotes='vi ${MEDIA}/txt/quotes.txt'
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 
 math() { bc -l <<< "$@"; }
-tom_owes=$(echo '/Volumes/Media/Documents/txt/tom_owes')
-tom() { cat '/Volumes/Media/Documents/txt/tom_phones'; }
+# tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
+# tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 
 alias python3="${HOME}/anaconda2/envs/py36/bin/python"
-lunch() { python3 /Volumes/Media/wkspace/mit-lunch/get_menu.py "$@"; }
-movies() { python3 /Volumes/Media/wkspace/cinematic/get_movies.py "$@"; }
+lunch() { python3 ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
+movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
 
 # universalish / v possibly nonrobust way to query ip address
 # this is local (not public) ip
@@ -125,6 +124,10 @@ if ((!$linux)); then
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
 	alias cpy='copy'
 
+	# internet tabs --> file
+	tabs() { now=$( date +%y%m%d ); for app in safari; #"google chrome" firefox;
+                 do osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}; done; }
+
 # linux only
 else
 	alias iceweasel='firefox 2>&1 > /dev/null & disown'
@@ -162,6 +165,14 @@ if (($linux)); then
             sed -nr "s/^Commandline: apt-get install (-. )?//p" | \
             # grep out uninstalled (unless empty)
             egrep -v ${uninstalled:-NADA_MUCHO};
+    }
+
+  else
+    pkgs() {
+        cd ${HOME}/dotfiles/packages
+        rm Brewfile && brew bundle dump # with package-install options
+	cd -
+        # brew list
     }
 fi
 
@@ -249,7 +260,7 @@ else
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
 
-        # brew autocomplete
+  # brew autocomplete
 	#if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
