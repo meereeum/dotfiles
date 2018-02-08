@@ -36,3 +36,7 @@ else
 	done < packages/packages_brew.txt
 
 fi
+
+
+# reveal-md
+npm install -g reveal-md
