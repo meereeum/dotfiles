@@ -1,4 +1,7 @@
 sudo
+vim-gui-common
+git
+dconf-editor
 vlc
 emacs
 exfat-fuse exfat-utils
@@ -10,7 +13,6 @@ sshfs
 texlive
 texstudio
 xzdec
-vim-gui-common
 texlive-latex-extra
 transmission
 python-pip
@@ -36,3 +38,9 @@ tmux
 arandr
 libav-tools
 pandoc
+dconf-tools
+firmware-iwlwifi
+xul-ext-iceweasel-branding
+graphviz
+libmpfr-dev
+npm
