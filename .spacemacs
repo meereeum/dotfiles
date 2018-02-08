@@ -37,7 +37,7 @@ values."
 		 (shell :variables
 						shell-default-height 30
 						shell-default-position 'bottom)
-		 spell-checking
+		 (spell-checking :variables spell-checking-enable-by-default nil) ;; default off
 		 ;; syntax-checking
 		 (syntax-checking :variables syntax-checking-enable-by-default nil) ;; default off
 		 version-control
@@ -49,6 +49,7 @@ values."
 	 dotspacemacs-additional-packages '(
 																			key-chord
 																			beacon
+                                      exec-path-from-shell
 																			)
 	 ;; A list of packages and/or extensions that will not be install and loaded.
 	 dotspacemacs-excluded-packages '()
@@ -209,6 +210,9 @@ user code."
 layers configuration. You are free to put any user code."
 	;; Delete selection mode to enable deletion/replacement of selected region
 	(delete-selection-mode 1)
+	(beacon-mode 1)
+  (golden-ratio-mode 1)
+
 	;; Add key binding jk for ESC
 	;;(setq-default evil-escape-key-sequence "jk")
 	;;(setq-default evil-escape-key-sequence "kj")
@@ -220,36 +224,47 @@ layers configuration. You are free to put any user code."
 	(key-chord-mode 1)
 	(key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
 	;; ---------------------------------------------------------------------------
-	(setq python-shell-virtualenv-path ${HOME}"/anaconda2/")
-	(setq python-shell-interpreter ${HOME}"/anaconda2/bin/python")
+
+  (exec-path-from-shell-copy-env "PYTHONPATH")
+	;; (setq python-shell-virtualenv-path "${HOME}/anaconda2/")
+	;; (setq python-shell-virtualenv-path "${PYTHONPATH%/bin/python}")
+	(setq python-shell-virtualenv-path "/home/miriam/miniconda3")
+	;; (setq python-shell-interpreter "${HOME}/anaconda2/bin/python")
+	;; (setq python-shell-interpreter "${PYTHONPATH}")
+	(setq python-shell-interpreter "/home/miriam/miniconda3/bin/python")
 	(add-hook 'python-mode-hook 'anaconda-mode)
 	(add-hook 'python-mode-hook 'anaconda-eldoc-mode) ;; docs
+
 	;; Add line nums
 	;;(add-hook 'prog-mode-hook #'linum-mode)
-	(spacemacs/toggle-golden-ratio-on)
-	(spacemacs/toggle-spelling-checking-off)
-	;; (spacemacs/toggle-syntax-checking-off)
 
 	;; tramp - via https://sriramkswamy.github.io/dotemacs/
 	(setq tramp-default-method "ssh"
 	      tramp-backup-directory-alist backup-directory-alist
-	      tramp-ssh-controlmaster-options "ssh")
+	      tramp-ssh-controlmaster-options "ssh"
+        ;; speed up ? - via https://www.gnu.org/software/emacs/manual/html_node/tramp/Frequently-Asked-Questions.html
+        tramp-completion-reread-directory-timeout nil
+        )
+  (setq vc-ignore-dir-regexp
+        (format "\\(%s\\)\\|\\(%s\\)"
+                vc-ignore-dir-regexp
+                tramp-file-name-regexp))
 
-  (setq-default dotspacemacs-configuration-layers '(auto-completion))
 
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+	;;(spacemacs/toggle-spelling-checking-off)
+	;; (spacemacs/toggle-syntax-checking-off)
 	;; disable flyspell by default
 	;; (setq-default dotspacemacs-configuration-layers
 	;; 							'((spell-checking :variables spell-checking-enable-by-default nil)))
   ;; (setq-default spell-checking-enable-by-default nil)
-  (setq-default spacemacs/toggle-spelling-checking-off)
+  ;;(setq-default spacemacs/toggle-spelling-checking-off)
 
 	;; Remove fly-spell for markdown and text-files.
 	(remove-hook 'text-mode-hook 'enable-flyspell-mode)
 	(remove-hook 'markdown-mode-hook 'enable-flyspell-mode)
 
-	(beacon-mode 1)
 	;; enable copy/paste from system clipboard in visual mode
 	(fset 'evil-visual-update-x-selection 'ignore)
 	;; automatically run inferior python process
@@ -330,8 +345,6 @@ layers configuration. You are free to put any user code."
   (setq sentence-end-double-space nil)
   ;; pdfs
   (setq doc-view-continuous t)
-
-  ;; center line
 
 )
 
