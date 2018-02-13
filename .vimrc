@@ -7,17 +7,26 @@ else
 	inoremap kj <Esc>
 endif
 
-
 " command autocompletion with tabs
 set wildchar=<TAB>
 
+" search stuff
+set ignorecase
+set smartcase
+set incsearch
 " highlight search results
 set hlsearch
+
+" colors
+syntax enable
 
 " show matching brackets on hover
 set showmatch
 " how many tenths of a second to blink when matching
 set mat=2
+
+" yank to end of line
+nmap Y y$
 
 " yank into system clipboard
 set clipboard+=autoselect,unnamed,unnamedplus
@@ -30,12 +39,11 @@ vmap <Leader>p :r! cat /tmp/vi_clip<CR>
 " make backspace work
 set backspace=2
 
-" http://blog.http417.com/2016/06/go-go-gadget-vim-command-magic-quick.html
-" Fast JSON formatting
-command JsonFmtAll %!python3 -m json.tool
-command -range JsonFmt <line1>,<line2>!python3 -m json.tool
-nnoremap & :JsonFmtAll<CR>
-vnoremap & :JsonFmt<CR>
+" 1 tab := 4 spaces
+set expandtab
+set shiftwidth=4
+set tabstop=4
+set smarttab
 
 " 80 char line widths
 " set textwidth=80
@@ -45,3 +53,16 @@ vnoremap & :JsonFmt<CR>
 set undodir=~/.vim/.undo//
 set backupdir=~/.vim/.backup//
 set directory=~/.vim/.swp//
+
+" w!! := sudo write
+cmap w!! w !sudo tee % > /dev/null
+
+" separate sentences by a period + ONE space when using gq
+set nojoinspaces
+
+" http://blog.http417.com/2016/06/go-go-gadget-vim-command-magic-quick.html
+" Fast JSON formatting
+command JsonFmtAll %!python3 -m json.tool
+command -range JsonFmt <line1>,<line2>!python3 -m json.tool
+nnoremap & :JsonFmtAll<CR>
+vnoremap & :JsonFmt<CR>
