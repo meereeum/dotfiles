@@ -44,3 +44,4 @@ xul-ext-iceweasel-branding
 graphviz
 libmpfr-dev
 npm
+tree
