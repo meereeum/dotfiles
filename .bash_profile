@@ -20,8 +20,8 @@ if (($linux)); then
 else
 	#e() { open -a Emacs "$@" & disown; }
 	#e() { emacs "$@" & disown; }
-  #e() { /Applications/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
-  e() { /usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
+	#e() { /Applications/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
+	e() { /usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
 fi
 
 # touche = touch + emacs
@@ -36,9 +36,8 @@ alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 # alias rc='cd ${MEDIA}/wkspace/rc'
 alias wk='cd ${MEDIA}/wkspace'
-# alias mit='cd ${MEDIA}/mit'
-# alias quotes='vi ${MEDIA}/txt/quotes.txt'
-#alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
+alias mit='cd ${MEDIA}/mit'
+alias quotes='vi ${MEDIA}/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 
@@ -57,6 +56,7 @@ movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
 alias ip='dig +short myip.opendns.com @resolver1.opendns.com'
 
+#alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
 
 # add appropriate suffix to unspecified file
@@ -130,15 +130,17 @@ if ((!$linux)); then
 
 # linux only
 else
-	alias iceweasel='firefox 2>&1 > /dev/null & disown'
-	#alias iceweasel='/usr/lib/iceweasel 2>&1 > /dev/null & disown'
+	alias iceweasel='firefox &> /dev/null & disown'
+	#alias iceweasel='/usr/lib/iceweasel &> /dev/null & disown'
 
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
+
+	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
 
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
 
 	# mass xdg-open
-	open(){ for f in "$@"; do xdg-open $f &> /dev/null & disown; done }
+	open(){ for f in "$@"; do xdg-open "$f" &> /dev/null & disown; done; }
 fi
 
 
@@ -193,13 +195,13 @@ alias mv='mv -i'
 
 # history
 
-HISTSIZE="INFINITE" # via https://superuser.com/questions/479726/how-to-get-infinite-command-history-in-bash
+export HISTSIZE="INFINITE" # via https://superuser.com/questions/479726/how-to-get-infinite-command-history-in-bash
 #HISTFILESIZE=100000 # 10^6
-HISTFILESIZE=$HISTSIZE
+export HISTFILESIZE=$HISTSIZE
 
 # ignore 2 letter commands, variants of ls, pwd
 #HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
-HISTIGNORE="?:??:pwd"
+export HISTIGNORE="?:??:pwd"
 
 # append rather than overrwriting history (which would only save last closed bash sesh)
 shopt -s histappend
@@ -240,9 +242,11 @@ export PS1=" \W \$ "
 
 # Path thangs
 
-# added by Anaconda2 2.4.1 installer
 export PATH="${HOME}/anaconda2/bin:$PATH"
 export PYTHONPATH="${HOME}/anaconda2/bin/python"
+# will be useful after upgrading to 3.7..
+# via builtin breakpoint()
+export PYTHONBREAKPOINT="IPython.embed"
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
@@ -313,3 +317,9 @@ complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(scree
 
 # make theanify work
 export MKL_THREADING_LAYER=GNU
+
+# rc servers
+alias rcbroome='ssh meereeum@broome.cluster.recurse.com'
+alias rccrosby='ssh meereeum@crosby.cluster.recurse.com' # gpu
+alias rcmercer='ssh meereeum@mercer.cluster.recurse.com' # gpu
+alias rcspring='ssh meereeum@spring.cluster.recurse.com'

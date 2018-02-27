@@ -18,7 +18,7 @@ set incsearch
 set hlsearch
 
 " colors
-syntax enable
+" syntax enable
 
 " show matching brackets on hover
 set showmatch
@@ -29,7 +29,8 @@ set mat=2
 nmap Y y$
 
 " yank into system clipboard
-set clipboard+=autoselect,unnamed,unnamedplus
+"set clipboard+=autoselect,unnamed,unnamedplus
+set clipboard=autoselect,unnamed,unnamedplus
 
 " OR via tmp file (if no vim-gui-common)
 let mapleader=","
