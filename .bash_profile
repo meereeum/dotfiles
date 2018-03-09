@@ -11,12 +11,14 @@ fi
 # editors
 #alias python="echo 'use haskell!'"
 export EDITOR=/usr/bin/vi
+export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
+export GIT_EDITOR=$EDITOR
 
 #e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 if (($linux)); then
-	e() { emacs "$@" 2>&1 > /dev/null & disown; }
+	#e() { emacs "$@" 2>&1 > /dev/null & disown; }
 	#e() { emacs "$@"; }
-	#e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
+	e() { emacsclient --alternate-editor="" -nc "$@"; }
 else
 	#e() { open -a Emacs "$@" & disown; }
 	#e() { emacs "$@" & disown; }
