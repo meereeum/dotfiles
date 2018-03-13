@@ -42,6 +42,7 @@ alias mit='cd ${MEDIA}/mit'
 alias quotes='vi ${MEDIA}/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
+alias urls='ssh -t csail "vi txt/urls"'
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
@@ -56,7 +57,8 @@ movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
 # this is local (not public) ip
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-alias ip='dig +short myip.opendns.com @resolver1.opendns.com'
+alias cpout='tee /dev/tty | xsel -i --clipboard' # clipboard + STDOUT
+alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout'
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
