@@ -37,6 +37,10 @@ let mapleader=","
 vmap <Leader>y :w! /tmp/vi_clip<CR>
 vmap <Leader>p :r! cat /tmp/vi_clip<CR>
 
+" ..but don't lose on exit
+" autocmd VimLeave * call system("xclip -selection clipboard", getreg('+'))
+autocmd VimLeave * call system("xsel -i --clipboard", getreg('+'))
+
 " make backspace work
 set backspace=2
 
