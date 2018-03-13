@@ -45,3 +45,6 @@ graphviz
 libmpfr-dev
 npm
 tree
+xclip
+xdotool
+xsel
