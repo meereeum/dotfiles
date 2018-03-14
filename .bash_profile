@@ -43,11 +43,13 @@ alias quotes='vi ${MEDIA}/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 alias urls='ssh -t csail "vi txt/urls"'
+alias cpout='tee /dev/tty | xsel -i --clipboard' # clipboard + STDOUT
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
+token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
 
 alias python3="${HOME}/anaconda2/envs/py36/bin/python"
 lunch() { python3 ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
@@ -57,7 +59,6 @@ movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
 # this is local (not public) ip
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-alias cpout='tee /dev/tty | xsel -i --clipboard' # clipboard + STDOUT
 alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout'
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
