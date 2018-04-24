@@ -48,3 +48,10 @@ tree
 xclip
 xdotool
 xsel
+qpdfview
+pdfgrep
+okular
+texlive-fonts-extra
+pianobooster
+timidity
+jq

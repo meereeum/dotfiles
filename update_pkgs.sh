@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 PKGDIR="$( dirname "$0" )/packages"
 
@@ -19,6 +19,7 @@ if (($linux)); then
 	fi
 
 	# apt
+    source ~/.bash_profile
 	pkgs > "${PKGDIR}/${OUTFILE}"
 else
 	# homebrew
