@@ -62,6 +62,15 @@ alias python3="${HOME}/anaconda2/envs/py36/bin/python"
 lunch() { python3 ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
 movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
 lsbeer() { python3 ${MEDIA}/utils/lsbeer/get_beer.py "$@"; }
+# e.g. from youtube-dled subtitles
+# $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
+vtt2txt() {
+    grep "<" "$@" |
+    # eliminate <stuff>, get ' back, remove blank lines
+    sed -e 's/<[^>]*>//g' -e "s/&#39;/'/g" -e '/^\s*$/d' |
+    uniq
+}
+
 
 # universalish / v possibly nonrobust way to query ip address
 # this is local (not public) ip
