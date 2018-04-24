@@ -14,6 +14,9 @@ done
 echo "source ~/.bash_profile" >> ~/.bashrc
 source ~/.bash_profile
 
+# infinite HIST
+sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
+
 # vim dir
 mkdir -p ~/.vim/{.swp,.backup,.undo}
 
