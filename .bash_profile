@@ -12,6 +12,7 @@ fi
 #alias python="echo 'use haskell!'"
 export EDITOR=/usr/bin/vi
 export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
+#export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
 export GIT_EDITOR=$EDITOR
 
 #e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
@@ -43,7 +44,9 @@ alias quotes='vi ${MEDIA}/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 alias urls='ssh -t csail "vi txt/urls"'
-alias cpout='tee /dev/tty | xsel -i --clipboard' # clipboard + STDOUT
+
+(( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
+alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
 
 export DELTA='Δ'
 
@@ -58,6 +61,7 @@ shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';
 alias python3="${HOME}/anaconda2/envs/py36/bin/python"
 lunch() { python3 ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
 movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
+lsbeer() { python3 ${MEDIA}/utils/lsbeer/get_beer.py "$@"; }
 
 # universalish / v possibly nonrobust way to query ip address
 # this is local (not public) ip
@@ -96,8 +100,10 @@ suffix()
 # save open ffox tabs
 # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
 openTabs(){
-    SESSION=$( awk -F'=' '/Path/ {print $2}' ~/.mozilla/firefox/profiles.ini )
-    cat ~/.mozilla/firefox/$SESSION/sessionstore-backups/recovery.js |         jq -c '.windows[].tabs[].entries[-1].url' |
+    (( $linux )) && PREFIX="$HOME/.mozilla/firefox" || PREFIX="$HOME/Library/Application Support/Firefox"
+    SESSION=$( awk -F'=' '/Path/ {print $2}' "${PREFIX}"/profiles.ini )
+    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js | 
+     jq -c '.windows[].tabs[].entries[-1].url' |
      sed -e 's/^"//' -e 's/"$//' |
 
      # site-specific edits
@@ -108,7 +114,7 @@ openTabs(){
 }
 
 getOpenTabs(){ openTabs | cpout; }
-saveOpenTabs(){ openTabs > ./urls_$( date +%y%m%d ); }
+saveOpenTabs(){ openTabs > ./tabs_$( date +%y%m%d ); }
 
 
 # terminal tab title
