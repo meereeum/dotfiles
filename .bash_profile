@@ -43,11 +43,16 @@ alias quotes='vi ${MEDIA}/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 alias urls='ssh -t csail "vi txt/urls"'
+alias cpout='tee /dev/tty | xsel -i --clipboard' # clipboard + STDOUT
+
+export DELTA='Δ'
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
+lstoday() { today=$( date +'%b %d' ); ls -l "$@" | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; }
+shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 
 alias python3="${HOME}/anaconda2/envs/py36/bin/python"
 lunch() { python3 ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
@@ -57,8 +62,8 @@ movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
 # this is local (not public) ip
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-alias cpout='tee /dev/tty | xsel -i --clipboard' # clipboard + STDOUT
-alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout'
+#alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout'
+alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
