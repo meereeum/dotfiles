@@ -92,6 +92,24 @@ suffix()
 }
 
 
+# save open ffox tabs
+# inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
+openTabs(){
+    SESSION=$( awk -F'=' '/Path/ {print $2}' ~/.mozilla/firefox/profiles.ini )
+    cat ~/.mozilla/firefox/$SESSION/sessionstore-backups/recovery.js |         jq -c '.windows[].tabs[].entries[-1].url' |
+     sed -e 's/^"//' -e 's/"$//' |
+
+     # site-specific edits
+     awk '!/about:sessionrestore/' |
+     awk -v SITE='nytimes.com' -F'?' '$0~SITE {print $1} $0!~SITE' |
+     sed 's@\(.*google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@';
+     #awk -v SITE='google.com' -F'&' '$0~SITE {print $1} $0!~SITE';
+}
+
+getOpenTabs(){ openTabs | cpout; }
+saveOpenTabs(){ openTabs > ./urls_$( date +%y%m%d ); }
+
+
 # terminal tab title
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
 t ()
