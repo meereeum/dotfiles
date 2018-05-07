@@ -55,7 +55,7 @@ math() { bc -l <<< "$@"; }
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
-lstoday() { today=$( date +'%b %d' ); ls -l "$@" | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; }
+lstoday() { today=$( date +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' ); ls -l "$@" | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; }
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 
 alias python3="${HOME}/anaconda2/envs/py36/bin/python"
