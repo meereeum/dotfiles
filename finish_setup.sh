@@ -9,6 +9,18 @@ if (($linux)); then
 		#do sudo apt-get install ${line}
 	done < packages/packages.txt
 
+    # set default apps
+    PDF_APP="zathura"
+    AUDIOVIZ_APP="vlc"
+
+    F_DEFAULTS="$HOME/.config/mimeapps.list"
+    F_DEFAULTS_BKP="${F_DEFAULTS}.bkp"
+
+    mv "$F_DEFAULTS" "$F_DEFAULTS_BKP"
+    cat $F_DEFAULTS_BKP | awk -F'=' '{OFS="="}; /video|audio/{print $1,"'$AUDIOVIZ_APP'.desktop;"} /pdf/{print $1, "'$PDF_APP'.desktop;"} !/video|audio|pdf/{print $0}' > $F_DEFAULTS
+
+    #sed -Ei'.tmp' --follow-symlinks 's/pdf=.*/pdf=zathura.desktop/' $HOME/.config/mimeapps.list
+
 	# update uq vpn profile
 	cp template_uq.conf uq.conf
 	vi uq.conf

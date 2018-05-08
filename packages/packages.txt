@@ -55,3 +55,4 @@ texlive-fonts-extra
 pianobooster
 timidity
 jq
+zathura
