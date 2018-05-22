@@ -70,6 +70,9 @@ vtt2txt() {
     sed -e 's/<[^>]*>//g' -e "s/&#39;/'/g" -e '/^\s*$/d' |
     uniq
 }
+srt2txt() {
+    grep -i "[a-z]" "$@"
+}
 
 
 # universalish / v possibly nonrobust way to query ip address
@@ -117,7 +120,7 @@ openTabs(){
 
      # site-specific edits
      awk '!/about:sessionrestore/' |
-     awk -v SITE='nytimes.com' -F'?' '$0~SITE {print $1} $0!~SITE' |
+     awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' |
      sed 's@\(.*google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@';
      #awk -v SITE='google.com' -F'&' '$0~SITE {print $1} $0!~SITE';
 }
