@@ -55,7 +55,6 @@ math() { bc -l <<< "$@"; }
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
-lstoday() { today=$( date +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' ); ls -l "$@" | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; }
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 
 alias python3="${HOME}/anaconda2/envs/py36/bin/python"
@@ -106,6 +105,40 @@ suffix()
        mv "$f" "$f.${SUFF,,}"
     fi
   done
+}
+
+# list files filtered by date
+# ls [$date] $files (default: today, working dir)
+#lstoday() { today=$( date +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' ); ls -l "$@" | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; }
+lstoday(){
+    # check for valid date
+    [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || with_date=0
+
+    (( $with_date )) && dt="$1" || dt="today" # default: today
+    #(( $with_date )) && dirs=$( echo "$@ " | tr -s [:blank:] | cut -d' ' -f1 --complement ) || dirs="$@" # trailing space makes empty dir (default) work
+    (( $with_date )) && shift
+    #[[ $dirs == '' ]] && dirs="." # default: working dir
+
+    today=$( date -d"$dt" +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' )
+    #ls --color=auto -l $dirs | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'
+    #dirs=$( echo "$dirs" | sed -e's/ /\/* /g' -e's/$/\/* /g' )
+    #dirs=$( echo "$dirs" | sed 's/\b\([^\*]*\) /\1\/\* /g' )
+    #dirs=$( echo "$dirs " | sed -E 's/([^\* ]+) / \1\/\* /g' )
+    #dirs=$( echo "$@ " | sed -E 's/([^\* ]+) / \1\/\* /g' )
+
+    #for dir in $dirs; do dir=$( echo "$dir" | sed -E 's/([^\* ]+) / \1\/\* /g' );
+    #ls --color=auto -dl $dir | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; done
+    #ls --color=auto -dl $dirs | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'
+    #for d in "$@"; do f=$( echo $d | awk '$0~/\*/ {print} $0!~/\*/ {print $0"/*"}' ); ls --color=auto -dl "$f" | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; done
+
+    for f in "$@"; do
+        #[[ -d "$arg" ]] && f="${arg}/*" || f="$arg"
+        #[[ -d "$f" ]] && f=$( echo "${f}"/* )
+
+        ( [[ -d "$f" ]] && ls -dl $f/* || ls --color=auto -dl "$f" ) | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'
+
+    #done | sed s'@\/\/@/@g'; # eliminate // in path
+    done | sed -e 's@\/\/@/@g' -e's/ //g' | xargs -I{} ls --color=auto "{}"
 }
 
 
