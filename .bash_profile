@@ -120,14 +120,15 @@ lstoday(){
     today=$( date -d"$dt" +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' )
 
     # ls the thing/s
-    ( [[ "$@" == "" ]] && ls -al || (
+    ( [[ "$@" == "" ]] && ls -Al || ( # "A"lmost all - not . or ..
         for f in "$@"; do
-            [[ -d "$f" ]] && ls -adl $f/* || ls -al "$f" # e.g. can't ls ".."
+            [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
         done )) |
 
     awk '/'"$today"'/{print $9,$10,$11,$12,$13}' | # filter
-    sed -e's/ //g' -e 's@\/\/@/@g' |               # eliminate // in path
-    grep -Ev '^\.+$' |                             # ignore . & ..
+    sed -e's/ //g' -e's@\/\/@/@g' |                # eliminate // in path
+    #grep -Ev '^\.+(git)?$' |                       # ignore . & .. & .git
+    grep -Ev '^\.git$' |                           # ignore .git
     xargs -I{} ls -d --color=auto "{}" ;           # pprint
 }
 
