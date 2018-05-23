@@ -1,6 +1,8 @@
 #!/bin/bash
 set -u # don't delete my hd plz
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 if (($linux)); then
 
 	# install apt-get packages/packages
@@ -50,6 +52,12 @@ fi
 
 # reveal-md
 npm install -g reveal-md
+
+# vim color
+# TODO for osx ?
+for COLORSCHEME in "${DIR}/*.vim"; do
+    sudo ln -s "$COLORSCHEME" /usr/share/vim/vim*/colors
+done
 
 
 instructions="

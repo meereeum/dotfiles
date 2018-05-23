@@ -18,7 +18,13 @@ set incsearch
 set hlsearch
 
 " colors
-" syntax enable
+syntax enable
+colorscheme plan9
+" default: .md highlighting if {no suffix,.txt}
+" https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension
+au BufNewFile,BufRead * if &syntax == '' | set syntax=markdown | endif
+" http://vim.wikia.com/wiki/Forcing_Syntax_Coloring_for_files_with_odd_extensions
+autocmd BufNewFile,BufRead *.txt set syntax=markdown
 
 " show matching brackets on hover
 set showmatch
