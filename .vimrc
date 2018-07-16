@@ -24,7 +24,8 @@ colorscheme plan9
 " https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension
 au BufNewFile,BufRead * if &syntax == '' | set syntax=markdown | endif
 " http://vim.wikia.com/wiki/Forcing_Syntax_Coloring_for_files_with_odd_extensions
-autocmd BufNewFile,BufRead *.txt set syntax=markdown
+autocmd BufNewFile,BufRead *.txt set syntax=markdown " txt files -> md
+autocmd BufNewFile,BufRead bash-fc.* set syntax=sh " bash tmp files -> sh
 
 " show matching brackets on hover
 set showmatch
@@ -58,6 +59,9 @@ set smarttab
 
 " 80 char line widths
 " set textwidth=80
+
+" keep backup file
+set backup
 
 " https://coderwall.com/p/sdhfug/vim-swap-backup-and-undo-files
 " cleaner swap, backup, undo files

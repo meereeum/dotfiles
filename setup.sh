@@ -20,6 +20,13 @@ sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
 # vim dir
 mkdir -p ~/.vim/{.swp,.backup,.undo}
 
+# vim postfx highlight
+OUTIDIR="$HOME/.vim/after/syntax/sh"
+mkdir -p $OUTDIR
+cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
+    awk '/AWK Embedding/,/^<$/' |
+    grep -v '^<$' > ${OUTDIR}/awkembed.vim
+
 # ye olde spacemacs
 [ -d ~/.emacs.d ] || git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 
