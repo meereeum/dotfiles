@@ -125,11 +125,45 @@ lstoday(){
             [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
         done )) |
 
-    awk '/'"$today"'/{print $9,$10,$11,$12,$13}' | # filter
-    sed -e's/ //g' -e's@\/\/@/@g' |                # eliminate // in path
+    #awk '/'"$today"'/{print $9,$10,$11,$12,$13}' | # filter
+    #sed -e's/ *$//g' -e's@\/\/@/@g' |              # eliminate trailing spaces, // in path
+    grep "${today}" |                                    # filter # TODO sed only
+    sed -Ee"s/^.*${today}.{7}(.*)$/\1/" -e's@\/\/@/@g' | # filter, eliminate // in path
     #grep -Ev '^\.+(git)?$' |                       # ignore . & .. & .git
     grep -Ev '^\.git$' |                           # ignore .git
     xargs -I{} ls -d --color=auto "{}" ;           # pprint
+}
+
+
+lssince(){
+    # check for valid date
+    [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || (
+        [[ $( date -d"$1 1" 2> /dev/null ) ]] && with_date=1 || with_date=0)
+
+    (( $with_date )) && dt="$1" || dt="today" # default: today
+    (( $with_date )) && shift                 # default: .
+
+    today=$( day "$dt" )
+
+    # ls the thing/s
+    ( [[ "$@" == "" ]] && ls -Al --time-style=+%y%m%d || ( # "A"lmost all - not . or ..
+        for f in "$@"; do
+            [[ -d "$f" ]] && ls -Ald --time-style=+%y%m%d $f/* \
+                          || ls -Al --time-style=+%y%m%d "$f" # e.g. can't ls ".."
+        done )) |
+
+    awk -v today=$today '$6 >= today' |               # filter by "since"
+    sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/@/@g' | # extract filename, eliminate // in path
+    grep -Ev '^\.git$' |                              # ignore .git
+    xargs -I{} ls -d --color=auto "{}" ;              # pprint
+}
+
+
+# get YYMMDD (default: today)
+day() {
+    [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
+    [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
+    [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date"                                     || date -d "$dt" +%y%m%d;
 }
 
 
@@ -150,7 +184,8 @@ openTabs(){
 }
 
 getOpenTabs(){ openTabs | cpout; }
-saveOpenTabs(){ openTabs > ./tabs_$( date +%y%m%d ); }
+#saveOpenTabs(){ openTabs > ./tabs_$( date +%y%m%d ); }
+saveOpenTabs(){ openTabs > ./tabs_$( day ); }
 
 
 # terminal tab title
