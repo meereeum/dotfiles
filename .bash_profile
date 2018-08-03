@@ -43,7 +43,8 @@ alias mit='cd ${MEDIA}/mit'
 alias quotes='vi ${MEDIA}/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
-alias urls='ssh -t csail "vi txt/urls"'
+#alias urls='ssh -t csail "vi txt/urls"'
+alias xvlc='xargs -I{} vlc "{}"'
 
 (( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
 alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
@@ -137,16 +138,19 @@ lstoday(){
 
 lssince(){
     # check for valid date
-    [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || (
-        [[ $( date -d"$1 1" 2> /dev/null ) ]] && with_date=1 || with_date=0)
+    maybe_dt="$( echo "$1" | sed -e's/wk/week/' -e's/week$/week ago/' )"
+    maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
+                           # else, check for (1st of) month
 
-    (( $with_date )) && dt="$1" || dt="today" # default: today
-    (( $with_date )) && shift                 # default: .
+    [[ $( date -d"$maybe_dt" 2> /dev/null ) ]] && with_date=1 || with_date=0
+
+    (( $with_date )) && dt="$maybe_dt" || dt="today" # default: today
+    (( $with_date )) && shift                        # default: .
 
     today=$( day "$dt" )
 
     # ls the thing/s
-    ( [[ "$@" == "" ]] && ls -Al --time-style=+%y%m%d || ( # "A"lmost all - not . or ..
+    ( [[ "$@" == "" ]] && ls -Al --time-style=+%y%m%d || (    # "A"lmost all - not . or ..
         for f in "$@"; do
             [[ -d "$f" ]] && ls -Ald --time-style=+%y%m%d $f/* \
                           || ls -Al --time-style=+%y%m%d "$f" # e.g. can't ls ".."
@@ -163,7 +167,8 @@ lssince(){
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
-    [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date"                                     || date -d "$dt" +%y%m%d;
+    [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
+                                    || date -d "$dt" +%y%m%d;
 }
 
 
@@ -184,8 +189,8 @@ openTabs(){
 }
 
 getOpenTabs(){ openTabs | cpout; }
-#saveOpenTabs(){ openTabs > ./tabs_$( date +%y%m%d ); }
-saveOpenTabs(){ openTabs > ./tabs_$( day ); }
+#saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
+saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
 
 
 # terminal tab title
