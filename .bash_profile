@@ -110,7 +110,6 @@ suffix()
 
 # list files filtered by date
 # ls [$date] $files (default: today, working dir)
-#lstoday() { today=$( date +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' ); ls -l "$@" | awk '/'"$today"'/{print $9,$10,$11,$12,$13}'; }
 lstoday(){
     # check for valid date
     [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || with_date=0
@@ -121,28 +120,27 @@ lstoday(){
     today=$( date -d"$dt" +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' )
 
     # ls the thing/s
-    ( [[ "$@" == "" ]] && ls -Al || ( # "A"lmost all - not . or ..
+    ( [[ "$@" == "" ]] && ls -Al || (                    # "A"lmost all - not . or ..
         for f in "$@"; do
             [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
         done )) |
 
-    #awk '/'"$today"'/{print $9,$10,$11,$12,$13}' | # filter
-    #sed -e's/ *$//g' -e's@\/\/@/@g' |              # eliminate trailing spaces, // in path
     grep "${today}" |                                    # filter # TODO sed only
     sed -Ee"s/^.*${today}.{7}(.*)$/\1/" -e's@\/\/@/@g' | # filter, eliminate // in path
-    #grep -Ev '^\.+(git)?$' |                       # ignore . & .. & .git
-    grep -Ev '^\.git$' |                           # ignore .git
-    xargs -I{} ls -d --color=auto "{}" ;           # pprint
+    #grep -Ev '^\.+(git)?$' |                            # ignore . & .. & .git
+    grep -Ev '^\.git$' |                                 # ignore .git
+    xargs -I{} ls -d --color=auto "{}" ;                 # pprint
 }
 
 
 lssince(){
     # check for valid date
-    maybe_dt="$( echo "$1" | sed -e's/wk/week/' -e's/week$/week ago/' )"
+    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/(((day)|(week)|(month))s?)/\1 ago/' )"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
     [[ $( date -d"$maybe_dt" 2> /dev/null ) ]] && with_date=1 || with_date=0
+    [[ $( date -d"last $maybe_dt" 2> /dev/null ) ]] && with_date=1 && maybe_dt="last $maybe_dt"
 
     (( $with_date )) && dt="$maybe_dt" || dt="today" # default: today
     (( $with_date )) && shift                        # default: .
