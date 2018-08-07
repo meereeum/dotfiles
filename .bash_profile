@@ -49,6 +49,8 @@ alias xvlc='xargs -I{} vlc "{}"'
 (( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
 alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
 
+alias restart='bash ~/dotfiles/bashcollager.sh'
+
 export DELTA='Δ'
 
 math() { bc -l <<< "$@"; }
