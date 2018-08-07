@@ -136,13 +136,13 @@ lstoday(){
     sed -Ee"s/^.*${today}.{7}(.*)$/\1/" -e's@\/\/@/@g' | # filter, eliminate // in path
     #grep -Ev '^\.+(git)?$' |                            # ignore . & .. & .git
     grep -Ev '^\.git$' |                                 # ignore .git
-    xargs -I{} ls -d --color=auto "{}" ;                 # pprint
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;            # pprint
 }
 
 
 lssince(){
     # check for valid date
-    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/(((day)|(week)|(month))s?)/\1 ago/' )"
+    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s?)/\1 ago/' )"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
@@ -164,7 +164,7 @@ lssince(){
     awk -v today=$today '$6 >= today' |               # filter by "since"
     sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/@/@g' | # extract filename, eliminate // in path
     grep -Ev '^\.git$' |                              # ignore .git
-    xargs -I{} ls -d --color=auto "{}" ;              # pprint
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;         # pprint
 }
 
 
