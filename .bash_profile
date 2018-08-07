@@ -74,13 +74,20 @@ srt2txt() {
     grep -i "[a-z]" "$@"
 }
 
+lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
+movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
+lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
 
 # universalish / v possibly nonrobust way to query ip address
 # this is local (not public) ip
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-#alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout'
-alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
+#alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
+MY_IP=$( dig +short myip.opendns.com @resolver1.opendns.com )
+alias ip='echo $MY_IP | cpout'
+
+alias sourceopenstack='. ~/*openrc.sh'
+alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $MY_IP ssh'
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
