@@ -30,11 +30,14 @@ vlc_hook_on(){
     # total seconds
     startsecs=$( echo $starttime | awk -F':' '{out=0; for (i=1; i<=NF; i++) out=out + $i * 60^(NF-i) } END {print out}' )
 
-    vlc --start-time $startsecs "$@"
+    vlc --start-time $startsecs --play-and-exit --no-video-title-show "$@"
+    # check for file type and add cool murphytags
+    # --fullscreen --qt-continue=0
 }
 
 
 touch $F_TIMES
 for f in "$@"; do
-    vlc_hook_on "$f" && vlc_hook_off "$f"
+    #vlc_hook_on "$f" && vlc_hook_off "$f"
+    vlc_hook_on "$f"; vlc_hook_off "$f"
 done
