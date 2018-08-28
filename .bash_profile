@@ -117,8 +117,39 @@ suffix()
   done
 }
 
+# list top `n` files (by size, including inside directory)
+# lsbiggest [-n] $dir (default: 10, working dir)
+lsbiggest(){
+    #(( $@ )) && n=$@ || n=10
+    #du -ahd1 | sort -k1,1 -h | tail -n $(( $n + 1 )) # account for total size
+
+    #FLAG="-n ?" # with optional space
+
+    #ARGS=$( printf "%s" "$@" | sed -r "s/^(.*) ?$FLAG(\w*) ?(.*)$/\2\t\1\3/" ) # N  DIR
+
+    #N=$( echo $ARGS | awk '{print $1}' )
+    #DIR=$( echo $ARGS | awk '{print $2}' | sed 's/\/$//' )
+
+    # defaults
+    #(( $N )) || N=10
+    #[[ "$DIR" ]] || DIR="."
+
+    FLAG="-n ?" # with optional space
+
+    # N.B. need printf b/c echo interprets -n
+    N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )        # extract $FLAG
+    (( $N )) || N=10                                                  # default
+
+    DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" ) # extract positional, remove trailing /
+    [[ "$DIR" ]] || DIR="."                                           # default
+
+    du -ahd1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))           # account for total size
+}
+
+#alias lsbiggest='echo "use du | sort | tail !"'
+
 # list files filtered by date
-# ls [$date] $files (default: today, working dir)
+# lstoday [$date] $files (default: today, working dir)
 lstoday(){
     # check for valid date
     [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || with_date=0
@@ -134,11 +165,11 @@ lstoday(){
             [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
         done )) |
 
-    grep "${today}" |                                    # filter # TODO sed only
-    sed -Ee"s/^.*${today}.{7}(.*)$/\1/" -e's@\/\/@/@g' | # filter, eliminate // in path
-    #grep -Ev '^\.+(git)?$' |                            # ignore . & .. & .git
-    grep -Ev '^\.git$' |                                 # ignore .git
-    xargs -I{} ls -d --color=auto 2>&1 "{}" ;            # pprint
+    #grep "${today}" |                                    # filter
+    sed -nEe"s/^.*${today}.{7}(.*)$/\1/p" -e's@\/\/@/@g' | # filter, eliminate // in path
+    #grep -Ev '^\.+(git)?$' |                              # ignore . & .. & .git
+    grep -Ev '^\.git$' |                                   # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;              # pprint
 }
 
 
@@ -302,6 +333,8 @@ alias venv='source .venv/bin/activate'
 
 # pretty print git log (via Mary @RC)
 alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(white)"'
+
+alias gitcontrib='git shortlog -sn'
 
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
