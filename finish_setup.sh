@@ -33,25 +33,26 @@ if (($linux)); then
 else
 
 	# install brew packages
-        # spacemacs
-        # the debate: https://github.com/d12frosted/homebrew-emacs-plus/issues/10
-	brew tap railwaycat/emacsmacport # for emacs-mac
-        brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
-	brew linkapps emacs-mac
-
-        #brew tap d12frosted/emacs-plus
-        #brew install emacs-plus --with-no-title-bars
-        #brew linkapps emacs-plus
-
 	while read line
 		do brew install ${line}
 	done < packages/packages_brew.txt
+
+    # spacemacs
+    # the debate: https://github.com/d12frosted/homebrew-emacs-plus/issues/10
+	brew tap railwaycat/emacsmacport # for emacs-mac
+    brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
+	brew linkapps emacs-mac
+
+    #brew tap d12frosted/emacs-plus
+    #brew install emacs-plus --with-no-title-bars
+    #brew linkapps emacs-plus
 
 fi
 
 
 # reveal-md
 npm install -g reveal-md
+
 
 # vim color
 # TODO for osx ?
