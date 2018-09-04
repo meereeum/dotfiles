@@ -26,7 +26,8 @@ mkdir -p ~/.vim/{.swp,.backup,.undo}
 
 # conda
 
-CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-Linux-x86_64.sh" 
+CONDA="https://repo.continuum.io/archive/Anaconda3-5.2.0-Linux-x86_64.sh"
+#CONDA="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 # silent install
 wget $CONDA -O ~/conda.sh && \
@@ -34,10 +35,13 @@ wget $CONDA -O ~/conda.sh && \
 	{
 		rm ~/conda.sh
 
-		export PATH="${HOME}/anaconda2/bin:${PATH}"
-		export PYTHONPATH="${HOME}/anaconda2/bin/python"
+		#export PATH="${HOME}/anaconda2/bin:${PATH}"
+		#export PYTHONPATH="${HOME}/anaconda2/bin/python"
 
-		yes | conda create -n py36 python=3.6 anaconda
+		#yes | conda create -n py36 python=3.6 anaconda
+
+        # cleanup
+        yes | conda clean --all
 	}
 
 
