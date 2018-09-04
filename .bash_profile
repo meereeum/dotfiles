@@ -48,6 +48,7 @@ alias xvlc='xargs -I{} vlc "{}"'
 
 (( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
 alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+#alias cpout='xargs echo' # w/o X11 forwarding
 
 alias restart='bash ~/dotfiles/bashcollager.sh'
 
@@ -60,10 +61,10 @@ tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:60
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 
-alias python3="${HOME}/anaconda2/envs/py36/bin/python"
-lunch() { python3 ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
-movies() { python3 ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
-lsbeer() { python3 ${MEDIA}/utils/lsbeer/get_beer.py "$@"; }
+lunch() { python ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
+movies() { python ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
+lsbeer() { python ${MEDIA}/utils/lsbeer/get_beer.py "$@"; }
+
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
 vtt2txt() {
@@ -392,8 +393,9 @@ export PS1=" \W \$ "
 
 # Path thangs
 
-export PATH="${HOME}/anaconda2/bin:$PATH"
-export PYTHONPATH="${HOME}/anaconda2/bin/python"
+export PATH="${HOME}/anaconda3/bin:$PATH"
+export PYTHONPATH="${HOME}/anaconda3/bin/python"
+
 # will be useful after upgrading to 3.7..
 # via builtin breakpoint()
 export PYTHONBREAKPOINT="IPython.embed"
@@ -419,7 +421,6 @@ else
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
 fi
-
 
 # ACE
 
