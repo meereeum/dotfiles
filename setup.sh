@@ -47,20 +47,24 @@ fi
 
 
 # anaconda
-CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-${SYS}-x86_64.sh"
+CONDA="https://repo.continuum.io/archive/Anaconda3-5.2.0-${SYS}-x86_64.sh"
 
 # silent install
-#wget $CONDA -O ~/conda.sh && \
-#	bash ~/conda.sh -b && \
-#                {
-#                        rm ~/conda.sh
-#                        #yes | conda create -n py36 python=3.6 anaconda
-#                        yes | conda env create -f ${DIR}/packages/conda_py36.yml
-#                }
-# cleanup
-yes | conda clean --all
+wget $CONDA -O ~/conda.sh && \
+	bash ~/conda.sh -b && \
+                {
+                    rm ~/conda.sh
+                    #yes | conda create -n py36 python=3.6 anaconda
+                    #yes | conda env create -f ${DIR}/packages/conda_py36.yml
+                    # cleanup
+                    yes | conda clean --all
+                }
+
 
 # vim for jupyter
+
+#./install/vimjupyter.sh "$DIR"
+
 mkdir -p $(jupyter --data-dir)/nbextensions
 cd $(jupyter --data-dir)/nbextensions
 [ -d vim_binding ] || git clone https://github.com/lambdalisue/jupyter-vim-binding vim_binding

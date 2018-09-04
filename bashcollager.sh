@@ -31,7 +31,7 @@ vlc_hook_on(){
     startsecs=$( echo $starttime | awk -F':' '{out=0; for (i=1; i<=NF; i++) out=out + $i * 60^(NF-i) } END {print out}' )
 
     vlc --start-time $startsecs --play-and-exit --no-video-title-show "$@"
-    # check for file type and add cool murphytags
+    # check for file type and add cool murphtags
     # --fullscreen --qt-continue=0
 }
 

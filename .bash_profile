@@ -60,6 +60,7 @@ math() { bc -l <<< "$@"; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
+coinflip() { (( $RANDOM % 2 )) && echo $1 || echo $2; }
 
 lunch() { python ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
 movies() { python ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
@@ -424,14 +425,15 @@ fi
 
 # ACE
 
-alias rudd='ssh -X uqmschif@10.168.48.12'
-alias keating='ssh -X uqmschif@10.168.48.11'
-alias hawke='ssh -X uqmschif@10.168.48.10'
-alias brown='ssh -X uqmschif@10.168.48.9'
-alias gillard='ssh -X uqmschif@10.168.48.17'
-alias menzies='ssh -X uqmschif@10.168.48.16'
-alias frazer='ssh -X uqmschif@10.168.48.13'
-alias curtin='ssh -X uqmschif@10.168.48.21'
+# ace servers
+alias acerudd='ssh acerudd'
+alias acekeating='ssh acekeating'
+alias acehawke='ssh acehawke'
+alias acebrown='ssh acebrown'
+alias acegillard='ssh acegillard'
+alias acemenzies='ssh acemenzies'
+alias acefrazer='ssh acefrazer'
+alias acecurtin='ssh acecurtin'
 
 # for faster X11 connection
 alias fastfrazer='ssh -Y -C -o CompressionLevel=9 -c arcfour,blowfish-cbc uqmschif@10.168.48.13'
@@ -444,7 +446,6 @@ alias upmenzies='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.
 alias upgillard='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.17:/srv/whitlam/home/users/uqmschif ~/srv/gillard'
 alias upfrazer='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/whitlam/home/users/uqmschif ~/srv/frazer'
 alias marsupial='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/projects/marsupial ~/srv/marsupial'
-
 
 alias downrudd='sudo umount ~/srv/rudd'
 alias downkeating='sudo umount ~/srv/keating'
@@ -470,7 +471,12 @@ complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(scree
 export MKL_THREADING_LAYER=GNU
 
 # rc servers
-alias rcbroome='ssh meereeum@broome.cluster.recurse.com'
-alias rccrosby='ssh meereeum@crosby.cluster.recurse.com' # gpu
-alias rcmercer='ssh meereeum@mercer.cluster.recurse.com' # gpu
-alias rcspring='ssh meereeum@spring.cluster.recurse.com'
+alias rcbroome='ssh rcbroome'
+alias rccrosby='ssh rccrosby'
+alias rcmercer='ssh rcmercer'
+alias rcspring='ssh rcspring'
+
+# broad servers
+alias broadgold='ssh broadgold'
+alias broadsilver='ssh broadsilver'
+alias broadplatinum='ssh broadplatinum'
