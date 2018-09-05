@@ -221,11 +221,18 @@ openTabs(){
      jq -c '.windows[].tabs[].entries[-1].url' |
      sed -e 's/^"//' -e 's/"$//' |
 
+     # filter unwanted
+     grep -v -e'[(calendar)|(mail)].google.com' -e'owa.(csail.)?mit.edu' -e'^file:' -e'zulipchat.com' |
+
      # site-specific edits
      awk '!/about:sessionrestore/' |
-     awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' |
-     sed 's@\(.*google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@';
-     #awk -v SITE='google.com' -F'&' '$0~SITE {print $1} $0!~SITE';
+     awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' | # get rid of post-? junk
+     sed 's@\(google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@' |                      # get rid of post-? junk besides query
+     sed 's@\(biorxiv.org/.*\)\.full\.pdf.*$@\1@' |                                     # biorxiv pdf -> abs
+     sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
+
+     # rm trailing stuff
+     sed -e 's@/$@@' ;
 }
 
 getOpenTabs(){ openTabs | cpout; }
