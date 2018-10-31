@@ -167,11 +167,10 @@ lstoday(){
             [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
         done )) |
 
-    #grep "${today}" |                                    # filter
-    sed -nEe"s/^.*${today}.{7}(.*)$/\1/p" -e's@\/\/@/@g' | # filter, eliminate // in path
-    #grep -Ev '^\.+(git)?$' |                              # ignore . & .. & .git
-    grep -Ev '^\.git$' |                                   # ignore .git
-    xargs -I{} ls -d --color=auto 2>&1 "{}" ;              # pprint
+    sed -Ee's@/+@/@g' -ne"s/^.*${today}.{7}(.*)$/\1/p" | # filter, eliminate // in path
+    #grep -Ev '^\.+(git)?$' |                            # ignore . & .. & .git
+    grep -Ev '^\.git$' |                                 # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;            # pprint
 }
 
 
