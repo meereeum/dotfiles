@@ -90,8 +90,9 @@ lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
 MY_IP=$( dig +short myip.opendns.com @resolver1.opendns.com )
 alias ip='echo $MY_IP | cpout'
 
-alias sourceopenstack='. ~/*openrc.sh'
-alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $MY_IP ssh'
+alias sourceopenstack='. $HOME/dotfiles/*openrc.sh'
+#alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $MY_IP ssh'
+alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $MY_IP ssh'
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
@@ -221,7 +222,7 @@ openTabs(){
      sed -e 's/^"//' -e 's/"$//' |
 
      # filter unwanted
-     grep -v -e'[(calendar)|(mail)].google.com' -e'owa.(csail.)?mit.edu' -e'^file:' -e'zulipchat.com' |
+     grep -v -e'[(calendar)|(mail)].google.com' -e'owa.mit.edu' -e'webmail.csail.mit.edu' -e'^file:' -e'zulipchat.com' |
 
      # site-specific edits
      awk '!/about:sessionrestore/' |
@@ -349,6 +350,8 @@ alias gitcontrib='git shortlog -sn'
 alias rm='bash ~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
+
+alias grep='grep --color'
 
 
 # history
