@@ -33,10 +33,6 @@ if (($linux)); then
 else
 
 	# install brew packages
-	while read line
-		do brew install ${line}
-	done < packages/packages_brew.txt
-
     # spacemacs
     # the debate: https://github.com/d12frosted/homebrew-emacs-plus/issues/10
 	brew tap railwaycat/emacsmacport # for emacs-mac
@@ -46,6 +42,10 @@ else
     #brew tap d12frosted/emacs-plus
     #brew install emacs-plus --with-no-title-bars
     #brew linkapps emacs-plus
+
+	while read line
+		do brew install ${line}
+	done < packages/packages_brew.txt
 
 fi
 

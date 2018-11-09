@@ -62,6 +62,8 @@ wget $CONDA -O ~/conda.sh && \
                     yes | conda clean --all
                 }
 
+# jupyter defaults
+echo "import numpy as np" >> $HOME/.ipython/profile_default/startup/00.py
 
 # vim for jupyter
 
