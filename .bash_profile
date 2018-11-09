@@ -87,11 +87,11 @@ lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
 #alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
-MY_IP=$( dig +short myip.opendns.com @resolver1.opendns.com )
-alias ip='echo $MY_IP | cpout'
+alias MY_IP='dig +short myip.opendns.com @resolver1.opendns.com'
+alias ip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
-alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $MY_IP ssh'
+alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $( MY_IP ) ssh'
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
@@ -167,17 +167,18 @@ lstoday(){
             [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
         done )) |
 
-    #grep "${today}" |                                    # filter
-    sed -nEe"s/^.*${today}.{7}(.*)$/\1/p" -e's@\/\/@/@g' | # filter, eliminate // in path
-    #grep -Ev '^\.+(git)?$' |                              # ignore . & .. & .git
-    grep -Ev '^\.git$' |                                   # ignore .git
-    xargs -I{} ls -d --color=auto 2>&1 "{}" ;              # pprint
+    #grep "${today}" |                        # filter
+    sed -nEe"s/^.*${today}.{7}(.*)$/\1/p" |   # filter
+    sed -e's@\/\/*@/@g' -e"s/'/\\\'/" |       # eliminate // in path, escape '
+    #grep -Ev '^\.+(git)?$' |                 # ignore . & .. & .git
+    grep -Ev '^\.git$' |                      # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ; # pprint
 }
 
 
 lssince(){
     # check for valid date
-    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s?)/\1 ago/' )"
+    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' )"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
@@ -196,10 +197,10 @@ lssince(){
                           || ls -Al --time-style=+%y%m%d "$f" # e.g. can't ls ".."
         done )) |
 
-    awk -v today=$today '$6 >= today' |               # filter by "since"
-    sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/@/@g' | # extract filename, eliminate // in path
-    grep -Ev '^\.git$' |                              # ignore .git
-    xargs -I{} ls -d --color=auto 2>&1 "{}" ;         # pprint
+    awk -v today=$today '$6 >= today' |                              # filter by "since"
+    sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/*@/@g' -e"s/'/\\\'/" | # extract filename, eliminate // in path, escape '
+    grep -Ev '^\.git$' |                                             # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;                        # pprint
 }
 
 
@@ -300,21 +301,21 @@ if (($linux)); then
     # find all packages uninstalled via ```$ apt-get remove```
     # redirect errors if no gzipped history log to /dev/null
     pkgs() {
-        uninstalled=$( \
-            ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
-            cat /var/log/apt/history.log ) | \
-                #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+        uninstalled=$(
+            ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+            cat /var/log/apt/history.log ) |
+                #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
                 # combination sed/grep for removed pkg names, minus -options
-                sed -nr "s/^Commandline: apt-get remove (-. )?//p" | \
+                sed -nr "s/^Commandline: apt-get remove (-. )?//p" |
                 # transform into regex to grep out
-                tr "\n " "|" | sed "s/|$//" \
+                tr "\n " "|" | sed "s/|$//"
                 )
 
-        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
-        cat /var/log/apt/history.log ) | \
-            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+        cat /var/log/apt/history.log ) |
+            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
             # combination sed/grep for all installed pkgs names, minus -options
-            sed -nr "s/^Commandline: apt-get install (-. )?//p" | \
+            sed -nr "s/^Commandline: apt-get install (-. )?//p" |
             # grep out uninstalled (unless empty)
             egrep -v ${uninstalled:-NADA_MUCHO};
     }
@@ -343,6 +344,8 @@ alias gitcontrib='git shortlog -sn'
 alias rm='bash ~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
+
+alias grep='grep --color'
 
 
 # history
