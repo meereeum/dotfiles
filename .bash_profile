@@ -87,7 +87,7 @@ lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
 #alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
-alias MY_IP='dig +short myip.opendns.com @resolver1.opendns.com'
+alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias ip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
@@ -240,6 +240,24 @@ getOpenTabs(){ openTabs | cpout; }
 saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
 
 
+# wifi on/off
+airplane_mode()
+{
+    OPS="on off"
+
+    get_op(){
+        echo "$OPS" | awk -v i=$1 '{print $(i + 1)}'
+    }
+    
+    [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
+    from=$( get_op $i )
+    to=$( get_op $( math "1 - $i" ) ) # flip
+
+    nmcli radio wifi $to
+    echo "${from^^}-->${to^^}"
+}
+
+
 # terminal tab title
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
 t ()
@@ -337,7 +355,7 @@ fi
 
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
-alias venv='source .venv/bin/activate'
+#alias venv='source .venv/bin/activate'
 
 
 # pretty print git log (via Mary @RC)
