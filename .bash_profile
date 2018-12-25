@@ -10,7 +10,8 @@ fi
 
 # editors
 #alias python="echo 'use haskell!'"
-export EDITOR=/usr/bin/vi
+export EDITOR=/usr/bin/vim
+export VISUAL=$EDITOR
 export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
 #export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
 export GIT_EDITOR=$EDITOR
@@ -146,7 +147,7 @@ lsbiggest(){
     DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" ) # extract positional, remove trailing /
     [[ "$DIR" ]] || DIR="."                                           # default
 
-    du -ahd1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))           # account for total size
+    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))           # account for total size
 }
 
 #alias lsbiggest='echo "use du | sort | tail !"'
@@ -318,6 +319,43 @@ else
 	open(){ for f in "$@"; do xdg-open "$f" &> /dev/null & disown; done; }
 fi
 
+if [[ -f /etc/redhat-release ]]; then # broad servers
+    DK_DEFAULTS="taciturn reuse dkcomplete"
+
+    use -q $DK_DEFAULTS # quietly load
+
+    # succinct cmd line (working dir only)
+    load_prompt() {
+        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
+        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
+                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
+                  xargs | sed 's/ /, /g' )
+        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+    }
+    load_prompt
+
+    utilize() { use "$@" && load_prompt; }
+    reutilize() { reuse "$@" && load_prompt; }
+    unutilize() { unuse "$@" && load_prompt; }
+
+    # turn on autocompletion
+    # via /broad/software/dotkit/bash/dkcomplete.d
+    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
+
+    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
+
+    #functions[use]='
+    #  (){ '$functions[use]'; } "$@"; local myret=$?
+    #  echo "hellooo"
+    #  return $myret'
+
+    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
+    #reuse() { reuse "$@" && load_prompt; }
+    #unuse() { unuse "$@" && load_prompt; }
+fi
+
 
 # list all packages from ```$ apt-get install```, in historical order
 # inspired by http://askubuntu.com/questions/17823/how-to-list-all-installed-packages
@@ -370,6 +408,9 @@ alias cp='cp -i'
 alias mv='mv -i'
 
 alias grep='grep --color'
+alias ls='ls --color=auto'
+#export LESS=-R # allow colorcodes in less
+export LESS=-r # allow colorcodes & symbols in less
 
 
 # history
