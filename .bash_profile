@@ -53,6 +53,7 @@ alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
 alias restart='bash ~/dotfiles/bashcollager.sh'
 
 export DELTA='Δ'
+export DELTAS="${DELTA}s"
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
@@ -268,7 +269,6 @@ t ()
 }
 
 
-
 # pandoc
 eval "$(pandoc --bash-completion)"
 # markdown -> man page
@@ -417,6 +417,7 @@ shopt -s extglob
 
 # succinct cmd line (working dir only)
 export PS1=" \W \$ "
+#export PS1="\e[1m\h:\e[m \W \$ "
 
 
 # Path thangs
