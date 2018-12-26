@@ -64,9 +64,16 @@ token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{p
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 coinflip() { (( $RANDOM % 2 )) && echo $1 || echo $2; }
 
-lunch() { python ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
-movies() { python ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/utils/lsbeer/get_beer.py "$@"; }
+dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
+
+#pdfurl2txt() { F=$( mktemp ); wget "$@" -qO $F; echo; pdftotext -layout $F -; echo; }
+pdfurl2txt() {
+    URL="$@"
+    F=/tmp/"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
+    [[ -f $F ]] || wget "$URL" -qO $F                    # wget iff doesn't exist
+    #echo; pdftotext -layout $F -; echo
+    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo
+}
 
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
@@ -457,8 +464,8 @@ shopt -s histverify
 shopt -s extglob
 
 # succinct cmd line (working dir only)
-export PS1=" \W \$ "
-#export PS1="\e[1m\h:\e[m \W \$ "
+export PS1=" \W \$ "               # homebase
+# export PS1="\e[1m\h:\e[m \W \$ " # remote / server
 
 
 # Path thangs
@@ -491,6 +498,7 @@ else
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
 fi
+
 
 # ACE
 
