@@ -49,9 +49,10 @@ alias xvlc='xargs -I{} vlc "{}"'
 
 (( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
 alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-#alias cpout='xargs echo' # w/o X11 forwarding
+# alias cpout='xargs echo'               # w/o X11 forwarding
 
 alias restart='bash ~/dotfiles/bashcollager.sh'
+alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
 export DELTA='Δ'
 export DELTAS="${DELTA}s"
@@ -64,14 +65,20 @@ token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{p
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 coinflip() { (( $RANDOM % 2 )) && echo $1 || echo $2; }
 
+addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
+addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
+
+# anagram utils
+#sortword() { echo "$@" | sed -E -e's/ //g' -e's/(.)/\n\1/g' | sort | tr -d '\n'; }
+sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
+anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
+
 dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
 
-#pdfurl2txt() { F=$( mktemp ); wget "$@" -qO $F; echo; pdftotext -layout $F -; echo; }
 pdfurl2txt() {
     URL="$@"
-    F=/tmp/"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
-    [[ -f $F ]] || wget "$URL" -qO $F                    # wget iff doesn't exist
-    #echo; pdftotext -layout $F -; echo
+    F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
+    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
     echo; dashes 100; pdftotext -layout $F -; dashes 100; echo
 }
 
