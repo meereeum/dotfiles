@@ -320,13 +320,8 @@ if [[ -f /etc/redhat-release ]]; then # broad servers
     reutilize() { reuse "$@" && load_prompt; }
     unutilize() { unuse "$@" && load_prompt; }
 
-    # turn on autocompletion
-    # via /broad/software/dotkit/bash/dkcomplete.d
-    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
-
-    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
+    cd $HOME/shiffman
+    utilize UGER
 
     #functions[use]='
     #  (){ '$functions[use]'; } "$@"; local myret=$?
@@ -336,6 +331,15 @@ if [[ -f /etc/redhat-release ]]; then # broad servers
     #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
     #reuse() { reuse "$@" && load_prompt; }
     #unuse() { unuse "$@" && load_prompt; }
+
+    # turn on autocompletion
+    # via /broad/software/dotkit/bash/dkcomplete.d
+    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
+
+    export LANG="en_US.utf8" # b/c broad defaults are :(
+    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
 fi
 
 
