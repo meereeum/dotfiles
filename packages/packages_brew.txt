@@ -17,6 +17,7 @@ gd
 gdbm
 gettext
 ghostscript
+git
 glib
 gmp
 gnu-sed
@@ -26,8 +27,11 @@ gobject-introspection
 graphite2
 graphviz
 grep
+gsl
 harfbuzz
 heroku
+heroku-node
+htop
 icu4c
 imagemagick
 isl
@@ -37,6 +41,9 @@ lame
 libass
 libcaca
 libffi
+libgcrypt
+libgpg-error
+libidn2
 libmpc
 libogg
 libpng
@@ -51,9 +58,11 @@ libvpx
 libyaml
 little-cms2
 lua
+lua@5.1
 mpfr
 nettle
 node
+oniguruma
 openconnect
 opencore-amr
 openjpeg
@@ -64,10 +73,13 @@ orc
 p11-kit
 pandoc
 pcre
+pdfgrep
 perl
 pixman
 pkg-config
+poppler
 python
+python@2
 readline
 rename
 rtmpdump
@@ -76,6 +88,7 @@ schroedinger
 sdl
 speex
 sqlite
+ssh-copy-id
 sshfs
 texi2html
 texinfo

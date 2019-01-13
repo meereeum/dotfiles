@@ -54,14 +54,16 @@ wget $CONDA -O ~/conda.sh && \
 	bash ~/conda.sh -b && \
                 {
                     rm ~/conda.sh
+
                     #yes | conda create -n py36 python=3.6 anaconda
                     #yes | conda env create -f ${DIR}/packages/conda_py36.yml
+
                     # cleanup
                     yes | conda clean --all
                 }
 
 # jupyter defaults
-echo "import numpy as np" >> $HOME/.ipython/profile_default/startup/00.py
+echo -e "import numpy as np\nimport itertools" >> $HOME/.ipython/profile_default/startup/00.py
 
 # vim for jupyter
 
@@ -89,6 +91,10 @@ cd $HOME
 git clone https://github.com/meereeum/vim-anywhere.git
 ./install
 cd $DIR # back to dotfiles
+
+
+# arxivate
+wget https://gist.githubusercontent.com/meereeum/d14cfd9c17e8abda5d0a09eed477bd27/raw/3b3706bd02db586a99fc45ac4f8e19e930764d62/arxivate.sh
 
 
 instructions="

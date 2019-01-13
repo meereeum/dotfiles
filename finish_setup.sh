@@ -53,6 +53,7 @@ fi
 # reveal-md
 npm install -g reveal-md
 
+
 # vim color
 # TODO for osx ?
 for COLORSCHEME in "${DIR}/*.vim"; do
@@ -68,6 +69,8 @@ TODO:
 (2) install mactex
 
 (3) build tf for hardware optimizations ?
+
+(4) get openstack stuff
 "
 
 echo "$instructions"

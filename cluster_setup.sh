@@ -29,15 +29,15 @@ CONDA="https://repo.continuum.io/archive/Anaconda3-5.2.0-Linux-x86_64.sh"
 #CONDA="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 # silent install
-wget $CONDA -O ~/conda.sh && \
-	bash ~/conda.sh -b && \
-                {
-                    rm ~/conda.sh
-                    #yes | conda create -n py36 python=3.6 anaconda
-                    #yes | conda env create -f ${DIR}/packages/conda_py36.yml
-                    # cleanup
-                    yes | conda clean --all
-                }
+#wget $CONDA -O ~/conda.sh && \
+#	bash ~/conda.sh -b && \
+#                {
+#                    rm ~/conda.sh
+#                    #yes | conda create -n py36 python=3.6 anaconda
+#                    #yes | conda env create -f ${DIR}/packages/conda_py36.yml
+#                    # cleanup
+#                    yes | conda clean --all
+#                }
 
 
 # minimal pkgs
@@ -60,7 +60,11 @@ sed -ri'.tmp' --follow-symlinks 's/^(export PS1=).*$/\\1"\\e[1m\\h:\\e[21m \\W \
 
 
 # jupyter defaults
+<<<<<<< HEAD
+echo -e "import numpy as np\nimport itertools" >> $HOME/.ipython/profile_default/startup/00.py
+=======
 echo "import numpy as np" >> $HOME/.ipython/profile_default/startup/00.py
+>>>>>>> d9c23708cfb19eb9eec928a4adcf80a4721bb194
 
 
 # does not exist or remove
