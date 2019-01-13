@@ -54,8 +54,10 @@ wget $CONDA -O ~/conda.sh && \
 	bash ~/conda.sh -b && \
                 {
                     rm ~/conda.sh
+
                     #yes | conda create -n py36 python=3.6 anaconda
                     #yes | conda env create -f ${DIR}/packages/conda_py36.yml
+
                     # cleanup
                     yes | conda clean --all
                 }

@@ -270,10 +270,6 @@ airplane_mode()
 {
     OPS="on off"
 
-    get_op(){
-        echo "$OPS" | awk -v i=$1 '{print $(i + 1)}'
-    }
-
     [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
     from=$( get_op $i )
     to=$( get_op $( math "1 - $i" ) ) # flip

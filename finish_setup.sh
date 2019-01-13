@@ -53,6 +53,7 @@ fi
 # reveal-md
 npm install -g reveal-md
 
+
 # vim color
 # TODO for osx ?
 for COLORSCHEME in "${DIR}/*.vim"; do
