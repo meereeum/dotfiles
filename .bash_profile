@@ -10,7 +10,8 @@ fi
 
 # editors
 #alias python="echo 'use haskell!'"
-export EDITOR=/usr/bin/vi
+export EDITOR=/usr/bin/vim
+export VISUAL=$EDITOR
 export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
 #export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
 export GIT_EDITOR=$EDITOR
@@ -48,11 +49,17 @@ alias xvlc='xargs -I{} vlc "{}"'
 
 (( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
 alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-#alias cpout='xargs echo' # w/o X11 forwarding
+# alias cpout='xargs echo'               # w/o X11 forwarding
 
 alias restart='bash ~/dotfiles/bashcollager.sh'
+alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
 export DELTA='Δ'
+export DELTAS="${DELTA}s"
+
+lunch() { python ${MEDIA}/tools/mit-lunch/get_menu.py "$@"; }
+movies() { python ${MEDIA}/tools/cinematic/get_movies.py "$@"; }
+lsbeer() { python ${MEDIA}/tools/lsbeer/get_beer.py "$@"; }
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
@@ -62,9 +69,22 @@ token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{p
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 coinflip() { (( $RANDOM % 2 )) && echo $1 || echo $2; }
 
-lunch() { python ${MEDIA}/utils/mit-lunch/get_menu.py "$@"; }
-movies() { python ${MEDIA}/utils/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/utils/lsbeer/get_beer.py "$@"; }
+addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
+addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
+
+# anagram utils
+#sortword() { echo "$@" | sed -E -e's/ //g' -e's/(.)/\n\1/g' | sort | tr -d '\n'; }
+sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
+anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
+
+dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
+
+pdfurl2txt() {
+    URL="$@"
+    F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
+    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
+    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo
+}
 
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
@@ -83,12 +103,11 @@ srt2txt() {
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
 #alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
-MY_IP=$( dig +short myip.opendns.com @resolver1.opendns.com )
-alias ip='echo $MY_IP | cpout'
+alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
+alias ip='echo $( MY_IP ) | cpout'
 
-alias sourceopenstack='. $HOME/dotfiles/*openrc.sh'
-#alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $MY_IP ssh'
-alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $MY_IP ssh'
+alias sourceopenstack='. ~/*openrc.sh'
+alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $( MY_IP ) ssh'
 
 # reset illustrator trial
 resetadobe()
@@ -151,7 +170,7 @@ lsbiggest(){
     DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" ) # extract positional, remove trailing /
     [[ "$DIR" ]] || DIR="."                                           # default
 
-    du -ahd1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))           # account for total size
+    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))           # account for total size
 }
 
 #alias lsbiggest='echo "use du | sort | tail !"'
@@ -175,6 +194,7 @@ lstoday(){
 
     sed -Ee's@/+@/@g' -ne"s/^.*${today}.{7}(.*)$/\1/p" | # filter, eliminate // in path
     #grep -Ev '^\.+(git)?$' |                            # ignore . & .. & .git
+    sed -e's@\/\/*@/@g' -e"s/'/\\\'/" -e"s/'/\\\'/" | # eliminate // in path, escape '|
     grep -Ev '^\.git$' |                                 # ignore .git
     xargs -I{} ls -d --color=auto 2>&1 "{}" ;            # pprint
 }
@@ -182,7 +202,7 @@ lstoday(){
 
 lssince(){
     # check for valid date
-    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s?)/\1 ago/' )"
+    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' )"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
@@ -201,10 +221,10 @@ lssince(){
                           || ls -Al --time-style=+%y%m%d "$f" # e.g. can't ls ".."
         done )) |
 
-    awk -v today=$today '$6 >= today' |               # filter by "since"
-    sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/@/@g' | # extract filename, eliminate // in path
-    grep -Ev '^\.git$' |                              # ignore .git
-    xargs -I{} ls -d --color=auto 2>&1 "{}" ;         # pprint
+    awk -v today=$today '$6 >= today' |                              # filter by "since"
+    sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/*@/@g' -e"s/'/\\\'/" | # extract filename, eliminate // in path, escape '
+    grep -Ev '^\.git$' |                                             # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;                        # pprint
 }
 
 
@@ -245,6 +265,24 @@ getOpenTabs(){ openTabs | cpout; }
 saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
 
 
+# wifi on/off
+airplane_mode()
+{
+    OPS="on off"
+
+    get_op(){
+        echo "$OPS" | awk -v i=$1 '{print $(i + 1)}'
+    }
+
+    [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
+    from=$( get_op $i )
+    to=$( get_op $( math "1 - $i" ) ) # flip
+
+    nmcli radio wifi $to
+    echo "${from^^}-->${to^^}"
+}
+
+
 # terminal tab title
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
 t ()
@@ -253,7 +291,6 @@ t ()
   TITLE_CAP=$(echo "$TITLE" | tr '[:lower:]' '[:upper:]');
   echo -en "\033]0;|| $TITLE_CAP ||\a ";
 }
-
 
 
 # pandoc
@@ -306,6 +343,43 @@ else
 	open(){ for f in "$@"; do xdg-open "$f" &> /dev/null & disown; done; }
 fi
 
+if [[ -f /etc/redhat-release ]]; then # broad servers
+    DK_DEFAULTS="taciturn reuse dkcomplete"
+
+    use -q $DK_DEFAULTS # quietly load
+
+    # succinct cmd line (working dir only)
+    load_prompt() {
+        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
+        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
+                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
+                  xargs | sed 's/ /, /g' )
+        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+    }
+    load_prompt
+
+    utilize() { use "$@" && load_prompt; }
+    reutilize() { reuse "$@" && load_prompt; }
+    unutilize() { unuse "$@" && load_prompt; }
+
+    # turn on autocompletion
+    # via /broad/software/dotkit/bash/dkcomplete.d
+    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
+
+    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
+
+    #functions[use]='
+    #  (){ '$functions[use]'; } "$@"; local myret=$?
+    #  echo "hellooo"
+    #  return $myret'
+
+    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
+    #reuse() { reuse "$@" && load_prompt; }
+    #unuse() { unuse "$@" && load_prompt; }
+fi
+
 
 # list all packages from ```$ apt-get install```, in historical order
 # inspired by http://askubuntu.com/questions/17823/how-to-list-all-installed-packages
@@ -313,21 +387,21 @@ if (($linux)); then
     # find all packages uninstalled via ```$ apt-get remove```
     # redirect errors if no gzipped history log to /dev/null
     pkgs() {
-        uninstalled=$( \
-            ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
-            cat /var/log/apt/history.log ) | \
-                #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+        uninstalled=$(
+            ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+            cat /var/log/apt/history.log ) |
+                #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
                 # combination sed/grep for removed pkg names, minus -options
-                sed -nr "s/^Commandline: apt-get remove (-. )?//p" | \
+                sed -nr "s/^Commandline: apt-get remove (-. )?//p" |
                 # transform into regex to grep out
-                tr "\n " "|" | sed "s/|$//" \
+                tr "\n " "|" | sed "s/|$//"
                 )
 
-        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null; \
-        cat /var/log/apt/history.log ) | \
-            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon | \
+        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+        cat /var/log/apt/history.log ) |
+            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
             # combination sed/grep for all installed pkgs names, minus -options
-            sed -nr "s/^Commandline: apt-get install (-. )?//p" | \
+            sed -nr "s/^Commandline: apt-get install (-. )?//p" |
             # grep out uninstalled (unless empty)
             egrep -v ${uninstalled:-NADA_MUCHO};
     }
@@ -343,7 +417,7 @@ fi
 
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
-alias venv='source .venv/bin/activate'
+#alias venv='source .venv/bin/activate'
 
 
 # pretty print git log (via Mary @RC)
@@ -358,6 +432,9 @@ alias cp='cp -i'
 alias mv='mv -i'
 
 alias grep='grep --color'
+alias ls='ls --color=auto'
+#export LESS=-R # allow colorcodes in less
+export LESS=-r # allow colorcodes & symbols in less
 
 
 # history
@@ -404,15 +481,21 @@ shopt -s histverify
 shopt -s extglob
 
 # succinct cmd line (working dir only)
-#export PS1=" \W \$ "
+# homebase vs remote / server
+[[ $DISPLAY ]] && PS1=" \W \$ " || PS1="\e[1m\h:\e[m \W \$ "
+
 case "$TERM" in
 	"dumb")
 	    export PS1="> " # make tramp compatible ?
 	    ;;
 	*)
-        export PS1=" \W \$ "
+        #export PS1=" \W \$ "
+        export PS1="$PS1"
 	    ;;
 esac
+# export PS1=" \W \$ "               # homebase
+# export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
+# export PS1="$PS1"
 
 # Path thangs
 
@@ -444,6 +527,7 @@ else
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
 fi
+
 
 # ACE
 
