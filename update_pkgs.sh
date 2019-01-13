@@ -4,10 +4,13 @@ PKGDIR="$( dirname "$0" )/packages"
 
 # conda
 
-conda env export -n root > "${PKGDIR}/conda_py27.yml" &&
-conda env export -n py36 > "${PKGDIR}/conda_py36.yml" &&
+#conda env export -n root > "${PKGDIR}/conda_py27.yml" &&
+#conda env export -n py36 > "${PKGDIR}/conda_py36.yml" &&
+VPY=$( python --version 2>&1 | sed -E 's/^Python ([0-9])\.([0-9]).*$/\1\2/' ) # NB python --version goes to STDERR, not -OUT
+conda env export -n root > "${PKGDIR}/conda_py${VPY}.yml" &&
 
-echo "updated: ${PKGDIR}/conda_py{27,36}.yml"
+echo "updated: ${PKGDIR}/conda_py${VPY}.yml"
+#echo "updated: ${PKGDIR}/conda_py{27,36}.yml"
 
 if (($linux)); then
 	DISTRO=$( cat /etc/*-release | awk -F'=' '/^NAME/ {print $2}' | xargs )

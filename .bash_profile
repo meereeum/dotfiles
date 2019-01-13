@@ -78,10 +78,6 @@ srt2txt() {
     grep -i "[a-z]" "$@"
 }
 
-lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
-movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
-
 # universalish / v possibly nonrobust way to query ip address
 # this is local (not public) ip
 #ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
@@ -93,6 +89,15 @@ alias ip='echo $MY_IP | cpout'
 alias sourceopenstack='. $HOME/dotfiles/*openrc.sh'
 #alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $MY_IP ssh'
 alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $MY_IP ssh'
+
+# reset illustrator trial
+resetadobe()
+{
+    f="/Applications/Adobe Illustrator CC 2018/Support Files/AMT/AI/AMT/application.xml"
+    oldn=$( awk -F'[<>]' '/TrialSerial/{print $3}' "$f" )
+    newn=$( math "$oldn + 1" )
+    sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
+}
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
@@ -232,7 +237,7 @@ openTabs(){
      sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
 
      # rm trailing stuff
-     sed -e 's@/$@@' ;
+     sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; TODO
 }
 
 getOpenTabs(){ openTabs | cpout; }
@@ -257,14 +262,15 @@ eval "$(pandoc --bash-completion)"
 md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
-alias p3='source activate py36'
-alias d='source deactivate'
+# alias p3='source activate py36'
+# alias d='source deactivate'
 
 # osx only
 if ((!$linux)); then
-	alias vlc='open -a VLC'
-	alias chrome='open -a /Applications/Google\ Chrome.app'
-	alias ffox='open -a /Applications/Firefox.app/'
+    alias vlc='open -a VLC'
+    alias chrome='open -a /Applications/Google\ Chrome.app'
+    alias ffox='open -a /Applications/Firefox.app'
+    alias preview='open -a /Applications/Preview.app'
 
         for x in gcc g++; do
            #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${x}* | grep ${x}-[0-9] | tail -n1)
@@ -398,8 +404,15 @@ shopt -s histverify
 shopt -s extglob
 
 # succinct cmd line (working dir only)
-export PS1=" \W \$ "
-
+#export PS1=" \W \$ "
+case "$TERM" in
+	"dumb")
+	    export PS1="> " # make tramp compatible ?
+	    ;;
+	*)
+        export PS1=" \W \$ "
+	    ;;
+esac
 
 # Path thangs
 
