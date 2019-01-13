@@ -51,6 +51,7 @@ alias xvlc='xargs -I{} vlc "{}"'
 alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
 # alias cpout='xargs echo'               # w/o X11 forwarding
 
+alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
@@ -429,7 +430,6 @@ alias mv='mv -i'
 
 alias grep='grep --color'
 alias ls='ls --color=auto'
-#export LESS=-R # allow colorcodes in less
 export LESS=-r # allow colorcodes & symbols in less
 
 
