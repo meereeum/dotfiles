@@ -208,10 +208,10 @@ user code."
 	"Configuration function for user code.
  This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
-	;; Delete selection mode to enable deletion/replacement of selected region
-	(delete-selection-mode 1)
+  ;; Delete selection mode to enable deletion/replacement of selected region
+    (delete-selection-mode 1)
 	(beacon-mode 1)
-  (golden-ratio-mode 1)
+    (golden-ratio-mode 1)
 
 	;; Add key binding jk for ESC
 	;;(setq-default evil-escape-key-sequence "jk")
@@ -223,15 +223,12 @@ layers configuration. You are free to put any user code."
 	(require 'key-chord)
 	(key-chord-mode 1)
 	(key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+	(key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
 	;; ---------------------------------------------------------------------------
 
-  (exec-path-from-shell-copy-env "PYTHONPATH")
-	;; (setq python-shell-virtualenv-path "${HOME}/anaconda2/")
-	;; (setq python-shell-virtualenv-path "${PYTHONPATH%/bin/python}")
-	(setq python-shell-virtualenv-path "/home/miriam/miniconda3")
-	;; (setq python-shell-interpreter "${HOME}/anaconda2/bin/python")
-	;; (setq python-shell-interpreter "${PYTHONPATH}")
-	(setq python-shell-interpreter "/home/miriam/miniconda3/bin/python")
+    ;; (exec-path-from-shell-copy-env "PYTHONPATH")
+	;; (setq python-shell-virtualenv-path "/Users/shiff/anaconda3")
+	(setq python-shell-interpreter "/Users/shiff/anaconda3/bin/python")
 	(add-hook 'python-mode-hook 'anaconda-mode)
 	(add-hook 'python-mode-hook 'anaconda-eldoc-mode) ;; docs
 
@@ -245,21 +242,31 @@ layers configuration. You are free to put any user code."
         ;; speed up ? - via https://www.gnu.org/software/emacs/manual/html_node/tramp/Frequently-Asked-Questions.html
         tramp-completion-reread-directory-timeout nil
         )
-  (setq vc-ignore-dir-regexp
-        (format "\\(%s\\)\\|\\(%s\\)"
-                vc-ignore-dir-regexp
-                tramp-file-name-regexp))
+    (setq vc-ignore-dir-regexp
+          (format "\\(%s\\)\\|\\(%s\\)"
+                  vc-ignore-dir-regexp
+                  tramp-file-name-regexp))
 
 
-  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+    (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 	;;(spacemacs/toggle-spelling-checking-off)
 	;; (spacemacs/toggle-syntax-checking-off)
 	;; disable flyspell by default
 	;; (setq-default dotspacemacs-configuration-layers
 	;; 							'((spell-checking :variables spell-checking-enable-by-default nil)))
-  ;; (setq-default spell-checking-enable-by-default nil)
-  ;;(setq-default spacemacs/toggle-spelling-checking-off)
+    ;; (setq-default spell-checking-enable-by-default nil)
+    ;;(setq-default spacemacs/toggle-spelling-checking-off)
+
+    ;; bug fix ?
+    ;; via https://github.com/syl20bnr/spacemacs/issues/9608#issuecomment-330499394
+    (require 'helm-bookmark)
+    ;; via https://github.com/syl20bnr/spacemacs/pull/10196#issuecomment-359213211
+    (with-eval-after-load 'helm
+    (setq helm-display-function 'helm-default-display-buffer))
+
+    dotspacemacs-check-for-update t
+
 
 	;; Remove fly-spell for markdown and text-files.
 	(remove-hook 'text-mode-hook 'enable-flyspell-mode)
@@ -296,14 +303,15 @@ layers configuration. You are free to put any user code."
 	;; pandoc
 	(add-hook 'markdown-mode-hook 'pandoc-mode)
 
-	;; font too large
-	(set-face-attribute 'default nil :height 114)
+	;; font
+	(set-face-attribute 'default nil :height 144)
+	;; (set-face-attribute 'default nil :height 114)
 	;; (set-face-attribute 'default nil :height 80)
 
-  ;; plz work
-  ;; http://stackoverflow.com/questions/37845243/python-indentation-in-spacemacs-with-hard-tabs-is-off
+    ;; plz work
+    ;; http://stackoverflow.com/questions/37845243/python-indentation-in-spacemacs-with-hard-tabs-is-off
 
-  ;; local values in this buffer
+    ;; local values in this buffer
 	(setq indent-tabs-mode nil) ;; nil for spaces, t for tabs
 	(setq evil-shift-width 4)
 	(setq standard-indent 4)
@@ -323,28 +331,28 @@ layers configuration. You are free to put any user code."
 	;; (add-hook 'python-mode-hook (lambda ()
 	;;                               (guess-style-guess-tab-width)))
 
-  ;; fix lockfiles
-  ;; https://github.com/syl20bnr/spacemacs/issues/5186
-  ;; (setq recentf-save-file (format "/tmp/recentf.%s" (emacs-pid)))
+    ;; fix lockfiles
+    ;; https://github.com/syl20bnr/spacemacs/issues/5186
+    ;; (setq recentf-save-file (format "/tmp/recentf.%s" (emacs-pid)))
 
-  ;; https://sriramkswamy.github.io/dotemacs/
-  ;; better autosave
-  ;; Backups at .tmp folder in the current folder
-  (setq backup-by-copying t      ; don't clobber symlinks
-        backup-directory-alist
-        '(("." . "~/.tmp"))      ; don't litter my fs tree
-        delete-old-versions t
-        kept-new-versions 6
-        kept-old-versions 2
-        version-control t)       ; use versioned backups
-  (setq auto-save-file-name-transforms `((".*", temporary-file-directory t))
-        create-lockfiles nil)
-  (setq-default create-lockfiles nil)
+    ;; https://sriramkswamy.github.io/dotemacs/
+    ;; better autosave
+    ;; Backups at .tmp folder in the current folder
+    (setq backup-by-copying t      ; don't clobber symlinks
+          backup-directory-alist
+          '(("." . "~/.tmp"))      ; don't litter my fs tree
+          delete-old-versions t
+          kept-new-versions 6
+          kept-old-versions 2
+          version-control t)       ; use versioned backups
+    (setq auto-save-file-name-transforms `((".*", temporary-file-directory t))
+          create-lockfiles nil)
+    (setq-default create-lockfiles nil)
 
-  ;; better sentences
-  (setq sentence-end-double-space nil)
-  ;; pdfs
-  (setq doc-view-continuous t)
+    ;; better sentences
+    (setq sentence-end-double-space nil)
+    ;; pdfs
+    (setq doc-view-continuous t)
 
 )
 
@@ -358,7 +366,7 @@ layers configuration. You are free to put any user code."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (org-category-capture org-mime web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data auctex-latexmk yapfify xterm-color ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package unfill toc-org spaceline powerline smeargle shell-pop reveal-in-osx-finder restart-emacs rainbow-delimiters pyvenv pytest pyenv-mode py-isort popwin pip-requirements persp-mode pcre2el pbcopy paradox spinner pandoc-mode ox-pandoc ht osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro alert log4e gntp org-plus-contrib org-download org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc markdown-mode magit-gitflow lorem-ipsum live-py-mode linum-relative link-hint launchctl key-chord info+ indent-guide hydra hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make projectile helm-gitignore request helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck pkg-info epl flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit magit magit-popup git-commit with-editor evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight eshell-z eshell-prompt-extras esh-help dumb-jump diminish diff-hl cython-mode company-statistics company-auctex company-anaconda company column-enforce-mode clean-aindent-mode bind-map bind-key beacon seq auto-yasnippet yasnippet auto-highlight-symbol auto-dictionary auctex anaconda-mode pythonic f dash s aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup))))
+    (org-category-capture dash-functional ghub treepy graphql web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data auctex-latexmk yapfify xterm-color ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package unfill toc-org spaceline powerline smeargle shell-pop reveal-in-osx-finder restart-emacs rainbow-delimiters pyvenv pytest pyenv-mode py-isort popwin pip-requirements persp-mode pcre2el pbcopy paradox spinner pandoc-mode ox-pandoc ht osx-trash osx-dictionary orgit org-projectile org-present org-pomodoro alert log4e gntp org-plus-contrib org-download org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc markdown-mode magit-gitflow lorem-ipsum live-py-mode linum-relative link-hint launchctl key-chord info+ indent-guide hydra hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make projectile helm-gitignore request helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck pkg-info epl flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit magit magit-popup git-commit with-editor evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight eshell-z eshell-prompt-extras esh-help dumb-jump diminish diff-hl cython-mode company-statistics company-auctex company-anaconda company column-enforce-mode clean-aindent-mode bind-map bind-key beacon seq auto-yasnippet yasnippet auto-highlight-symbol auto-dictionary auctex anaconda-mode pythonic f dash s aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

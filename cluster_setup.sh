@@ -60,7 +60,7 @@ sed -ri'.tmp' --follow-symlinks 's/^(export PS1=).*$/\\1"\\e[1m\\h:\\e[21m \\W \
 
 
 # jupyter defaults
-echo "import numpy as np" >> $HOME/.ipython/profile_default/startup/00.py
+echo -e "import numpy as np\nimport itertools" >> $HOME/.ipython/profile_default/startup/00.py
 
 
 # does not exist or remove

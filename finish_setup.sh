@@ -69,6 +69,8 @@ TODO:
 (2) install mactex
 
 (3) build tf for hardware optimizations ?
+
+(4) get openstack stuff
 "
 
 echo "$instructions"
