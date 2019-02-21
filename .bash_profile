@@ -69,7 +69,6 @@ addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
 addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
 
 # anagram utils
-#sortword() { echo "$@" | sed -E -e's/ //g' -e's/(.)/\n\1/g' | sort | tr -d '\n'; }
 sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
 anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
 
@@ -99,10 +98,10 @@ movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
 
 # universalish / v possibly nonrobust way to query ip address
-# this is local (not public) ip
-#ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
+# --> this is local (not public) ip
+# ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-#alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
+# alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
 alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias ip='echo $( MY_IP ) | cpout'
 
@@ -155,13 +154,13 @@ lsbiggest(){
     FLAG="-n ?" # with optional space
 
     # N.B. need printf b/c echo interprets -n
-    N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )        # extract $FLAG
-    (( $N )) || N=10                                                  # default
+    N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )          # extract $FLAG
+    (( $N )) || N=10                                                    # default
 
-    DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" ) # extract positional, remove trailing /
-    [[ "$DIR" ]] || DIR="."                                           # default
+    DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" )   # extract positional, remove trailing /
+    [[ "$DIR" ]] || DIR="."                                             # default
 
-    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))           # account for total size
+    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 )) # account for total size
 }
 
 #alias lsbiggest='echo "use du | sort | tail !"'
@@ -259,15 +258,11 @@ saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
 # wifi on/off
 airplane_mode()
 {
-    OPS="on off"
-
-    get_op(){
-        echo "$OPS" | awk -v i=$1 '{print $(i + 1)}'
-    }
+    OPS=(on off)
     
     [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
-    from=$( get_op $i )
-    to=$( get_op $( math "1 - $i" ) ) # flip
+    from=${OPS[$i]}
+    to=${OPS[1 - $i]} # flip
 
     nmcli radio wifi $to
     echo "${from^^}-->${to^^}"
@@ -278,9 +273,9 @@ airplane_mode()
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
 t ()
 {
-  TITLE=$@;
-  TITLE_CAP=$(echo "$TITLE" | tr '[:lower:]' '[:upper:]');
-  echo -en "\033]0;|| $TITLE_CAP ||\a ";
+    TITLE=$@
+    PATTERN=||
+    echo -en "\033]0;$PATTERN ${TITLE^^} $PATTERN\a "
 }
 
 
@@ -290,22 +285,20 @@ eval "$(pandoc --bash-completion)"
 md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
-alias p3='source activate py36'
-alias d='source deactivate'
+# alias p3='source activate py36'
+# alias d='source deactivate'
 
 # osx only
 if ((!$linux)); then
 	alias vlc='open -a VLC'
 	alias chrome='open -a /Applications/Google\ Chrome.app'
-	alias ffox='open -a /Applications/Firefox.app/'
+	alias ffox='open -a /Applications/Firefox.app'
 
-        for x in gcc g++; do
-           #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${x}* | grep ${x}-[0-9] | tail -n1)
-           #alias $x=$GPATH
-           #sudo ln -s $GPATH /usr/local/bin/${x}
-        #done
-           alias $x=$( ls /usr/local/Cellar/gcc/*/bin/${x}* |
-                       grep ${x}-[0-9] | tail -n1); done
+    #for g in gcc g++; do
+       #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${g}* | grep ${g}-[0-9] | tail -n1)
+       #alias $g=$GPATH
+       #sudo ln -s $GPATH /usr/local/bin/${g}
+    #done
 
 	alias phil='chrome "https://docs.google.com/document/d/1Bcfz3Tl_T78nx9VLnOyoyn4rrvpjFH2ol8PJ9JMk97U/edit";
 			open -a Skype; open -a Evernote'
@@ -315,13 +308,17 @@ if ((!$linux)); then
 	alias cpy='copy'
 
 	# internet tabs --> file
-	tabs() { now=$( date +%y%m%d ); for app in safari; #"google chrome" firefox;
-                 do osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}; done; }
+	tabs() {
+        now=$( date +%y%m%d )
+        for app in safari; do #"google chrome" firefox;
+            osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}
+        done
+    }
 
 # linux only
 else
 	alias iceweasel='firefox &> /dev/null & disown'
-	#alias iceweasel='/usr/lib/iceweasel &> /dev/null & disown'
+	# alias iceweasel='/usr/lib/iceweasel &> /dev/null & disown'
 
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
@@ -400,7 +397,7 @@ if (($linux)); then
     pkgs() {
         cd ${HOME}/dotfiles/packages
         rm Brewfile && brew bundle dump # with package-install options
-	cd -
+	    cd -
         # brew list
     }
 fi
@@ -501,7 +498,7 @@ else
 	PATH="/Library/TeX/texbin/:$PATH"
 
   # brew autocomplete
-	#if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
+	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
 fi
@@ -549,7 +546,7 @@ alias vdc='sudo vpnc-disconnect'
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
 
 # make tensorflow work, if server
-#export QT_QPA_PLATFORM=offscreen
+# export QT_QPA_PLATFORM=offscreen
 
 # make theanify work
 export MKL_THREADING_LAYER=GNU

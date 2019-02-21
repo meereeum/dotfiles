@@ -93,6 +93,10 @@ git clone https://github.com/meereeum/vim-anywhere.git
 cd $DIR # back to dotfiles
 
 
+# arxivate
+wget 'https://gist.github.com/meereeum/d14cfd9c17e8abda5d0a09eed477bd27/raw/00b7851cb2bfc80d34431c2ee2ca249586e5f920/arxivate.sh'
+
+
 instructions="
 TODO:
 $ su
