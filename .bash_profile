@@ -68,7 +68,12 @@ math() { bc -l <<< "$@"; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
-coinflip() { (( $RANDOM % 2 )) && echo $1 || echo $2; }
+coinflip() {
+    choices=( "$@" )
+    echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
+    #i=$(( $RANDOM % ${#choices[@]} ))
+    #echo "${choices[$i]}"
+}
 
 addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
 addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
@@ -107,7 +112,13 @@ alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias ip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
-alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $( MY_IP ) ssh'
+allowip()
+{
+    IP="$@"
+    [[ $IP ]] || IP=$( MY_IP )
+    sourceopenstack
+    openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
+}
 
 # reset illustrator trial
 resetadobe()
@@ -242,7 +253,9 @@ day() {
 openTabs(){
     (( $linux )) && PREFIX="$HOME/.mozilla/firefox" || PREFIX="$HOME/Library/Application Support/Firefox"
     SESSION=$( awk -F'=' '/Path/ {print $2}' "${PREFIX}"/profiles.ini )
-    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js | 
+    #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
+    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+     dejsonlz4 - |
      jq -c '.windows[].tabs[].entries[-1].url' |
      sed -e 's/^"//' -e 's/"$//' |
 
@@ -281,11 +294,11 @@ airplane_mode()
 
 # terminal tab title
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
-t ()
+t()
 {
     TITLE=$@
-    PATTERN=||
-    echo -en "\033]0;$PATTERN ${TITLE^^} $PATTERN\a "
+    PATTERN="||"
+    echo -en "\033]2;$PATTERN ${TITLE^^} $PATTERN\a"
 }
 
 
