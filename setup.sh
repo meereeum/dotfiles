@@ -63,7 +63,7 @@ wget $CONDA -O ~/conda.sh && \
                 }
 
 # jupyter defaults
-echo -e "import numpy as np\nimport itertools" >> $HOME/.ipython/profile_default/startup/00.py
+echo -e "import numpy as np\nimport itertools\nimport re" >> $HOME/.ipython/profile_default/startup/00.py
 
 # vim for jupyter
 
@@ -112,6 +112,8 @@ append 'non-free contrib' to every deb line
 ( don't forget to remove l8r )
 $ apt-get update
 
+[ also: sudo apt-get install msttcorefonts -qq ]
+
 (3) fix connectivity ?!
 (via http://brontosaurusrex.github.io/postbang/#!index.md)
 $ vi /etc/NetworkManager/NetworkManager.conf
@@ -123,9 +125,15 @@ $ exit
 $ bash finish_setup.sh
 "
 
+instructions_mac="
+don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos`
+"
+
 if (($linux)); then
 	#sudo mkdir /Volumes
 	#sudo mkdir /Volumes/Media
 
 	echo "$instructions"
+else
+    echo "$instructions_mac"
 fi
