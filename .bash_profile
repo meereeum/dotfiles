@@ -58,9 +58,10 @@ alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 export DELTA='Δ'
 export DELTAS="${DELTA}s"
 
-lunch() { python ${MEDIA}/tools/mit-lunch/get_menu.py "$@"; }
-movies() { python ${MEDIA}/tools/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/tools/lsbeer/get_beer.py "$@"; }
+lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
+movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
+lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
+vixw() { python ${MEDIA}/wkspace/vixw/vixw/vixw.py "$@"; }
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
@@ -81,6 +82,8 @@ addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
 # anagram utils
 sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
 anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
+
+spiral() { jp2a $MEDIA/media/giphy_096.jpg --term-width --chars=" ${@^^}${@,,}"; }
 
 dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
 
@@ -511,6 +514,8 @@ esac
 
 export PATH="${HOME}/anaconda3/bin:$PATH"
 export PYTHONPATH="${HOME}/anaconda3/bin/python"
+
+export pandoc=/usr/bin/pandoc # don't let conda vs override
 
 # will be useful after upgrading to 3.7..
 # via builtin breakpoint()
