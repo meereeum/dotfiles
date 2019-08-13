@@ -482,6 +482,8 @@ export PYTHONPATH="${HOME}/.conda/envs/ddt/bin/python"
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
+export pandoc=/usr/bin/pandoc # don't let conda vs override
+
 # will be useful after upgrading to 3.7..
 # via builtin breakpoint()
 export PYTHONBREAKPOINT="IPython.embed"
