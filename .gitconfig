@@ -1,7 +1,8 @@
 # This is Git's per-user configuration file.
 [user]
-	name = Miriam Shiffman
+	name = meereeum
 	email = meereeum@gmail.com
+    password = 1015daec51311c4fb13941bba009807ba0649841
 [credential]
 	username = meereeum
 	#helper = cache --timeout=3600
@@ -11,5 +12,8 @@
 	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
+[credential "https://github.com"]
+	username = meereeum
+	helper = store
 [color]
 	ui = auto

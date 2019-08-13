@@ -10,11 +10,12 @@ fi
 
 # editors
 #alias python="echo 'use haskell!'"
-export EDITOR=/usr/bin/vim
-export VISUAL=$EDITOR
-export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
-#export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
-export GIT_EDITOR=$EDITOR
+#export EDITOR=/usr/bin/vim
+#export EDITOR=vim
+#export VISUAL=$EDITOR
+#export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
+##export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
+#export GIT_EDITOR=$EDITOR
 
 #e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 if (($linux)); then
@@ -146,13 +147,12 @@ resetadobe()
 suffix()
 {
   for f in "$@"; do
-    #SUFF=$( file --extension "$f" | awk -F':' '{print $2}' | awk -F'/' '{print $1}' | xargs) &&
-    SUFF=$( file -b "$f" | awk '{print $1}' ) && \
-
-    if [[ "${SUFF}" = "ASCII" ]]; then SUFF='txt'; fi
+    SUFF=$( file -b "$f" | awk '{print $1}' )
+    [ "${SUFF,,}" = "ascii" ] && SUFF="txt"
+    [ "${SUFF,,}" = "bourne-again" ] && SUFF="sh"
 
     # unknown
-    if [[ "${SUFF}" = "???" ]]; then
+    if [[ "$SUFF" = "???" ]]; then
        echo 'suffix: filetype unknown'
     # already suffixed
     elif [[ "${f##*.}" =~ ("${SUFF,,}"|"${SUFF^^}") ]]; then
@@ -314,9 +314,9 @@ t()
 
 
 # pandoc
-eval "$(pandoc --bash-completion)"
+# eval "$(pandoc --bash-completion)"
 # markdown -> man page
-md() { pandoc -s -f markdown -t man "$*" | man -l -; }
+# md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
 # alias p3='source activate py36'
@@ -363,43 +363,6 @@ else
 
 	# mass xdg-open
 	open(){ for f in "$@"; do xdg-open "$f" &> /dev/null & disown; done; }
-fi
-
-if [[ -f /etc/redhat-release ]]; then # broad servers
-    DK_DEFAULTS="taciturn reuse dkcomplete"
-
-    use -q $DK_DEFAULTS # quietly load
-
-    # succinct cmd line (working dir only)
-    load_prompt() {
-        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
-        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
-                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
-                  xargs | sed 's/ /, /g' )
-        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
-    }
-    load_prompt
-
-    utilize() { use "$@" && load_prompt; }
-    reutilize() { reuse "$@" && load_prompt; }
-    unutilize() { unuse "$@" && load_prompt; }
-
-    # turn on autocompletion
-    # via /broad/software/dotkit/bash/dkcomplete.d
-    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
-
-    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
-
-    #functions[use]='
-    #  (){ '$functions[use]'; } "$@"; local myret=$?
-    #  echo "hellooo"
-    #  return $myret'
-
-    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
-    #reuse() { reuse "$@" && load_prompt; }
-    #unuse() { unuse "$@" && load_prompt; }
 fi
 
 
@@ -449,7 +412,7 @@ alias gitcontrib='git shortlog -sn'
 
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
-alias rm='bash ~/dotfiles/safe_rm.sh'
+##alias rm='bash ~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
 
@@ -520,8 +483,12 @@ esac
 
 # Path thangs
 
-export PATH="${HOME}/anaconda3/bin:$PATH"
-export PYTHONPATH="${HOME}/anaconda3/bin/python"
+#export PATH="${HOME}/.conda/envs/ddt/bin:${HOME}/utils/hdf5/bin:$PATH"
+export PATH="${HOME}/.conda/envs/ddt/bin:${HOME}/bin:$PATH"
+export PYTHONPATH="${HOME}/.conda/envs/ddt/bin/python"
+#export PYTHONPATH="${HOME}/anaconda3/bin/python"
+
+export pandoc=/usr/bin/pandoc # don't let conda vs override
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
@@ -531,9 +498,10 @@ export PYTHONBREAKPOINT="IPython.embed"
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
-if (($linux)); then
-	export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-else
+#if (($linux)); then
+	#export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+#else
+if ((!$linux)); then
 	# added for homebrew, coreutils
 	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
@@ -593,19 +561,70 @@ alias vdc='sudo vpnc-disconnect'
 # autocomplete screen
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
 
-# make tensorflow work, if server
-# export QT_QPA_PLATFORM=offscreen
+[[ $DISPLAY ]] || export QT_QPA_PLATFORM=offscreen # make tensorflow / matplotlib work if server
 
 # make theanify work
 export MKL_THREADING_LAYER=GNU
 
-# rc servers
-alias rcbroome='ssh rcbroome'
-alias rccrosby='ssh rccrosby'
-alias rcmercer='ssh rcmercer'
-alias rcspring='ssh rcspring'
 
-# broad servers
-alias broadgold='ssh broadgold'
-alias broadsilver='ssh broadsilver'
-alias broadplatinum='ssh broadplatinum'
+if [[ -f /etc/redhat-release ]]; then # broad servers
+    DK_DEFAULTS="taciturn reuse dkcomplete"
+
+    use -q $DK_DEFAULTS # quietly load
+
+    # succinct cmd line (working dir only)
+    load_prompt() {
+        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
+        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
+                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
+                  xargs | sed 's/ /, /g' )
+        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+    }
+    load_prompt
+
+    # make CWD nice
+    TMPWD="$HOME/.cwd"
+
+    [ -f $TMPWD ] && source $TMPWD   # maybe `cd`, &
+    echo "cd $HOME/shiffman" > $TMPWD # reset to default
+
+    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7'
+    alias ddt='utilize GCC-5.2 Anaconda3 && source activate ddt && cd $HOME/shiffman/tree-ddt'
+    alias editbash='echo "cd $PWD" > $TMPWD; vi ~/dotfiles/.bash_profile && source ~/dotfiles/.bash_profile' # re-alias
+
+    utilize()   {   use "$@" && load_prompt; }
+    reutilize() { reuse "$@" && load_prompt; }
+    unutilize() { unuse "$@" && load_prompt; }
+
+    utilize UGER
+
+    #functions[use]='
+    #  (){ '$functions[use]'; } "$@"; local myret=$?
+    #  echo "hellooo"
+    #  return $myret'
+
+    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
+    #reuse() { reuse "$@" && load_prompt; }
+    #unuse() { unuse "$@" && load_prompt; }
+
+    # turn on autocompletion
+    # via /broad/software/dotkit/bash/dkcomplete.d
+    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
+
+    OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
+    #(( $( bc <<< "$OS > 7" ) )) && vimdir='vim' || vimdir='vim_dumb' # TODO
+    #alias vim=$HOME/bin/$vimdir
+    (( $( bc <<< "$OS > 7" ) )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
+    alias vim=$vimdir
+    alias vi=vim
+
+    # refresh editors
+    export EDITOR=$vimdir
+    export VISUAL=$EDITOR
+    export GIT_EDITOR=$EDITOR
+
+    export LANG="en_US.utf8" # b/c broad defaults are :(
+    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
+fi
