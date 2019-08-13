@@ -14,7 +14,8 @@ for f in $DOTFILES; do
 		echo "~/${f} --> ${DIR}/${f}"
 done
 
-echo "source ~/.bash_profile" >> ~/.bashrc
+[ -f /etc/redhat-release ] && BASHRC="~/.my.bashrc" || BASHRC="~/.bashrc" # broad servers vs other
+echo "source ~/.bash_profile" >> $BASHRC
 source ~/.bash_profile
 
 # infinite HIST

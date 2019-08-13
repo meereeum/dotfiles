@@ -17,6 +17,9 @@ set incsearch
 " highlight search results
 set hlsearch
 
+" don't wrap lines by default
+set nowrap
+
 " colors
 syntax enable
 colorscheme plan9
@@ -25,8 +28,11 @@ colorscheme plan9
 " https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension
 au BufNewFile,BufRead * if &syntax == '' | set syntax=markdown | endif
 " http://vim.wikia.com/wiki/Forcing_Syntax_Coloring_for_files_with_odd_extensions
-autocmd BufNewFile,BufRead *.txt set syntax=markdown " txt files -> md
-autocmd BufNewFile,BufRead bash-fc.* set syntax=sh   " bash tmp files -> sh
+autocmd BufNewFile,BufRead *.txt set syntax=markdown   " txt files -> md
+autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
+
+" always UTF-8
+"set encoding=utf-8
 
 " show matching brackets on hover
 set showmatch
@@ -82,3 +88,18 @@ command JsonFmtAll %!python3 -m json.tool
 command -range JsonFmt <line1>,<line2>!python3 -m json.tool
 nnoremap & :JsonFmtAll<CR>
 vnoremap & :JsonFmt<CR>
+
+" https://www.reddit.com/r/vim/comments/48zclk/i_just_found_a_simple_method_to_read_pdf_doc_odt/
+
+autocmd BufReadPost *.doc,*.docx,*.rtf,*.odp,*.odt silent %!pandoc "%" -tplain -o /dev/stdout
+
+" Read-only pdf through pdftotext
+autocmd BufReadPre *.pdf silent set ro
+autocmd BufReadPost *.pdf silent %!pdftotext -nopgbrk -layout -q -eol unix "%" - | fmt -w78
+
+" For jpegs
+autocmd BufReadPre *.jpg,*.jpeg silent set ro
+autocmd BufReadPost *.jpg,*.jpeg silent %!jp2a --term-width "%"
+" For other image formats
+autocmd BufReadPre *.png,*.gif,*.bmp silent set ro
+autocmd BufReadPost *.png,*.gif,*.bmp silent %!convert "%" jpg:- | jp2a -i --term-width -
