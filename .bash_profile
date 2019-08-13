@@ -58,6 +58,9 @@ alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 export DELTA='Δ'
 export DELTAS="${DELTA}s"
 
+export STRFDATE="+%y%m%d"
+
+
 lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
 movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
@@ -87,7 +90,11 @@ spiral() { jp2a $MEDIA/media/giphy_096.jpg --term-width --chars=" ${@^^}${@,,}";
 
 dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
 
-pdfurl2txt() {
+pdfsplit(){
+    PDF="$@"
+    pdfseparate $PDF ${PDF%.pdf}.%d.pdf
+}
+pdfurl2txt() { # e.g. for menus
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
     [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
@@ -198,19 +205,20 @@ lstoday(){
     (( $with_date )) && dt="$1" || dt="today" # default: today
     (( $with_date )) && shift                 # default: .
 
-    today=$( date -d"$dt" +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' )
+    today=$( date -d"$dt" $STRFDATE )
 
     # ls the thing/s
-    ( [[ "$@" == "" ]] && ls -Al || (                    # "A"lmost all - not . or ..
+    ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
         for f in "$@"; do
-            [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
+            [[ -d "$f" ]] && ls -Adl --time-style=$STRFDATE $f/* \
+                          || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".." (directory not contents)
         done )) |
 
-    sed -Ee's@/+@/@g' -ne"s/^.*${today}.{7}(.*)$/\1/p" | # filter, eliminate // in path
-    #grep -Ev '^\.+(git)?$' |                            # ignore . & .. & .git
+    sed -Ee's@/+@/@g' -ne"s/^.*${today} (.*)$/\1/p" | # filter, eliminate // in path
+    #grep -Ev '^\.+(git)?$' |                          # ignore . & .. & .git
     sed -e's@\/\/*@/@g' -e"s/'/\\\'/" -e"s/'/\\\'/" | # eliminate // in path, escape '|
-    grep -Ev '^\.git$' |                                 # ignore .git
-    xargs -I{} ls -d --color=auto 2>&1 "{}" ;            # pprint
+    grep -Ev '^\.git$' |                              # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;         # pprint
 }
 
 
@@ -229,10 +237,10 @@ lssince(){
     today=$( day "$dt" )
 
     # ls the thing/s
-    ( [[ "$@" == "" ]] && ls -Al --time-style=+%y%m%d || (    # "A"lmost all - not . or ..
+    ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
         for f in "$@"; do
-            [[ -d "$f" ]] && ls -Ald --time-style=+%y%m%d $f/* \
-                          || ls -Al --time-style=+%y%m%d "$f" # e.g. can't ls ".."
+            [[ -d "$f" ]] && ls -Ald --time-style=$STRFDATE $f/* \
+                          || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".."
         done )) |
 
     awk -v today=$today '$6 >= today' |                              # filter by "since"
@@ -247,7 +255,7 @@ day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
-                                    || date -d "$dt" +%y%m%d;
+                                    || date -d "$dt" $STRFDATE;
 }
 
 
@@ -336,7 +344,7 @@ if ((!$linux)); then
 
 	# internet tabs --> file
 	tabs() {
-        now=$( date +%y%m%d )
+        now=$( date $STRFDATE )
         for app in safari; do #"google chrome" firefox;
             osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}
         done
