@@ -17,9 +17,12 @@ set incsearch
 " highlight search results
 set hlsearch
 
+" don't wrap lines by default
+set nowrap
+
 " colors
 syntax enable
-colorscheme plan9
+" colorscheme plan9
 
 " default: .md highlighting if {no suffix,.txt}
 " https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension

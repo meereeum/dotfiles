@@ -55,16 +55,11 @@ sed -ri'.tmp' --follow-symlinks 's/^(.*safe_rm)/#\1/' ~/.bash_profile
 
 
 # edit for remote prompt
-
 sed -ri'.tmp' --follow-symlinks 's/^(export PS1=).*$/\\1"\\e[1m\\h:\\e[21m \\W \\$ "/' ~/.bash_profile
 
 
 # jupyter defaults
-<<<<<<< HEAD
 echo -e "import numpy as np\nimport itertools" >> $HOME/.ipython/profile_default/startup/00.py
-=======
-echo "import numpy as np" >> $HOME/.ipython/profile_default/startup/00.py
->>>>>>> d9c23708cfb19eb9eec928a4adcf80a4721bb194
 
 
 # does not exist or remove

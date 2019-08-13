@@ -10,11 +10,12 @@ fi
 
 # editors
 #alias python="echo 'use haskell!'"
-export EDITOR=/usr/bin/vim
-export VISUAL=$EDITOR
-export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
-#export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
-export GIT_EDITOR=$EDITOR
+#export EDITOR=/usr/bin/vim
+#export EDITOR=vim
+#export VISUAL=$EDITOR
+#export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
+##export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
+#export GIT_EDITOR=$EDITOR
 
 #e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 if (($linux)); then
@@ -202,7 +203,7 @@ lstoday(){
     # ls the thing/s
     ( [[ "$@" == "" ]] && ls -Al || (                    # "A"lmost all - not . or ..
         for f in "$@"; do
-            [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
+            [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can\'t ls ".."
         done )) |
 
     sed -Ee's@/+@/@g' -ne"s/^.*${today}.{7}(.*)$/\1/p" | # filter, eliminate // in path
@@ -231,7 +232,7 @@ lssince(){
     ( [[ "$@" == "" ]] && ls -Al --time-style=+%y%m%d || (    # "A"lmost all - not . or ..
         for f in "$@"; do
             [[ -d "$f" ]] && ls -Ald --time-style=+%y%m%d $f/* \
-                          || ls -Al --time-style=+%y%m%d "$f" # e.g. can't ls ".."
+                          || ls -Al --time-style=+%y%m%d "$f" # e.g. can\'t ls ".."
         done )) |
 
     awk -v today=$today '$6 >= today' |                              # filter by "since"
@@ -245,7 +246,7 @@ lssince(){
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
-    [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
+    [[ "${dt,,}" == "tom murphy" ]] && echo "that\'s my date not *a* date" \
                                     || date -d "$dt" +%y%m%d;
 }
 
@@ -305,9 +306,9 @@ t()
 
 
 # pandoc
-eval "$(pandoc --bash-completion)"
+# eval "$(pandoc --bash-completion)"
 # markdown -> man page
-md() { pandoc -s -f markdown -t man "$*" | man -l -; }
+# md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
 # alias p3='source activate py36'
@@ -403,7 +404,7 @@ alias gitcontrib='git shortlog -sn'
 
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
-alias rm='bash ~/dotfiles/safe_rm.sh'
+##alias rm='bash ~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
 
@@ -474,8 +475,10 @@ esac
 
 # Path thangs
 
-export PATH="${HOME}/anaconda3/bin:$PATH"
-export PYTHONPATH="${HOME}/anaconda3/bin/python"
+#export PATH="${HOME}/.conda/envs/ddt/bin:${HOME}/utils/hdf5/bin:$PATH"
+export PATH="${HOME}/.conda/envs/ddt/bin:${HOME}/bin:$PATH"
+export PYTHONPATH="${HOME}/.conda/envs/ddt/bin/python"
+#export PYTHONPATH="${HOME}/anaconda3/bin/python"
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
@@ -485,9 +488,10 @@ export PYTHONBREAKPOINT="IPython.embed"
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
-if (($linux)); then
-	export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-else
+#if (($linux)); then
+	#export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+#else
+if ((!$linux)); then
 	# added for homebrew, coreutils
 	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
@@ -551,17 +555,6 @@ complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(scree
 
 # make theanify work
 export MKL_THREADING_LAYER=GNU
-
-# rc servers
-alias rcbroome='ssh rcbroome'
-alias rccrosby='ssh rccrosby'
-alias rcmercer='ssh rcmercer'
-alias rcspring='ssh rcspring'
-
-# broad servers
-alias broadgold='ssh broadgold'
-alias broadsilver='ssh broadsilver'
-alias broadplatinum='ssh broadplatinum'
 
 
 if [[ -f /etc/redhat-release ]]; then # broad servers
