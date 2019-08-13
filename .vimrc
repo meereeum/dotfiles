@@ -25,7 +25,7 @@ colorscheme plan9
 " https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension
 au BufNewFile,BufRead * if &syntax == '' | set syntax=markdown | endif
 " http://vim.wikia.com/wiki/Forcing_Syntax_Coloring_for_files_with_odd_extensions
-autocmd BufNewFile,BufRead *.txt set syntax=markdown " txt files -> md
+autocmd BufNewFile,BufRead *.txt set syntax=markdown   " txt files -> md
 autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
 
 " always UTF-8

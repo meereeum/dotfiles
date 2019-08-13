@@ -58,9 +58,10 @@ alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 export DELTA='Δ'
 export DELTAS="${DELTA}s"
 
-lunch() { python ${MEDIA}/tools/mit-lunch/get_menu.py "$@"; }
-movies() { python ${MEDIA}/tools/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/tools/lsbeer/get_beer.py "$@"; }
+lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
+movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
+lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
+vixw() { python ${MEDIA}/wkspace/vixw/vixw/vixw.py "$@"; }
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
@@ -68,15 +69,21 @@ math() { bc -l <<< "$@"; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
-coinflip() { (( $RANDOM % 2 )) && echo $1 || echo $2; }
+coinflip() {
+    choices=( "$@" )
+    echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
+    #i=$(( $RANDOM % ${#choices[@]} ))
+    #echo "${choices[$i]}"
+}
 
 addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
 addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
 
 # anagram utils
-#sortword() { echo "$@" | sed -E -e's/ //g' -e's/(.)/\n\1/g' | sort | tr -d '\n'; }
 sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
 anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
+
+spiral() { jp2a $MEDIA/media/giphy_096.jpg --term-width --chars=" ${@^^}${@,,}"; }
 
 dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
 
@@ -100,15 +107,21 @@ srt2txt() {
 }
 
 # universalish / v possibly nonrobust way to query ip address
-# this is local (not public) ip
-#ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
+# --> this is local (not public) ip
+# ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-#alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
+# alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
 alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias ip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
-alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $( MY_IP ) ssh'
+allowip()
+{
+    IP="$@"
+    [[ $IP ]] || IP=$( MY_IP )
+    sourceopenstack
+    openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
+}
 
 # reset illustrator trial
 resetadobe()
@@ -164,11 +177,11 @@ lsbiggest(){
     FLAG="-n ?" # with optional space
 
     # N.B. need printf b/c echo interprets -n
-    N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )        # extract $FLAG
-    (( $N )) || N=10                                                  # default
+    N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )          # extract $FLAG
+    (( $N )) || N=10                                                    # default
 
-    DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" ) # extract positional, remove trailing /
-    [[ "$DIR" ]] || DIR="."                                           # default
+    DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" )   # extract positional, remove trailing /
+    [[ "$DIR" ]] || DIR="."                                             # default
 
     du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 )) # account for total size
 }
@@ -242,7 +255,9 @@ day() {
 openTabs(){
     (( $linux )) && PREFIX="$HOME/.mozilla/firefox" || PREFIX="$HOME/Library/Application Support/Firefox"
     SESSION=$( awk -F'=' '/Path/ {print $2}' "${PREFIX}"/profiles.ini )
-    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js | 
+    #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
+    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+     dejsonlz4 - |
      jq -c '.windows[].tabs[].entries[-1].url' |
      sed -e 's/^"//' -e 's/"$//' |
 
@@ -268,11 +283,11 @@ saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
 # wifi on/off
 airplane_mode()
 {
-    OPS="on off"
+    OPS=(on off)
 
     [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
-    from=$( get_op $i )
-    to=$( get_op $( math "1 - $i" ) ) # flip
+    from=${OPS[$i]}
+    to=${OPS[1 - $i]} # flip
 
     nmcli radio wifi $to
     echo "${from^^}-->${to^^}"
@@ -281,11 +296,11 @@ airplane_mode()
 
 # terminal tab title
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
-t ()
+t()
 {
-  TITLE=$@;
-  TITLE_CAP=$(echo "$TITLE" | tr '[:lower:]' '[:upper:]');
-  echo -en "\033]0;|| $TITLE_CAP ||\a ";
+    TITLE=$@
+    PATTERN="||"
+    echo -en "\033]2;$PATTERN ${TITLE^^} $PATTERN\a"
 }
 
 
@@ -305,13 +320,11 @@ if ((!$linux)); then
     alias ffox='open -a /Applications/Firefox.app'
     alias preview='open -a /Applications/Preview.app'
 
-        for x in gcc g++; do
-           #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${x}* | grep ${x}-[0-9] | tail -n1)
-           #alias $x=$GPATH
-           #sudo ln -s $GPATH /usr/local/bin/${x}
-        #done
-           alias $x=$( ls /usr/local/Cellar/gcc/*/bin/${x}* |
-                       grep ${x}-[0-9] | tail -n1); done
+    #for g in gcc g++; do
+       #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${g}* | grep ${g}-[0-9] | tail -n1)
+       #alias $g=$GPATH
+       #sudo ln -s $GPATH /usr/local/bin/${g}
+    #done
 
 	alias phil='chrome "https://docs.google.com/document/d/1Bcfz3Tl_T78nx9VLnOyoyn4rrvpjFH2ol8PJ9JMk97U/edit";
 			open -a Skype; open -a Evernote'
@@ -321,13 +334,17 @@ if ((!$linux)); then
 	alias cpy='copy'
 
 	# internet tabs --> file
-	tabs() { now=$( date +%y%m%d ); for app in safari; #"google chrome" firefox;
-                 do osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}; done; }
+	tabs() {
+        now=$( date +%y%m%d )
+        for app in safari; do #"google chrome" firefox;
+            osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}
+        done
+    }
 
 # linux only
 else
 	alias iceweasel='firefox &> /dev/null & disown'
-	#alias iceweasel='/usr/lib/iceweasel &> /dev/null & disown'
+	# alias iceweasel='/usr/lib/iceweasel &> /dev/null & disown'
 
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
@@ -369,7 +386,7 @@ if (($linux)); then
     pkgs() {
         cd ${HOME}/dotfiles/packages
         rm Brewfile && brew bundle dump # with package-install options
-	cd -
+	    cd -
         # brew list
     }
 fi
@@ -460,6 +477,8 @@ esac
 export PATH="${HOME}/anaconda3/bin:$PATH"
 export PYTHONPATH="${HOME}/anaconda3/bin/python"
 
+export pandoc=/usr/bin/pandoc # don't let conda vs override
+
 # will be useful after upgrading to 3.7..
 # via builtin breakpoint()
 export PYTHONBREAKPOINT="IPython.embed"
@@ -481,7 +500,7 @@ else
 	PATH="/Library/TeX/texbin/:$PATH"
 
   # brew autocomplete
-	#if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
+	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
 fi
