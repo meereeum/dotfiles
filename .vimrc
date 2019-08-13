@@ -26,7 +26,10 @@ colorscheme plan9
 au BufNewFile,BufRead * if &syntax == '' | set syntax=markdown | endif
 " http://vim.wikia.com/wiki/Forcing_Syntax_Coloring_for_files_with_odd_extensions
 autocmd BufNewFile,BufRead *.txt set syntax=markdown " txt files -> md
-autocmd BufNewFile,BufRead bash-fc.* set syntax=sh " bash tmp files -> sh
+autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
+
+" always UTF-8
+"set encoding=utf-8
 
 " show matching brackets on hover
 set showmatch

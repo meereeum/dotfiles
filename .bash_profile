@@ -171,7 +171,7 @@ lsbiggest(){
     DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" ) # extract positional, remove trailing /
     [[ "$DIR" ]] || DIR="."                                           # default
 
-    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))           # account for total size
+    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 )) # account for total size
 }
 
 #alias lsbiggest='echo "use du | sort | tail !"'
@@ -338,47 +338,6 @@ else
 
 	# mass xdg-open
 	open(){ for f in "$@"; do xdg-open "$f" &> /dev/null & disown; done; }
-fi
-
-if [[ -f /etc/redhat-release ]]; then # broad servers
-    DK_DEFAULTS="taciturn reuse dkcomplete"
-
-    use -q $DK_DEFAULTS # quietly load
-
-    # succinct cmd line (working dir only)
-    load_prompt() {
-        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
-        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
-                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
-                  xargs | sed 's/ /, /g' )
-        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
-    }
-    load_prompt
-
-    utilize() { use "$@" && load_prompt; }
-    reutilize() { reuse "$@" && load_prompt; }
-    unutilize() { unuse "$@" && load_prompt; }
-
-    cd $HOME/shiffman
-    utilize UGER
-
-    #functions[use]='
-    #  (){ '$functions[use]'; } "$@"; local myret=$?
-    #  echo "hellooo"
-    #  return $myret'
-
-    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
-    #reuse() { reuse "$@" && load_prompt; }
-    #unuse() { unuse "$@" && load_prompt; }
-
-    # turn on autocompletion
-    # via /broad/software/dotkit/bash/dkcomplete.d
-    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
-
-    export LANG="en_US.utf8" # b/c broad defaults are :(
-    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
 fi
 
 
@@ -570,8 +529,7 @@ alias vdc='sudo vpnc-disconnect'
 # autocomplete screen
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
 
-# make tensorflow work, if server
-#export QT_QPA_PLATFORM=offscreen
+[[ $DISPLAY ]] || export QT_QPA_PLATFORM=offscreen # make tensorflow / matplotlib work if server
 
 # make theanify work
 export MKL_THREADING_LAYER=GNU
@@ -586,3 +544,66 @@ alias rcspring='ssh rcspring'
 alias broadgold='ssh broadgold'
 alias broadsilver='ssh broadsilver'
 alias broadplatinum='ssh broadplatinum'
+
+
+if [[ -f /etc/redhat-release ]]; then # broad servers
+    DK_DEFAULTS="taciturn reuse dkcomplete"
+
+    use -q $DK_DEFAULTS # quietly load
+
+    # succinct cmd line (working dir only)
+    load_prompt() {
+        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
+        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
+                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
+                  xargs | sed 's/ /, /g' )
+        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+    }
+    load_prompt
+
+    # make CWD nice
+    TMPWD="$HOME/.cwd"
+
+    [ -f $TMPWD ] && source $TMPWD   # maybe `cd`, &
+    echo "cd $HOME/shiffman" > $TMPWD # reset to default
+
+    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7'
+    alias ddt='utilize GCC-5.2 Anaconda3 && source activate ddt && cd $HOME/shiffman/tree-ddt'
+    alias editbash='echo "cd $PWD" > $TMPWD; vi ~/dotfiles/.bash_profile && source ~/dotfiles/.bash_profile' # re-alias
+
+    utilize()   {   use "$@" && load_prompt; }
+    reutilize() { reuse "$@" && load_prompt; }
+    unutilize() { unuse "$@" && load_prompt; }
+
+    utilize UGER
+
+    #functions[use]='
+    #  (){ '$functions[use]'; } "$@"; local myret=$?
+    #  echo "hellooo"
+    #  return $myret'
+
+    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
+    #reuse() { reuse "$@" && load_prompt; }
+    #unuse() { unuse "$@" && load_prompt; }
+
+    # turn on autocompletion
+    # via /broad/software/dotkit/bash/dkcomplete.d
+    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
+
+    OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
+    #(( $( bc <<< "$OS > 7" ) )) && vimdir='vim' || vimdir='vim_dumb' # TODO
+    #alias vim=$HOME/bin/$vimdir
+    (( $( bc <<< "$OS > 7" ) )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
+    alias vim=$vimdir
+    alias vi=vim
+
+    # refresh editors
+    export EDITOR=$vimdir
+    export VISUAL=$EDITOR
+    export GIT_EDITOR=$EDITOR
+
+    export LANG="en_US.utf8" # b/c broad defaults are :(
+    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
+fi

@@ -11,5 +11,8 @@
 	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
+[credential "https://github.com"]
+	username = meereeum
+	helper = store
 [color]
 	ui = auto
