@@ -126,13 +126,12 @@ resetadobe()
 suffix()
 {
   for f in "$@"; do
-    #SUFF=$( file --extension "$f" | awk -F':' '{print $2}' | awk -F'/' '{print $1}' | xargs) &&
-    SUFF=$( file -b "$f" | awk '{print $1}' ) && \
-
-    if [[ "${SUFF}" = "ASCII" ]]; then SUFF='txt'; fi
+    SUFF=$( file -b "$f" | awk '{print $1}' )
+    [ "${SUFF,,}" = "ascii" ] && SUFF="txt"
+    [ "${SUFF,,}" = "bourne-again" ] && SUFF="sh"
 
     # unknown
-    if [[ "${SUFF}" = "???" ]]; then
+    if [[ "$SUFF" = "???" ]]; then
        echo 'suffix: filetype unknown'
     # already suffixed
     elif [[ "${f##*.}" =~ ("${SUFF,,}"|"${SUFF^^}") ]]; then
