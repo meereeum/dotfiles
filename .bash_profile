@@ -34,7 +34,7 @@ touche() { touch "$@"; e "$@"; }
 
 # aliasing
 
-MEDIA="${HOME}"
+MEDIA="${HOME}/shiff"
 
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
@@ -483,9 +483,8 @@ esac
 
 # Path thangs
 
-export PATH="${HOME}/anaconda3/bin:$PATH" # local bins take precendence before conda pkgs
-#export PATH="${HOME}/anaconda3/bin:$PATH"
-export PYTHONPATH="${HOME}/anaconda3/bin/python"
+export PATH="${HOME}/miniconda3/bin:$PATH"
+export PYTHONPATH="${HOME}/miniconda3/bin/python"
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
