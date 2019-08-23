@@ -22,7 +22,7 @@ set nowrap
 
 " colors
 syntax enable
-colorscheme plan9
+" colorscheme plan9
 
 " default: .md highlighting if {no suffix,.txt}
 " https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension
@@ -30,6 +30,7 @@ au BufNewFile,BufRead * if &syntax == '' | set syntax=markdown | endif
 " http://vim.wikia.com/wiki/Forcing_Syntax_Coloring_for_files_with_odd_extensions
 autocmd BufNewFile,BufRead *.txt set syntax=markdown   " txt files -> md
 autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
+" autocmd BufNewFile,BufRead *rc set syntax=sh         " rc files -> sh
 
 " always UTF-8
 "set encoding=utf-8
@@ -64,6 +65,12 @@ set shiftwidth=4
 set tabstop=4
 set smarttab
 
+" Uncomment the following to have Vim load indentation rules and plugins
+" according to the detected filetype.
+if has("autocmd")
+    filetype plugin indent on
+endif
+
 " 80 char line widths
 " set textwidth=80
 
@@ -75,6 +82,12 @@ set backup
 set undodir=~/.vim/.undo//
 set backupdir=~/.vim/.backup//
 set directory=~/.vim/.swp//
+
+"Uncomment the following to have Vim jump to the last position when
+" reopening a file
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
 
 " w!! := sudo write
 cmap w!! w !sudo tee % > /dev/null

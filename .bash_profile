@@ -10,12 +10,11 @@ fi
 
 # editors
 #alias python="echo 'use haskell!'"
-#export EDITOR=/usr/bin/vim
-#export EDITOR=vim
-#export VISUAL=$EDITOR
+export EDITOR=vim
+export VISUAL=$EDITOR
 #export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
 ##export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
-#export GIT_EDITOR=$EDITOR
+export GIT_EDITOR=$EDITOR
 
 #e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 if (($linux)); then
@@ -47,10 +46,11 @@ alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 #alias urls='ssh -t csail "vi txt/urls"'
 alias xvlc='xargs -I{} vlc "{}"'
+alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 
 (( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
-alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-# alias cpout='xargs echo'               # w/o X11 forwarding
+#alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+alias cpout='xargs echo'                  # w/o X11 forwarding
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
@@ -412,7 +412,7 @@ alias gitcontrib='git shortlog -sn'
 
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
-##alias rm='bash ~/dotfiles/safe_rm.sh'
+# alias rm='bash ~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
 
@@ -483,12 +483,9 @@ esac
 
 # Path thangs
 
-#export PATH="${HOME}/.conda/envs/ddt/bin:${HOME}/utils/hdf5/bin:$PATH"
-export PATH="${HOME}/.conda/envs/ddt/bin:${HOME}/bin:$PATH"
-export PYTHONPATH="${HOME}/.conda/envs/ddt/bin/python"
-#export PYTHONPATH="${HOME}/anaconda3/bin/python"
-
-export pandoc=/usr/bin/pandoc # don't let conda vs override
+export PATH="${HOME}/anaconda3/bin:$PATH" # local bins take precendence before conda pkgs
+#export PATH="${HOME}/anaconda3/bin:$PATH"
+export PYTHONPATH="${HOME}/anaconda3/bin/python"
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
@@ -628,3 +625,10 @@ if [[ -f /etc/redhat-release ]]; then # broad servers
     export LANG="en_US.utf8" # b/c broad defaults are :(
     export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
 fi
+
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/ubuntu/google-cloud-sdk/path.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/path.bash.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/ubuntu/google-cloud-sdk/completion.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/completion.bash.inc'; fi
