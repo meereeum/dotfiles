@@ -258,6 +258,25 @@ day() {
                                     || date -d "$dt" $STRFDATE;
 }
 
+# extract zulip msgs
+zulipjson2msgs(){ cat "$@" | jq -c '.messages[].content' | sed -re's@</?code>@`@g' -e's@</?strong>@*@g' \
+                                                               -e's@</?(p|br|pre)>@@g' \
+                                                               -e's/(^|[^\])"/\1/g' -e's/\\"/"/g' \
+                                                               -e's@<a href[^>]*>pasted image</a>@@g' \
+                                                               -e's@<a href[^>]*>([^<]*)</a>@\1@g' \
+                                                               -e's@<img alt="([^"]*)" class="emoji[^>]*>@\1@g' \
+                                                               -e's@<span class[^>]*>([^<]*)</span>@\1@g' \
+                                                               -e's@</?span>@@g' \
+                                                               -e's@<div class="codehilite">([^<]*)</div>@```\n\1\n```@' \
+                                                               -e 's/amp;//g' -e 's/\\n/\n/g' \
+                                                         | grep -v '^<div class="message_inline_image">' \
+                                                         | awk '$NF'; }
+# N.B. missing txt inside <span class="k">, which seems to be a latex math block
+                           #| grep -v "^</?div"; }
+                                                               #-e's@<span[^>]*>[^>]*>@@g' \
+                                                               #-e's@<span class="emoji[^>]*>([^<]*)</span>@\1@g' \
+                                                               #-e's@<span class="user-mention"[^>]*>([^<]*)</span>@\1@g' \
+
 
 # save open ffox tabs
 # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
