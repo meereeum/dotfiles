@@ -259,7 +259,10 @@ day() {
 }
 
 # extract zulip msgs
-zulipjson2msgs(){ cat "$@" | jq -c '.messages[].content' | sed -re's@</?code>@`@g' -e's@</?strong>@*@g' \
+#zulipjson2msgs(){ cat "$@" | jq -c '.messages[].content' | sed -re's@</?code>@`@g' -e's@</?strong>@*@g' \
+zulipjson2msgs(){ cat "$@" | jq -c '.messages[] | [.sender_short_name, .content]' |
+                             sed -re's/^\["(meereeum|amindfv)","/** /' -e 's/"]$//' -e's/^\["[^"]*","//' \
+                             -e's@</?code>@`@g' -e's@</?strong>@*@g' \
                                                                -e's@</?(p|br|pre)>@@g' \
                                                                -e's/(^|[^\])"/\1/g' -e's/\\"/"/g' \
                                                                -e's@<a href[^>]*>pasted image</a>@@g' \
