@@ -95,6 +95,21 @@ dashes() {
     yes "$dash" | head -n"$1" | tr -d '\n'; echo;
 }
 
+# via https://misc.flogisoft.com/bash/tip_colors_and_formatting#colors2
+_iter256() {
+    fgbg=$1
+    for color in {0..255} ; do
+        [[ $2 ]] && str=$2 \
+                 || str=$color # default: str is colornumber
+
+        # display the color
+        printf "\e[${fgbg};5;%sm  %3s  \e[0m" $color $str
+        [[ $((($color + 1) % 6)) == 4 ]] && echo # newline (6 colors per line)
+    done
+}
+iterbg256() { _iter256 48 "$@"; }
+iterfg256() { _iter256 38 "$@"; }
+
 pdfsplit() {
     PDF="$@"
     pdfseparate $PDF ${PDF%.pdf}.%d.pdf
