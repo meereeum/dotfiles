@@ -102,6 +102,12 @@ pdfurl2txt() { # e.g. for menus
     echo; dashes 100; pdftotext -layout $F -; dashes 100; echo
 }
 
+# get bounding box of img (e.g. for when pdflatex is being dumb)
+getbbox() {
+    gs -o /dev/null -sDEVICE=bbox "$@" 2>&1 | awk '/%%B/ {print $2,$3,$4,$5}' # redirect ghostscript STDERR to STDOUT, & parse
+}
+
+
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
 vtt2txt() {
@@ -311,7 +317,7 @@ openTabs(){
      sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
 
      # rm trailing stuff
-     sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; TODO
+     sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
 }
 
 getOpenTabs(){ openTabs | cpout; }
