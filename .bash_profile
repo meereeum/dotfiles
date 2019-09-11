@@ -442,7 +442,9 @@ alias gitcontrib='git shortlog -sn'
 
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
-# alias rm='bash ~/dotfiles/safe_rm.sh'
+(($linux)) && export TRASHDIR="${HOME}/.local/share/Trash/files" \
+           || export TRASHDIR="${HOME}/.Trash"
+alias rm='~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
 
