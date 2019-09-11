@@ -522,6 +522,9 @@ esac
 MOON=$( bash ~/dotfiles/moony.sh )
 export PS1="$MOON$PS1" # prepend moon
 
+SUN=$( bash ~/dotfiles/sunny.sh )
+echo $SUN
+
 # Path thangs
 
 export PATH="${HOME}/miniconda3/bin:$PATH"
