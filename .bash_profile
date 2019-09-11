@@ -10,10 +10,10 @@ fi
 
 # editors
 #alias python="echo 'use haskell!'"
-export EDITOR=/usr/bin/vim
+export EDITOR=vim
 export VISUAL=$EDITOR
-export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
-#export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
+#export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
+##export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
 export GIT_EDITOR=$EDITOR
 
 #e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
@@ -34,7 +34,7 @@ touche() { touch "$@"; e "$@"; }
 
 # aliasing
 
-MEDIA="${HOME}"
+MEDIA="${HOME}/shiff"
 
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
@@ -46,10 +46,11 @@ alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 #alias urls='ssh -t csail "vi txt/urls"'
 alias xvlc='xargs -I{} vlc "{}"'
+alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 
 (( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
-alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-# alias cpout='xargs echo'               # w/o X11 forwarding
+#alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+alias cpout='xargs echo'                  # w/o X11 forwarding
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
@@ -58,9 +59,13 @@ alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 export DELTA='Δ'
 export DELTAS="${DELTA}s"
 
-lunch() { python ${MEDIA}/tools/mit-lunch/get_menu.py "$@"; }
-movies() { python ${MEDIA}/tools/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/tools/lsbeer/get_beer.py "$@"; }
+export STRFDATE="+%y%m%d"
+
+
+lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
+movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
+lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
+vixw() { python ${MEDIA}/wkspace/vixw/vixw/vixw.py "$@"; }
 
 math() { bc -l <<< "$@"; }
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
@@ -68,7 +73,12 @@ math() { bc -l <<< "$@"; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
-coinflip() { (( $RANDOM % 2 )) && echo $1 || echo $2; }
+coinflip() {
+    choices=( "$@" )
+    echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
+    #i=$(( $RANDOM % ${#choices[@]} ))
+    #echo "${choices[$i]}"
+}
 
 addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
 addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
@@ -77,15 +87,46 @@ addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
 sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
 anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
 
-dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
+spiral() { jp2a $MEDIA/media/giphy_096.jpg --term-width --chars=" ${@^^}${@,,}"; }
 
-pdfurl2txt() {
+#dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
+dashes() {
+    [[ $2 ]] && dash="$2" || dash="-"
+    yes "$dash" | head -n"$1" | tr -d '\n'; echo;
+}
+
+# via https://misc.flogisoft.com/bash/tip_colors_and_formatting#colors2
+_iter256() {
+    fgbg=$1
+    for color in {0..255} ; do
+        [[ $2 ]] && str=$2 \
+                 || str=$color # default: str is colornumber
+
+        # display the color
+        printf "\e[${fgbg};5;%sm  %3s  \e[0m" $color $str
+        [[ $((($color + 1) % 6)) == 4 ]] && echo # newline (6 colors per line)
+    done
+}
+iterbg256() { _iter256 48 "$@"; }
+iterfg256() { _iter256 38 "$@"; }
+
+pdfsplit() {
+    PDF="$@"
+    pdfseparate $PDF ${PDF%.pdf}.%d.pdf
+}
+pdfurl2txt() { # e.g. for menus
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
     #[[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
     [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
     echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
 }
+
+# get bounding box of img (e.g. for when pdflatex is being dumb)
+getbbox() {
+    gs -o /dev/null -sDEVICE=bbox "$@" 2>&1 | awk '/%%B/ {print $2,$3,$4,$5}' # redirect ghostscript STDERR to STDOUT, & parse
+}
+
 
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
@@ -108,8 +149,14 @@ alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias ip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
-alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $( MY_IP ) ssh'
-#alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $( MY_IP ) ssh'
+allowip()
+{
+    IP="$@"
+    [[ $IP ]] || IP=$( MY_IP )
+    sourceopenstack
+    openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $IP ssh
+    # openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
+}
 
 # reset illustrator trial
 resetadobe()
@@ -127,13 +174,12 @@ resetadobe()
 suffix()
 {
   for f in "$@"; do
-    #SUFF=$( file --extension "$f" | awk -F':' '{print $2}' | awk -F'/' '{print $1}' | xargs) &&
-    SUFF=$( file -b "$f" | awk '{print $1}' ) && \
-
-    if [[ "${SUFF}" = "ASCII" ]]; then SUFF='txt'; fi
+    SUFF=$( file -b "$f" | awk '{print $1}' )
+    [ "${SUFF,,}" = "ascii" ] && SUFF="txt"
+    [ "${SUFF,,}" = "bourne-again" ] && SUFF="sh"
 
     # unknown
-    if [[ "${SUFF}" = "???" ]]; then
+    if [[ "$SUFF" = "???" ]]; then
        echo 'suffix: filetype unknown'
     # already suffixed
     elif [[ "${f##*.}" =~ ("${SUFF,,}"|"${SUFF^^}") ]]; then
@@ -186,19 +232,20 @@ lstoday(){
     (( $with_date )) && dt="$1" || dt="today" # default: today
     (( $with_date )) && shift                 # default: .
 
-    today=$( date -d"$dt" +'%b %d' | sed -e's/0\([1-9]\)/\1/' -e's/ / */' )
+    today=$( date -d"$dt" $STRFDATE )
 
     # ls the thing/s
-    ( [[ "$@" == "" ]] && ls -Al || (                    # "A"lmost all - not . or ..
+    ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
         for f in "$@"; do
-            [[ -d "$f" ]] && ls -Adl $f/* || ls -Al "$f" # e.g. can't ls ".."
+            [[ -d "$f" ]] && ls -Adl --time-style=$STRFDATE $f/* \
+                          || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".." (directory not contents)
         done )) |
 
-    sed -Ee's@/+@/@g' -ne"s/^.*${today}.{7}(.*)$/\1/p" | # filter, eliminate // in path
-    #grep -Ev '^\.+(git)?$' |                            # ignore . & .. & .git
+    sed -Ee's@/+@/@g' -ne"s/^.*${today} (.*)$/\1/p" | # filter, eliminate // in path
+    #grep -Ev '^\.+(git)?$' |                          # ignore . & .. & .git
     sed -e's@\/\/*@/@g' -e"s/'/\\\'/" -e"s/'/\\\'/" | # eliminate // in path, escape '|
-    grep -Ev '^\.git$' |                                 # ignore .git
-    xargs -I{} ls -d --color=auto 2>&1 "{}" ;            # pprint
+    grep -Ev '^\.git$' |                              # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;         # pprint
 }
 
 
@@ -217,10 +264,10 @@ lssince(){
     today=$( day "$dt" )
 
     # ls the thing/s
-    ( [[ "$@" == "" ]] && ls -Al --time-style=+%y%m%d || (    # "A"lmost all - not . or ..
+    ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
         for f in "$@"; do
-            [[ -d "$f" ]] && ls -Ald --time-style=+%y%m%d $f/* \
-                          || ls -Al --time-style=+%y%m%d "$f" # e.g. can't ls ".."
+            [[ -d "$f" ]] && ls -Ald --time-style=$STRFDATE $f/* \
+                          || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".."
         done )) |
 
     awk -v today=$today '$6 >= today' |                              # filter by "since"
@@ -235,16 +282,48 @@ day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
-                                    || date -d "$dt" +%y%m%d;
+                                    || date -d "$dt" $STRFDATE;
 }
 
+# extract zulip msgs
+# zulipjson2msgs(){ cat "$@" | jq -c '.messages[].content' | # <-- without **mirtom
+zulipjson2msgs(){
+    cat "$@" | jq -c '.messages[] | [.sender_short_name, .content]' |
+      # star the ~best~ lines, then rm the jq crud
+      sed -re's/^\["(meereeum|amindfv)","/** /' -e's/"]$//' -e's/^\["[^"]*","//' |
+      # " (just the escaped ones) and &
+      sed -re's/(^|[^\])"/\1/g' -e's/\\"/"/g' -e's/amp;//g' |
+      # `code` and *bold* and ```
+      #                       multiline code
+      #                       ```
+      sed -re's@</?code>@`@g' -e's@</?strong>@*@g' -e's@<div class="codehilite">([^<]*)</div>@```\n\1\n```@' |
+      # rm extraneous tags
+      sed -re's@</?(p|br|pre)>@@g' -e's@<a href[^>]*>pasted image</a>@@g' |
+      # rescue just the linknames + spantxt (including @folks and some emoji)
+      sed -re's@<a href[^>]*>([^<]*)</a>@\1@g' -e's@<span class[^>]*>([^<]*)</span>@\1@g' |
+                                             # -e's@<span class="emoji[^>]*>([^<]*)</span>@\1@g'
+                                             # -e's@<span class="user-mention"[^>]*>([^<]*)</span>@\1@g'
+      # rescue more emoji
+      sed -re's@<img alt="([^"]*)" class="emoji[^>]*>@\1@g' |
+      # clobber remaining spans; make actual newlines
+      sed -re's@</?span>@@g' -e 's/\\n/\n/g' |
+         # -e's@<span[^>]*>[^>]*>@@g'
+      # rm remaining crud, including emptylines, et voila
+      grep -v '^<div class="message_inline_image">' | awk '$NF';
+    # grep -v "^</?div"
+}
+
+
+# N.B. missing txt inside <span class="k">, which seems to be a latex math block
 
 # save open ffox tabs
 # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
 openTabs(){
     (( $linux )) && PREFIX="$HOME/.mozilla/firefox" || PREFIX="$HOME/Library/Application Support/Firefox"
     SESSION=$( awk -F'=' '/Path/ {print $2}' "${PREFIX}"/profiles.ini )
-    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js | 
+    #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
+    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+     dejsonlz4 - |
      jq -c '.windows[].tabs[].entries[-1].url' |
      sed -e 's/^"//' -e 's/"$//' |
 
@@ -259,7 +338,7 @@ openTabs(){
      sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
 
      # rm trailing stuff
-     sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; TODO
+     sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
 }
 
 getOpenTabs(){ openTabs | cpout; }
@@ -283,18 +362,18 @@ airplane_mode()
 
 # terminal tab title
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
-t ()
+t()
 {
     TITLE=$@
-    PATTERN=||
-    echo -en "\033]0;$PATTERN ${TITLE^^} $PATTERN\a "
+    PATTERN="||"
+    echo -en "\033]2;$PATTERN ${TITLE^^} $PATTERN\a"
 }
 
 
 # pandoc
-eval "$(pandoc --bash-completion)"
+# eval "$(pandoc --bash-completion)"
 # markdown -> man page
-md() { pandoc -s -f markdown -t man "$*" | man -l -; }
+# md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
 # alias p3='source activate py36'
@@ -322,7 +401,7 @@ if ((!$linux)); then
 
 	# internet tabs --> file
 	tabs() {
-        now=$( date +%y%m%d )
+        now=$( date $STRFDATE )
         for app in safari; do #"google chrome" firefox;
             osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}
         done
@@ -341,43 +420,6 @@ else
 
 	# mass xdg-open
 	open(){ for f in "$@"; do xdg-open "$f" &> /dev/null & disown; done; }
-fi
-
-if [[ -f /etc/redhat-release ]]; then # broad servers
-    DK_DEFAULTS="taciturn reuse dkcomplete"
-
-    use -q $DK_DEFAULTS # quietly load
-
-    # succinct cmd line (working dir only)
-    load_prompt() {
-        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
-        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
-                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
-                  xargs | sed 's/ /, /g' )
-        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
-    }
-    load_prompt
-
-    utilize() { use "$@" && load_prompt; }
-    reutilize() { reuse "$@" && load_prompt; }
-    unutilize() { unuse "$@" && load_prompt; }
-
-    # turn on autocompletion
-    # via /broad/software/dotkit/bash/dkcomplete.d
-    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
-    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
-
-    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
-
-    #functions[use]='
-    #  (){ '$functions[use]'; } "$@"; local myret=$?
-    #  echo "hellooo"
-    #  return $myret'
-
-    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
-    #reuse() { reuse "$@" && load_prompt; }
-    #unuse() { unuse "$@" && load_prompt; }
 fi
 
 
@@ -427,7 +469,9 @@ alias gitcontrib='git shortlog -sn'
 
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
-alias rm='bash ~/dotfiles/safe_rm.sh'
+(($linux)) && export TRASHDIR="${HOME}/.local/share/Trash/files" \
+           || export TRASHDIR="${HOME}/.Trash"
+alias rm='~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
 
@@ -496,10 +540,18 @@ esac
 # export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
 # export PS1="$PS1"
 
+MOON=$( bash ~/dotfiles/moony.sh )
+export PS1="$MOON$PS1" # prepend moon
+
+SUN=$( bash ~/dotfiles/sunny.sh )
+echo $SUN
+
 # Path thangs
 
-export PATH="${HOME}/anaconda3/bin:$PATH"
-export PYTHONPATH="${HOME}/anaconda3/bin/python"
+export PATH="${HOME}/miniconda3/bin:$PATH"
+export PYTHONPATH="${HOME}/miniconda3/bin/python"
+
+export pandoc=/usr/bin/pandoc # don't let conda vs override
 
 # will be useful after upgrading to 3.7..
 # via builtin breakpoint()
@@ -507,9 +559,10 @@ export PYTHONBREAKPOINT="IPython.embed"
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
-if (($linux)); then
-	export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-else
+#if (($linux)); then
+	#export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+#else
+if ((!$linux)); then
 	# added for homebrew, coreutils
 	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
@@ -569,22 +622,81 @@ alias vdc='sudo vpnc-disconnect'
 # autocomplete screen
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
 
-# make tensorflow work, if server
-# export QT_QPA_PLATFORM=offscreen
+[[ $DISPLAY ]] || export QT_QPA_PLATFORM=offscreen # make tensorflow / matplotlib work if server
 
 # make theanify work
 export MKL_THREADING_LAYER=GNU
 
-# rc servers
-alias rcbroome='ssh rcbroome'
-alias rccrosby='ssh rccrosby'
-alias rcmercer='ssh rcmercer'
-alias rcspring='ssh rcspring'
-
-# broad servers
-alias broadgold='ssh broadgold'
-alias broadsilver='ssh broadsilver'
-alias broadplatinum='ssh broadplatinum'
 
 # screen shots
 alias update_screenshots='mv ~/Desktop/Screen* ~/pix/screenshots; rsync -rz --progress ~/pix csail:./macos'
+
+# broad servers
+if [[ -f /etc/redhat-release ]]; then
+    DK_DEFAULTS="taciturn reuse dkcomplete"
+
+    use -q $DK_DEFAULTS # quietly load
+
+    # succinct cmd line (working dir only)
+    load_prompt() {
+        #LS_USE=$( use | grep -A 10 'Packages in use:' | awk 'NR>1 && $0' | xargs | sed 's/ /, /g' )
+        LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
+                  grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
+                  xargs | sed 's/ /, /g' )
+        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+    }
+    load_prompt
+
+    # make CWD nice
+    TMPWD="$HOME/.cwd"
+
+    [ -f $TMPWD ] && source $TMPWD   # maybe `cd`, &
+    echo "cd $HOME/shiffman" > $TMPWD # reset to default
+
+    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7'
+    alias ddt='utilize GCC-5.2 Anaconda3 && source activate ddt && cd $HOME/shiffman/tree-ddt'
+    alias editbash='echo "cd $PWD" > $TMPWD; vi ~/dotfiles/.bash_profile && source ~/dotfiles/.bash_profile' # re-alias
+
+    utilize()   {   use "$@" && load_prompt; }
+    reutilize() { reuse "$@" && load_prompt; }
+    unutilize() { unuse "$@" && load_prompt; }
+
+    utilize UGER
+
+    #functions[use]='
+    #  (){ '$functions[use]'; } "$@"; local myret=$?
+    #  echo "hellooo"
+    #  return $myret'
+
+    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
+    #reuse() { reuse "$@" && load_prompt; }
+    #unuse() { unuse "$@" && load_prompt; }
+
+    # turn on autocompletion
+    # via /broad/software/dotkit/bash/dkcomplete.d
+    complete -W '`$DK_ROOT/etc/use-usage 1`' utilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
+    complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
+
+    OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
+    #(( $( bc <<< "$OS > 7" ) )) && vimdir='vim' || vimdir='vim_dumb' # TODO
+    #alias vim=$HOME/bin/$vimdir
+    (( $( bc <<< "$OS > 7" ) )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
+    alias vim=$vimdir
+    alias vi=vim
+
+    # refresh editors
+    export EDITOR=$vimdir
+    export VISUAL=$EDITOR
+    export GIT_EDITOR=$EDITOR
+
+    export LANG="en_US.utf8" # b/c broad defaults are :(
+    export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
+fi
+
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/ubuntu/google-cloud-sdk/path.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/path.bash.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/ubuntu/google-cloud-sdk/completion.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/completion.bash.inc'; fi
