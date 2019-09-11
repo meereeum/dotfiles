@@ -89,9 +89,13 @@ anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANA
 
 spiral() { jp2a $MEDIA/media/giphy_096.jpg --term-width --chars=" ${@^^}${@,,}"; }
 
-dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
+#dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
+dashes() {
+    [[ $2 ]] && dash="$2" || dash="-"
+    yes "$dash" | head -n"$1" | tr -d '\n'; echo;
+}
 
-pdfsplit(){
+pdfsplit() {
     PDF="$@"
     pdfseparate $PDF ${PDF%.pdf}.%d.pdf
 }
