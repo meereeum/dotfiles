@@ -23,7 +23,7 @@ COLORS=(221 168) # 162
 EVENTS=($SUNRISE $SUNSET)
 TIMETILLEVENT=$(( (${EVENTS[$i]} - $( date +%s )) ))
 
-converts() # s -> (h) m s
+converts() # s -> h(h):mm:ss
 {
     local t=$1
 
