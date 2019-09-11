@@ -36,4 +36,4 @@ case 1 in
     ;;
 esac
 
-[[ $PHASE != null ]] && echo ${MOONS[$i]} # else, request failed
+echo ${MOONS[$i]}
