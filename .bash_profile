@@ -82,8 +82,9 @@ dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
 pdfurl2txt() {
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
-    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
-    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo
+    #[[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
+    [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
+    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
 }
 
 # e.g. from youtube-dled subtitles
@@ -107,7 +108,8 @@ alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias ip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
-alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $( MY_IP ) ssh'
+alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $( MY_IP ) ssh'
+#alias allowip='sourceopenstack; openstack security group rule create --protocol tcp --dst-port 22 --src-ip $( MY_IP ) ssh'
 
 # reset illustrator trial
 resetadobe()
@@ -115,7 +117,7 @@ resetadobe()
     f="/Applications/Adobe Illustrator CC 2018/Support Files/AMT/AI/AMT/application.xml"
     oldn=$( awk -F'[<>]' '/TrialSerial/{print $3}' "$f" )
     newn=$( math "$oldn + 1" )
-    sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
+    sudo sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
 }
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
@@ -514,7 +516,7 @@ else
 	MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
 	MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
 
-	alias vi='/usr/local/bin/vim' # homebrew version
+	alias vi='/usr/bin/vim' # homebrew version
 
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
@@ -583,3 +585,6 @@ alias rcspring='ssh rcspring'
 alias broadgold='ssh broadgold'
 alias broadsilver='ssh broadsilver'
 alias broadplatinum='ssh broadplatinum'
+
+# screen shots
+alias update_screenshots='mv ~/Desktop/Screen* ~/pix/screenshots; rsync -rz --progress ~/pix csail:./macos'
