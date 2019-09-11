@@ -9,10 +9,15 @@ LON=-73.936074
 SUNTIMES=$( curl -s https://api.darksky.net/forecast/$KEY/$LAT,$LON?exclude=$EXCLUDE |
                 jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
 
+[[ $SUNTIMES == "[null,null]" ]] && exit 1
+
 SUNRISE=$( echo $SUNTIMES | jq '.[0]' )
 SUNSET=$(  echo $SUNTIMES | jq '.[1]' )
 
-i=$(( $SUNRISE > $SUNSET )) # next event is sunrise vs 'set
+NOW=$( date +%s )
+
+# i=$(( $SUNRISE > $SUNSET )) # next event is sunset vs 'rise
+i=$(( $SUNRISE < $NOW )) # next event is sunset vs 'rise
 
 ARROWS=(↗ ↘)
 COLORS=(221 168) # 162
@@ -23,7 +28,7 @@ COLORS=(221 168) # 162
 EVENTS=($SUNRISE $SUNSET)
 TIMETILLEVENT=$(( (${EVENTS[$i]} - $( date +%s )) ))
 
-converts() # s -> (h) m s
+converts() # s -> h(h):mm:ss
 {
     local t=$1
 
@@ -48,10 +53,7 @@ converts() # s -> (h) m s
     # echo
 }
 
-#[[ $SUNTIMES != null ]] && echo "☼${ARROWS[$i]} in $( converts $TIMETILLEVENT )"
-
 fgbg=48 # background; else 38
 COLORSTRING="\e[$fgbg;5;%sm  %3s  \e[0m"
 
-[[ $SUNTIMES != null ]] && \
-    printf "$COLORSTRING" ${COLORS[$i]} "☼${ARROWS[$i]} in $( converts $TIMETILLEVENT )"
+printf "$COLORSTRING" ${COLORS[$i]} "☼${ARROWS[$i]} in $( converts $TIMETILLEVENT )"
