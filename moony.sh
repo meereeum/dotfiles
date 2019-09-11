@@ -2,7 +2,7 @@
 
 MOONS=(🌑 🌒 🌓 🌔 🌕 🌖 🌗 🌘)
 
-KEY=SETME
+KEY=e183813ad99e49edfd257277c2df9a2c
 EXCLUDE=currently,minutely,hourly,alerts,flags
 
 LAT=40.6695668 # @ 961

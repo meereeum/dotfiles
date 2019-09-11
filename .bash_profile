@@ -540,6 +540,7 @@ esac
 
 MOON=$( bash ~/dotfiles/moony.sh )
 export PS1="$MOON$PS1" # prepend moon
+# export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
 
 SUN=$( bash ~/dotfiles/sunny.sh )
 echo $SUN
