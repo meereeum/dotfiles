@@ -379,6 +379,9 @@ t()
 # alias p3='source activate py36'
 # alias d='source deactivate'
 
+(($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
+alias pip-clean='\rm -r $PIPCACHE/*'
+
 # osx only
 if ((!$linux)); then
     alias vlc='open -a VLC'
@@ -564,17 +567,37 @@ export PYTHONBREAKPOINT="IPython.embed"
 #else
 if ((!$linux)); then
 	# added for homebrew, coreutils
-	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
-	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-	MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
-	MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
+    GNUPATH=$( echo "/usr/local/opt/"{grep,coreutils,gnu-{sed,tar,which,indent}}"/libexec/gnubin:" |
+               sed 's/ //g' )
+    # GNUPATH=$( echo "/usr/local/opt/gnu-"{sed,tar,which,indent}"/libexec/gnubin:" | sed 's/ //g' )
+	# GNUPATH="/usr/local/opt/grep/libexec/gnubin:$GNUPATH"
+    # GNUPATH="/usr/local/opt/coreutils/libexec/gnubin:$GNUPATH"
+    ## GNUPATH="$(brew --prefix coreutils)/libexec/gnubin:$GNUPATH"
 
-	alias vi='/usr/bin/vim' # homebrew version
+    GNUMANPATH=$( echo $GNUPATH | sed 's/gnubin/gnuman/g' )
+
+    PATH="$GNUPATH$PATH"
+    MANPATH="$GNUMANPATH$MANPATH"
+
+    # either: symlink once OR explicitly alias
+    # ln -s /usr/local/Cellar/vim/*/bin/vim /usr/local/bin/vim
+    # alias vim=/usr/local/Cellar/vim/*/bin/vim # homebrew version
+	alias vi=vim
+    export VIMRUNTIME=/usr/local/Cellar/vim/*/share/vim/*
+
+    # # refresh editors
+    # export EDITOR=vim
+    # export VISUAL=$EDITOR
+    # export GIT_EDITOR=$EDITOR
 
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
 
-  # brew autocomplete
+    # LD stuff
+    export CPPFLAGS="-I/usr/local/include"
+    export LDFLAGS="-L/usr/local/lib"
+
+    # brew autocomplete
 	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
