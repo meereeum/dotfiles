@@ -2,7 +2,10 @@
 
 MOONS=(🌑 🌒 🌓 🌔 🌕 🌖 🌗 🌘)
 
-[[ -f SECRET_darksky ]] && KEY=$( cat SECRET_darksky ) || ( echo "missing SECRET_darksky" && exit 1 )
+DIR=$( dirname "${BASH_SOURCE[0]}" )
+[[ -f $DIR/SECRET_darksky ]] && KEY=$( cat $DIR/SECRET_darksky ) \
+                             || ( >&2 echo "missing SECRET_darksky" && exit 1 ) # echo to STDERR & leave
+
 EXCLUDE=currently,minutely,hourly,alerts,flags
 
 LAT=40.6695668 # @ 961

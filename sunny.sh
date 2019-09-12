@@ -1,10 +1,11 @@
 #!/bin/bash
 
-[[ -f SECRET_darksky ]] && KEY=$( cat SECRET_darksky ) || ( echo "missing SECRET_darksky" && exit 1 )
+DIR=$( dirname "${BASH_SOURCE[0]}" )
+[[ -f $DIR/SECRET_darksky ]] && KEY=$( cat $DIR/SECRET_darksky ) \
+                             || ( >&2 echo "missing SECRET_darksky" && exit 1 ) # echo to STDERR & leave
+
 EXCLUDE=currently,minutely,hourly,alerts,flags
 
-LAT=40.6695668 # @ 961
-LON=-73.936074
 
 SUNTIMES=$( curl -s https://api.darksky.net/forecast/$KEY/$LAT,$LON?exclude=$EXCLUDE |
                 jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
