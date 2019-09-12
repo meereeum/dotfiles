@@ -117,8 +117,9 @@ pdfsplit() {
 pdfurl2txt() { # e.g. for menus
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
-    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
-    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo
+    #[[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
+    [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
+    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
 }
 
 # get bounding box of img (e.g. for when pdflatex is being dumb)
@@ -153,7 +154,8 @@ allowip()
     IP="$@"
     [[ $IP ]] || IP=$( MY_IP )
     sourceopenstack
-    openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
+    openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $IP ssh
+    # openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
 }
 
 # reset illustrator trial
@@ -162,7 +164,7 @@ resetadobe()
     f="/Applications/Adobe Illustrator CC 2018/Support Files/AMT/AI/AMT/application.xml"
     oldn=$( awk -F'[<>]' '/TrialSerial/{print $3}' "$f" )
     newn=$( math "$oldn + 1" )
-    sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
+    sudo sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
 }
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
@@ -377,6 +379,9 @@ t()
 # alias p3='source activate py36'
 # alias d='source deactivate'
 
+(($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
+alias pip-clean='\rm -r $PIPCACHE/*'
+
 # osx only
 if ((!$linux)); then
     alias vlc='open -a VLC'
@@ -562,17 +567,37 @@ export PYTHONBREAKPOINT="IPython.embed"
 #else
 if ((!$linux)); then
 	# added for homebrew, coreutils
-	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
-	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-	MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
-	MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
+    GNUPATH=$( echo "/usr/local/opt/"{grep,coreutils,gnu-{sed,tar,which,indent}}"/libexec/gnubin:" |
+               sed 's/ //g' )
+    # GNUPATH=$( echo "/usr/local/opt/gnu-"{sed,tar,which,indent}"/libexec/gnubin:" | sed 's/ //g' )
+	# GNUPATH="/usr/local/opt/grep/libexec/gnubin:$GNUPATH"
+    # GNUPATH="/usr/local/opt/coreutils/libexec/gnubin:$GNUPATH"
+    ## GNUPATH="$(brew --prefix coreutils)/libexec/gnubin:$GNUPATH"
 
-	alias vi='/usr/local/bin/vim' # homebrew version
+    GNUMANPATH=$( echo $GNUPATH | sed 's/gnubin/gnuman/g' )
+
+    PATH="$GNUPATH$PATH"
+    MANPATH="$GNUMANPATH$MANPATH"
+
+    # either: symlink once OR explicitly alias
+    # ln -s /usr/local/Cellar/vim/*/bin/vim /usr/local/bin/vim
+    # alias vim=/usr/local/Cellar/vim/*/bin/vim # homebrew version
+	alias vi=vim
+    export VIMRUNTIME=/usr/local/Cellar/vim/*/share/vim/*
+
+    # # refresh editors
+    # export EDITOR=vim
+    # export VISUAL=$EDITOR
+    # export GIT_EDITOR=$EDITOR
 
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
 
-  # brew autocomplete
+    # LD stuff
+    export CPPFLAGS="-I/usr/local/include"
+    export LDFLAGS="-L/usr/local/lib"
+
+    # brew autocomplete
 	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
@@ -626,7 +651,11 @@ complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(scree
 export MKL_THREADING_LAYER=GNU
 
 
-if [[ -f /etc/redhat-release ]]; then # broad servers
+# screen shots
+alias update_screenshots='mv ~/Desktop/Screen* ~/pix/screenshots; rsync -rz --progress ~/pix csail:./macos'
+
+# broad servers
+if [[ -f /etc/redhat-release ]]; then
     DK_DEFAULTS="taciturn reuse dkcomplete"
 
     use -q $DK_DEFAULTS # quietly load
