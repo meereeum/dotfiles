@@ -542,7 +542,7 @@ MOON=$( bash ~/dotfiles/moony.sh )
 export PS1="$MOON$PS1" # prepend moon
 
 SUN=$( bash ~/dotfiles/sunny.sh )
-echo $SUN
+[[ $SUN ]] && echo $SUN # skip if no return
 
 # Path thangs
 
