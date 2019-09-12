@@ -2,7 +2,7 @@
 
 MOONS=(🌑 🌒 🌓 🌔 🌕 🌖 🌗 🌘)
 
-KEY=SETME
+[[ -f SECRET_darksky ]] && KEY=$( cat SECRET_darksky ) || ( echo "missing SECRET_darksky" && exit 1 )
 EXCLUDE=currently,minutely,hourly,alerts,flags
 
 LAT=40.6695668 # @ 961

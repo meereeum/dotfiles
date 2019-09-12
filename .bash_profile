@@ -154,8 +154,7 @@ allowip()
     IP="$@"
     [[ $IP ]] || IP=$( MY_IP )
     sourceopenstack
-    openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $IP ssh
-    # openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
+    openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
 }
 
 # reset illustrator trial
