@@ -19,7 +19,7 @@ COLORS=(221 168) # 162
 # TIMETILLSET=$((  ($SUNSET  - $( date +%s )) / 60 ))
 
 EVENTS=($SUNRISE $SUNSET)
-TIMETILLEVENT=$(( (${EVENTS[$i]} - $( date +%s )) ))
+TIMETILLEVENT=$(( ${EVENTS[$i]} - $NOW ))
 
 # via https://unix.stackexchange.com/questions/27013/displaying-seconds-as-days-hours-mins-seconds
 converts() # s -> h(h):mm:ss

@@ -139,6 +139,9 @@ $ vi /etc/NetworkManager/NetworkManager.conf
 change 'managed = true'
 $ service network-manager restart
 
+(4) edit /etc/anacrontab
+add line: "1	1	geolocate	bash $( dirname "${BASH_SOURCE[0]}" )/geolocate.sh"
+
 $ exit
 
 $ bash finish_setup.sh

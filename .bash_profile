@@ -104,7 +104,7 @@ _iter256() {
 
         # display the color
         printf "\e[${fgbg};5;%sm  %3s  \e[0m" $color $str
-        [[ $((($color + 1) % 6)) == 4 ]] && echo # newline (6 colors per line)
+        [[ $(( ($color + 1) % 6 )) == 4 ]] && echo # newline (6 colors per line)
     done
 }
 iterbg256() { _iter256 48 "$@"; }
