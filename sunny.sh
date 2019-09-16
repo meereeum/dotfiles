@@ -1,16 +1,8 @@
 #!/bin/bash
 
-DIR=$( dirname "${BASH_SOURCE[0]}" )
-[[ -f $DIR/SECRET_darksky ]] && KEY=$( cat $DIR/SECRET_darksky ) \
-                             || ( >&2 echo "missing SECRET_darksky" && exit 1 ) # echo to STDERR & leave
+SUNTIMES=$( cat /tmp/darksky | jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
 
-EXCLUDE=currently,minutely,hourly,alerts,flags
-
-
-SUNTIMES=$( curl -s https://api.darksky.net/forecast/$KEY/$LAT,$LON?exclude=$EXCLUDE |
-                jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
-
-[[ $SUNTIMES == "[null,null]" ]] && exit 1
+( [[ ! $SUNTIMES ]] || [[ $SUNTIMES == "[null,null]" ]] ) && exit 1
 
 SUNRISE=$( echo $SUNTIMES | jq '.[0]' )
 SUNSET=$(  echo $SUNTIMES | jq '.[1]' )

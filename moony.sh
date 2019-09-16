@@ -2,19 +2,9 @@
 
 MOONS=(🌑 🌒 🌓 🌔 🌕 🌖 🌗 🌘)
 
-DIR=$( dirname "${BASH_SOURCE[0]}" )
-[[ -f $DIR/SECRET_darksky ]] && KEY=$( cat $DIR/SECRET_darksky ) \
-                             || ( >&2 echo "missing SECRET_darksky" && exit 1 ) # echo to STDERR & leave
+PHASE=$( cat /tmp/darksky | jq '.daily.data[0].moonPhase' )
 
-EXCLUDE=currently,minutely,hourly,alerts,flags
-
-LAT=40.6695668 # @ 961
-LON=-73.936074
-
-PHASE=$( curl -s https://api.darksky.net/forecast/$KEY/$LAT,$LON?exclude=$EXCLUDE |
-           jq '.daily.data[0].moonPhase' )
-
-[[ $PHASE == null ]] && exit 1
+( [[ ! $PHASE ]] || [[ $PHASE == null ]] ) && exit 1
 
 INTPHASE=$( bc <<< "$PHASE * 1000" | xargs printf "%0.f" ) # float (0,1) -> int (0,1000)
 

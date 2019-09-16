@@ -542,6 +542,8 @@ esac
 # export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
 # export PS1="$PS1"
 
+bash ~/dotfiles/horizon.sh # populate /tmp/darksky
+
 MOON=$( bash ~/dotfiles/moony.sh )
 export PS1="$MOON$PS1" # prepend moon
 
