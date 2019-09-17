@@ -488,39 +488,44 @@ export HISTSIZE="INFINITE" # via https://superuser.com/questions/479726/how-to-g
 #HISTFILESIZE=100000 # 10^6
 export HISTFILESIZE=$HISTSIZE
 
-# ignore 2 letter commands, variants of ls, pwd
+# ignore 1-2 letter commands, variants of ls, pwd
 #HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
-export HISTIGNORE="?:??:pwd"
+export HISTIGNORE="?:??:pwd:history"
 
-# append rather than overrwriting history (which would only save last closed bash sesh)
+# via https://www.shellhacks.com/tune-command-line-history-bash/
+# append rather than overwriting history (which would only save last closed bash sesh)
 shopt -s histappend
 # make commands executed in one shell immediately accessible in history of others
 # i.e. append, then clear, then reload file
-#export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+# export PROMPT_COMMAND="history -a; history -c; history -r"
+# export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 # ignore duplicates
 #HISTCONTROL=erasedups
-HISTCONTROL=ignorespace:ignoredups
+export HISTCONTROL=ignorespace:ignoredups
 
 # via https://unix.stackexchange.com/questions/1288/preserve-bash-history-in-multiple-terminal-windows
 
-_bash_history_sync() {
-  builtin history -a         #1
-  HISTFILESIZE=$HISTSIZE     #2
-  builtin history -c         #3
-  builtin history -r         #4
-}
-
-history() {                  #5
-  _bash_history_sync
-  builtin history "$@"
-}
-
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
+# _bash_history_sync() {
+#   builtin history -a         #1
+#   HISTFILESIZE=$HISTSIZE     #2
+#   builtin history -c         #3
+#   builtin history -r         #4
+# }
+#
+# history() {                  #5
+#   _bash_history_sync
+#   builtin history "$@"
+# }
+#
+# PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
+PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND} ;}history -a"
 
 # reedit a history substitution line if it failed
 shopt -s histreedit
 # edit a recalled history line before executing
 shopt -s histverify
+# multi-line commands in 1 history entry
+shopt -s cmdhist
 
 # extended regex - e.g. $ ls !(*except_this)
 shopt -s extglob
