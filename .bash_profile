@@ -481,6 +481,8 @@ alias grep='grep --color'
 alias ls='ls --color=auto'
 export LESS=-r # allow colorcodes & symbols in less
 
+alias vinilla='vi -u NONE'
+
 
 # history
 
@@ -575,11 +577,6 @@ if ((!$linux)); then
 	# added for homebrew, coreutils
     GNUPATH=$( echo "/usr/local/opt/"{grep,coreutils,gnu-{sed,tar,which,indent}}"/libexec/gnubin:" |
                sed 's/ //g' )
-    # GNUPATH=$( echo "/usr/local/opt/gnu-"{sed,tar,which,indent}"/libexec/gnubin:" | sed 's/ //g' )
-	# GNUPATH="/usr/local/opt/grep/libexec/gnubin:$GNUPATH"
-    # GNUPATH="/usr/local/opt/coreutils/libexec/gnubin:$GNUPATH"
-    ## GNUPATH="$(brew --prefix coreutils)/libexec/gnubin:$GNUPATH"
-
     GNUMANPATH=$( echo $GNUPATH | sed 's/gnubin/gnuman/g' )
 
     PATH="$GNUPATH$PATH"

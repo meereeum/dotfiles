@@ -38,6 +38,7 @@ wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
 
 # ye olde spacemacs
 [ -d ~/.emacs.d ] || git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+# wget https://github.com/nashamri/spacemacs-logo/raw/master/spacemacs.icns
 
 
 # determine os
