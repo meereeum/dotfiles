@@ -553,14 +553,16 @@ bash ~/dotfiles/horizon.sh # populate /tmp/darksky
 
 MOON=$( bash ~/dotfiles/moony.sh )
 export PS1="$MOON$PS1" # prepend moon
+# export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
 
 SUN=$( bash ~/dotfiles/sunny.sh )
 [[ $SUN ]] && echo $SUN # skip if no return
 
 # Path thangs
 
-export PATH="${HOME}/miniconda3/bin:$PATH"
-export PYTHONPATH="${HOME}/miniconda3/bin/python"
+CONDA="$HOME/*conda3" # {ana,mini}conda
+export PATH="$CONDA/bin:$PATH"
+export PYTHONPATH="$CONDA/bin/python"
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
