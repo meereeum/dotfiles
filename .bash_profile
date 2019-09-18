@@ -558,8 +558,9 @@ SUN=$( bash ~/dotfiles/sunny.sh )
 
 # Path thangs
 
-export PATH="${HOME}/miniconda3/bin:$PATH"
-export PYTHONPATH="${HOME}/miniconda3/bin/python"
+CONDA="$HOME/*conda3" # {ana,mini}conda
+export PATH="$CONDA/bin:$PATH"
+export PYTHONPATH="$CONDA/bin/python"
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
