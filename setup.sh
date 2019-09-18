@@ -27,18 +27,30 @@ cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
     awk '/AWK Embedding/,/^<$/' |
     grep -v '^<$' > ${OUTDIR}/awkembed.vim
 
+# vim syntax highlighting fix
+# via https://github.com/vim/vim/issues/1008
+wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
+    {
+        gunzip sh.vim.gz
+        [[ -d ~/.vim/syntax ]] || mkdir ~/.vim/syntax
+        mv sh.vim ~/.vim/syntax
+    }
+
 # ye olde spacemacs
 [ -d ~/.emacs.d ] || git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 
 
-# deterimne os
+# determine os
 [[ ${OSTYPE//[0-9.]/} == "darwin" ]] && SYS="MacOSX" || SYS="Linux"
 
-
-# homebrew
+# osx stuff
 if [[ $SYS == "MacOSX" ]]; then
+    # homebrew
 	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
 	brew install wget
+
+    # command line tools
+    # xcode-select --install
 fi
 
 
@@ -126,6 +138,9 @@ $ apt-get update
 $ vi /etc/NetworkManager/NetworkManager.conf
 change 'managed = true'
 $ service network-manager restart
+
+(4) edit /etc/anacrontab
+add line: "1	1	geolocate	bash $( dirname "${BASH_SOURCE[0]}" )/geolocate.sh"
 
 $ exit
 

@@ -104,7 +104,7 @@ _iter256() {
 
         # display the color
         printf "\e[${fgbg};5;%sm  %3s  \e[0m" $color $str
-        [[ $((($color + 1) % 6)) == 4 ]] && echo # newline (6 colors per line)
+        [[ $(( ($color + 1) % 6 )) == 4 ]] && echo # newline (6 colors per line)
     done
 }
 iterbg256() { _iter256 48 "$@"; }
@@ -117,8 +117,9 @@ pdfsplit() {
 pdfurl2txt() { # e.g. for menus
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
-    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
-    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo
+    #[[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
+    [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
+    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
 }
 
 # get bounding box of img (e.g. for when pdflatex is being dumb)
@@ -162,7 +163,7 @@ resetadobe()
     f="/Applications/Adobe Illustrator CC 2018/Support Files/AMT/AI/AMT/application.xml"
     oldn=$( awk -F'[<>]' '/TrialSerial/{print $3}' "$f" )
     newn=$( math "$oldn + 1" )
-    sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
+    sudo sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
 }
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
@@ -377,6 +378,9 @@ t()
 # alias p3='source activate py36'
 # alias d='source deactivate'
 
+(($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
+alias pip-clean='\rm -r $PIPCACHE/*'
+
 # osx only
 if ((!$linux)); then
     alias vlc='open -a VLC'
@@ -484,39 +488,44 @@ export HISTSIZE="INFINITE" # via https://superuser.com/questions/479726/how-to-g
 #HISTFILESIZE=100000 # 10^6
 export HISTFILESIZE=$HISTSIZE
 
-# ignore 2 letter commands, variants of ls, pwd
+# ignore 1-2 letter commands, variants of ls, pwd
 #HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
-export HISTIGNORE="?:??:pwd"
+export HISTIGNORE="?:??:pwd:history"
 
-# append rather than overrwriting history (which would only save last closed bash sesh)
+# via https://www.shellhacks.com/tune-command-line-history-bash/
+# append rather than overwriting history (which would only save last closed bash sesh)
 shopt -s histappend
 # make commands executed in one shell immediately accessible in history of others
 # i.e. append, then clear, then reload file
-#export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+# export PROMPT_COMMAND="history -a; history -c; history -r"
+# export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 # ignore duplicates
 #HISTCONTROL=erasedups
-HISTCONTROL=ignorespace:ignoredups
+export HISTCONTROL=ignorespace:ignoredups
 
 # via https://unix.stackexchange.com/questions/1288/preserve-bash-history-in-multiple-terminal-windows
 
-_bash_history_sync() {
-  builtin history -a         #1
-  HISTFILESIZE=$HISTSIZE     #2
-  builtin history -c         #3
-  builtin history -r         #4
-}
-
-history() {                  #5
-  _bash_history_sync
-  builtin history "$@"
-}
-
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
+# _bash_history_sync() {
+#   builtin history -a         #1
+#   HISTFILESIZE=$HISTSIZE     #2
+#   builtin history -c         #3
+#   builtin history -r         #4
+# }
+#
+# history() {                  #5
+#   _bash_history_sync
+#   builtin history "$@"
+# }
+#
+# PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
+PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND} ;}history -a"
 
 # reedit a history substitution line if it failed
 shopt -s histreedit
 # edit a recalled history line before executing
 shopt -s histverify
+# multi-line commands in 1 history entry
+shopt -s cmdhist
 
 # extended regex - e.g. $ ls !(*except_this)
 shopt -s extglob
@@ -538,12 +547,14 @@ esac
 # export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
 # export PS1="$PS1"
 
+bash ~/dotfiles/horizon.sh # populate /tmp/darksky
+
 MOON=$( bash ~/dotfiles/moony.sh )
 export PS1="$MOON$PS1" # prepend moon
 # export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
 
 SUN=$( bash ~/dotfiles/sunny.sh )
-echo $SUN
+[[ $SUN ]] && echo $SUN # skip if no return
 
 # Path thangs
 
@@ -563,17 +574,37 @@ export PYTHONBREAKPOINT="IPython.embed"
 #else
 if ((!$linux)); then
 	# added for homebrew, coreutils
-	PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
-	PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-	MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
-	MANPATH="/usr/local/opt/gnu-sed/libexec/gnuman:$MANPATH"
+    GNUPATH=$( echo "/usr/local/opt/"{grep,coreutils,gnu-{sed,tar,which,indent}}"/libexec/gnubin:" |
+               sed 's/ //g' )
+    # GNUPATH=$( echo "/usr/local/opt/gnu-"{sed,tar,which,indent}"/libexec/gnubin:" | sed 's/ //g' )
+	# GNUPATH="/usr/local/opt/grep/libexec/gnubin:$GNUPATH"
+    # GNUPATH="/usr/local/opt/coreutils/libexec/gnubin:$GNUPATH"
+    ## GNUPATH="$(brew --prefix coreutils)/libexec/gnubin:$GNUPATH"
 
-	alias vi='/usr/local/bin/vim' # homebrew version
+    GNUMANPATH=$( echo $GNUPATH | sed 's/gnubin/gnuman/g' )
+
+    PATH="$GNUPATH$PATH"
+    MANPATH="$GNUMANPATH$MANPATH"
+
+    # either: symlink once OR explicitly alias
+    # ln -s /usr/local/Cellar/vim/*/bin/vim /usr/local/bin/vim
+    # alias vim=/usr/local/Cellar/vim/*/bin/vim # homebrew version
+	alias vi=vim
+    export VIMRUNTIME=/usr/local/Cellar/vim/*/share/vim/*
+
+    # # refresh editors
+    # export EDITOR=vim
+    # export VISUAL=$EDITOR
+    # export GIT_EDITOR=$EDITOR
 
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
 
-  # brew autocomplete
+    # LD stuff
+    export CPPFLAGS="-I/usr/local/include"
+    export LDFLAGS="-L/usr/local/lib"
+
+    # brew autocomplete
 	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	#  fi
@@ -627,7 +658,11 @@ complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(scree
 export MKL_THREADING_LAYER=GNU
 
 
-if [[ -f /etc/redhat-release ]]; then # broad servers
+# screen shots
+alias update_screenshots='mv ~/Desktop/Screen* ~/pix/screenshots; rsync -rz --progress ~/pix csail:./macos'
+
+# broad servers
+if [[ -f /etc/redhat-release ]]; then
     DK_DEFAULTS="taciturn reuse dkcomplete"
 
     use -q $DK_DEFAULTS # quietly load

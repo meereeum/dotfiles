@@ -1,15 +1,8 @@
 #!/bin/bash
 
-KEY=SETME
-EXCLUDE=currently,minutely,hourly,alerts,flags
+SUNTIMES=$( cat /tmp/darksky | jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
 
-LAT=40.6695668 # @ 961
-LON=-73.936074
-
-SUNTIMES=$( curl -s https://api.darksky.net/forecast/$KEY/$LAT,$LON?exclude=$EXCLUDE |
-                jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
-
-[[ $SUNTIMES == "[null,null]" ]] && exit 1
+( [[ ! $SUNTIMES ]] || [[ $SUNTIMES == "[null,null]" ]] ) && exit 1
 
 SUNRISE=$( echo $SUNTIMES | jq '.[0]' )
 SUNSET=$(  echo $SUNTIMES | jq '.[1]' )
@@ -26,8 +19,9 @@ COLORS=(221 168) # 162
 # TIMETILLSET=$((  ($SUNSET  - $( date +%s )) / 60 ))
 
 EVENTS=($SUNRISE $SUNSET)
-TIMETILLEVENT=$(( (${EVENTS[$i]} - $( date +%s )) ))
+TIMETILLEVENT=$(( ${EVENTS[$i]} - $NOW ))
 
+# via https://unix.stackexchange.com/questions/27013/displaying-seconds-as-days-hours-mins-seconds
 converts() # s -> h(h):mm:ss
 {
     local t=$1
