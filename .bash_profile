@@ -560,7 +560,7 @@ SUN=$( bash ~/dotfiles/sunny.sh )
 
 # Path thangs
 
-CONDA="$HOME/*conda3" # {ana,mini}conda
+CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
 export PATH="$CONDA/bin:$PATH"
 export PYTHONPATH="$CONDA/bin/python"
 
