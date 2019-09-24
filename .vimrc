@@ -34,6 +34,12 @@ let &t_ZH="\e[3m"
 let &t_ZR="\e[23m"
 
 highlight Comment cterm=italic
+highlight TODO    cterm=underline,bold
+" i.e. TODO
+
+" highlight docstrings like comments
+syn region pythonDocString start=+^\s*"""+ end=+"""+ keepend contains=...
+hi link pythonDocString Comment
 
 " default: .md highlighting if {no suffix,.txt}
 " https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension
