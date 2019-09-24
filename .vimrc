@@ -23,6 +23,17 @@ set nowrap
 " colors
 syntax enable
 " colorscheme plan9
+" colorscheme 256_noir_rosy
+" colorscheme paramount
+" colorscheme rollerblades
+" set background=dark
+
+" italics for mac
+" via https://stackoverflow.com/a/53625973
+let &t_ZH="\e[3m"
+let &t_ZR="\e[23m"
+
+highlight Comment cterm=italic
 
 " default: .md highlighting if {no suffix,.txt}
 " https://stackoverflow.com/questions/2666551/vim-default-syntax-for-files-with-no-extension
