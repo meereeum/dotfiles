@@ -72,6 +72,10 @@ math() { bc -l <<< "$@"; }
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
+nbrerun() {
+    for nb in "$@"; do
+        (jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=600 "$nb";) &done
+}
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 coinflip() {
     choices=( "$@" )
@@ -564,7 +568,7 @@ CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
 export PATH="$CONDA/bin:$PATH"
 export PYTHONPATH="$CONDA/bin/python"
 
-export pandoc=/usr/bin/pandoc # don't let conda vs override
+alias pandoc=/usr/bin/pandoc # don't let conda vs override
 
 # will be useful after upgrading to 3.7..
 # via builtin breakpoint()
