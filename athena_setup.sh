@@ -20,7 +20,10 @@ source "${HOME}/.bash_profile"
 
 
 # vim dir
-mkdir -p "${HOME}/.vim/{.swp,.backup,.undo}"
+mkdir -p ~/.vim/{.swp,.backup,.undo,colors}
+for COLOR in "$DIR/colors/*"; do
+    ln -s $COLOR ~/.vim/colors
+done
 
 
 # shiff folder
