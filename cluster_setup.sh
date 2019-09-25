@@ -20,7 +20,10 @@ source ~/.bash_profile
 sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
 
 # vim dir
-mkdir -p ~/.vim/{.swp,.backup,.undo}
+mkdir -p ~/.vim/{.swp,.backup,.undo,colors}
+for COLOR in "$DIR/colors/*"; do
+    ln -s $COLOR ~/.vim/colors
+done
 
 
 # conda
