@@ -23,19 +23,22 @@ set nowrap
 " colors
 syntax enable
 " colorscheme plan9
+" set background=dark
 " colorscheme 256_noir_rosy
 " colorscheme paramount
 " colorscheme rollerblades
-" set background=dark
+
+" via https://stackoverflow.com/a/15095377
+set t_ut=
 
 " italics for mac
 " via https://stackoverflow.com/a/53625973
 let &t_ZH="\e[3m"
 let &t_ZR="\e[23m"
 
-highlight Comment cterm=italic
-highlight TODO    cterm=underline,bold
-" i.e. TODO
+hi Comment cterm=italic
+hi Todo    cterm=underline,bold
+" i.e. TODO read the stuff
 
 " highlight docstrings like comments
 syn region pythonDocString start=+^\s*"""+ end=+"""+ keepend contains=...
