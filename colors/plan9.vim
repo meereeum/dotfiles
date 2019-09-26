@@ -2,6 +2,12 @@
 
 highlight clear 
 
+if exists("syntax_on")
+  syntax reset
+endif
+
+set t_Co=256
+
 " for cterm, 'black' might get overwritten by the terminal emulator, so we use
 " 232 (#080808), which is close enough.
 
@@ -30,6 +36,14 @@ highlight! Directory guibg=bg guifg=fg gui=bold ctermbg=bg ctermfg=fg cterm=bold
 highlight! link Title Directory
 highlight! link MoreMsg Comment
 highlight! link Question Comment
+
+highlight! Todo cterm=underline,bold,italic ctermbg=NONE
+highlight! Search ctermbg=NONE cterm=underline
+highlight! IncSearch ctermfg=bg ctermbg=fg cterm=underline
+highlight! MatchParen ctermbg=NONE cterm=underline,bold
+highlight! Error ctermbg=167
+highlight! ErrorMsg ctermbg=167
+highlight! Warning ctermfg=167
 
 " vim
 hi link vimFunction Identifier
