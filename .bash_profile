@@ -539,29 +539,30 @@ shopt -s extglob
 
 # succinct cmd line (working dir only)
 # homebase vs remote / server
-[[ $DISPLAY ]] && PS1=" \W \$ " || PS1="\e[1m\h:\e[m \W \$ "
+[[ $DISPLAY ]] && export PS1=" \W \$ " \
+               || export PS1="\e[1m\h:\e[m \W \$ "
 
-case "$TERM" in
-	"dumb")
-	    export PS1="> " # make tramp compatible ?
-	    ;;
-	*)
-        #export PS1=" \W \$ "
-        export PS1="$PS1"
-	    ;;
-esac
-# export PS1=" \W \$ "               # homebase
-# export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
-# export PS1="$PS1"
+# case "$TERM" in
+# 	"dumb")
+# 	    export PS1="> " # make tramp compatible ?
+# 	    ;;
+# 	*)
+#         #export PS1=" \W \$ "
+#         export PS1="$PS1"
+# 	    ;;
+# esac
 
 bash ~/dotfiles/horizon.sh # populate /tmp/darksky
 
+# prepend moon
 MOON=$( bash ~/dotfiles/moony.sh )
-export PS1="$MOON$PS1" # prepend moon
-# export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
+[[ $DISPLAY ]] && export PS1="$MOON$PS1" \
+               || export PS1="$MOON $PS1"
 
+# echo sun
 SUN=$( bash ~/dotfiles/sunny.sh )
 [[ $SUN ]] && echo $SUN # skip if no return
+
 
 # Path thangs
 
