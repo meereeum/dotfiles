@@ -23,10 +23,9 @@ set nowrap
 " colors
 syntax enable
 " colorscheme plan9
-" set background=dark
 " colorscheme 256_noir_rosy
 " colorscheme paramount
-" colorscheme rollerblades
+colorscheme neon-rollerblades
 
 " via https://stackoverflow.com/a/15095377
 set t_ut=

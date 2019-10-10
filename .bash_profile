@@ -640,8 +640,31 @@ alias downfrazer='sudo umount ~/srv/frazer'
 
 # UQ VPN up/down
 # http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
-alias vuq='sudo vpnc uq'
-alias vdc='sudo vpnc-disconnect'
+# alias vuq='sudo vpnc uq'
+# alias vdc='sudo vpnc-disconnect'
+
+# broad VPN up/down
+# help via https://gist.github.com/moklett/3170636
+VPNPID="$HOME/.openconnect.pid"
+upvpn() {
+    # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
+    #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
+    GRP="Duo-Broad-NonSplit-VPN"
+    VPNURL="https://vpn.broadinstitute.org"
+    echo -e "$@" | sudo openconnect --pid-file $VPNPID --user=shiffman \
+                     --authgroup=$GRP $VPNURL --token-mode yubioath
+                     # --background \
+                     # --authgroup=$GRP https://vpn.broadinstitute.org
+                     # --authgroup=Duo-Broad-NonSplit-VPN https://vpn.broadinstitute.org
+}
+downvpn() {
+    if [[ -f $VPNPID ]]; then
+        sudo kill "$( cat $VPNPID )" && rm $VPNPID
+        pgrep openconnect
+    else
+        echo "vpn not running."
+    fi
+}
 
 # autocomplete screen
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen

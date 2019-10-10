@@ -55,6 +55,10 @@ if [[ $SYS == "MacOSX" ]]; then
 
     # command line tools
     # xcode-select --install
+
+    # yubikey manager
+    YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
+    wget $YUBICO
 fi
 
 
