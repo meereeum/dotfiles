@@ -348,12 +348,19 @@ zulipjson2msgs(){
 # N.B. missing txt inside <span class="k">, which seems to be a latex math block
 
 # save open ffox tabs
+_get_ffox() {
+    (( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
+                 || PREFIX="$HOME/Library/Application Support/Firefox"
+    SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini )
+    echo "$PREFIX/$SESSION"
+}
+FFOX_PROFILE="$( _get_ffox )"
+
 # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
 openTabs(){
-    (( $linux )) && PREFIX="$HOME/.mozilla/firefox" || PREFIX="$HOME/Library/Application Support/Firefox"
-    SESSION=$( awk -F'=' '/Path/ {print $2}' "${PREFIX}"/profiles.ini )
     #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
-    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+    #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+    cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
      dejsonlz4 - |
      jq -c '.windows[].tabs[].entries[-1].url' |
      sed -e 's/^"//' -e 's/"$//' |
@@ -375,6 +382,14 @@ openTabs(){
 getOpenTabs(){ openTabs | cpout; }
 #saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
 saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
+
+getAddons() {
+    # exclude addons that are not automatic ffox extensions
+    cat "$FFOX_PROFILE/extensions.json" |
+        jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
+        tr -d '"'
+}
+export -f getAddons
 
 
 # wifi on/off
