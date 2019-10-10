@@ -24,7 +24,7 @@ for COLOR in "$DIR/colors/*"; do
 done
 
 # vim postfx highlight
-OUTIDIR="$HOME/.vim/after/syntax/sh"
+OUTDIR="$HOME/.vim/after/syntax/sh"
 mkdir -p $OUTDIR
 cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
     awk '/AWK Embedding/,/^<$/' |
