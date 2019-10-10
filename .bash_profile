@@ -34,7 +34,7 @@ touche() { touch "$@"; e "$@"; }
 
 # aliasing
 
-MEDIA="${HOME}/shiff"
+MEDIA="${HOME}"
 
 alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
 alias http='python -m SimpleHTTPServer'
@@ -598,6 +598,7 @@ Wshort() { # inspired by https://askubuntu.com/a/29580
 
 CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
 export PATH="$CONDA/bin:$PATH"
+# export PATH="$PATH:$CONDA/bin"
 export PYTHONPATH="$CONDA/bin/python"
 
 alias pandoc=/usr/bin/pandoc # don't let conda vs override
