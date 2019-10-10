@@ -83,6 +83,10 @@ PI=$( bc -l <<< "scale=10; 4*a(1)" )
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
+nbrerun() {
+    for nb in "$@"; do
+        (jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=600 "$nb";) &done
+}
 
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 # via https://unix.stackexchange.com/a/28045
@@ -297,6 +301,7 @@ lssince(){
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
+    [[ "${dt,,}" == "weds" ]] && dt="wed"      # i am bad at wkday abbrevs
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
@@ -574,30 +579,19 @@ Wshort() { # inspired by https://askubuntu.com/a/29580
 }
 
 # homebase vs remote / server
-# [[ $DISPLAY ]] && PS1=" \W \$ " || PS1="\e[1m\h:\e[m \W \$ "
-[[ $DISPLAY ]] && PS1=" \$( Wshort ) \$ " || PS1="\e[1m\h:\e[m \$( Wshort ) \$ "
-# export PS1=" \W \$ "               # homebase
-# export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
+[[ $DISPLAY ]] && export PS1=" \W \$ " \
+               || export PS1="\e[1m\h:\e[m \W \$ "
 
-case "$TERM" in
-	"dumb")
-	    export PS1="> " # make tramp compatible ?
-	    ;;
-	*)
-        export PS1="$PS1"
-	    ;;
-esac
+# case "$TERM" in
+# 	"dumb")
+# 	    export PS1="> " # make tramp compatible ?
+# 	    ;;
+# 	*)
+#         #export PS1=" \W \$ "
+#         export PS1="$PS1"
+# 	    ;;
+# esac
 
-# fancify
-
-bash ~/dotfiles/horizon.sh # populate /tmp/darksky
-
-MOON=$( bash ~/dotfiles/moony.sh )
-export PS1="$MOON$PS1" # prepend moon
-# export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
-
-SUN=$( bash ~/dotfiles/sunny.sh )
-[[ $SUN ]] && echo $SUN # skip if no return
 
 # Path thangs
 
@@ -605,7 +599,7 @@ CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
 export PATH="$CONDA/bin:$PATH"
 export PYTHONPATH="$CONDA/bin/python"
 
-export pandoc=/usr/bin/pandoc # don't let conda vs override
+alias pandoc=/usr/bin/pandoc # don't let conda vs override
 
 # will be useful after upgrading to 3.7..
 # via builtin breakpoint()
@@ -685,8 +679,31 @@ alias downfrazer='sudo umount ~/srv/frazer'
 
 # UQ VPN up/down
 # http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
-alias vuq='sudo vpnc uq'
-alias vdc='sudo vpnc-disconnect'
+# alias vuq='sudo vpnc uq'
+# alias vdc='sudo vpnc-disconnect'
+
+# broad VPN up/down
+# help via https://gist.github.com/moklett/3170636
+VPNPID="$HOME/.openconnect.pid"
+upvpn() {
+    # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
+    #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
+    GRP="Duo-Broad-NonSplit-VPN"
+    VPNURL="https://vpn.broadinstitute.org"
+    echo -e "$@" | sudo openconnect --pid-file $VPNPID --user=shiffman \
+                     --authgroup=$GRP $VPNURL --token-mode yubioath
+                     # --background \
+                     # --authgroup=$GRP https://vpn.broadinstitute.org
+                     # --authgroup=Duo-Broad-NonSplit-VPN https://vpn.broadinstitute.org
+}
+downvpn() {
+    if [[ -f $VPNPID ]]; then
+        sudo kill "$( cat $VPNPID )" && rm $VPNPID
+        pgrep openconnect
+    else
+        echo "vpn not running."
+    fi
+}
 
 # autocomplete screen
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
@@ -764,8 +781,28 @@ if [[ -f /etc/redhat-release ]]; then
 fi
 
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/ubuntu/google-cloud-sdk/path.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/path.bash.inc'; fi
+# The next lines update PATH for the Google Cloud SDK,
+#              & enable shell command completion for gcloud.
+# for f in "$HOME/google-cloud-sdk/{path,completion}.bash.inc"; do
+#     [[ -f "$f" ]] && source "$f"
+# done
 
-# The next line enables shell command completion for gcloud.
-if [ -f '/home/ubuntu/google-cloud-sdk/completion.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/completion.bash.inc'; fi
+
+# last but far from least... fancify
+
+bash ~/dotfiles/horizon.sh # populate /tmp/darksky
+
+# prepend moon
+MOON=$( bash ~/dotfiles/moony.sh )
+[[ $DISPLAY ]] && export PS1="$MOON$PS1" \
+               || export PS1="$MOON $PS1"
+
+# echo sun
+SUN=$( bash ~/dotfiles/sunny.sh )
+[[ $SUN ]] && echo $SUN # skip if no return
+
+# check metrograph !
+if [[ -f /etc/debian_version ]] && \
+   [[ $( cat /etc/debian_version ) == 9.5 ]]; then # csail server only
+    bash ~/dotfiles/metrographer.sh
+fi
