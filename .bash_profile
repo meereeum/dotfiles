@@ -571,6 +571,7 @@ shopt -s cmdhist
 # extended regex - e.g. $ ls !(*except_this)
 shopt -s extglob
 
+
 # succinct cmd line (abbrev working dir only)
 Wshort() { # inspired by https://askubuntu.com/a/29580
     W=$( basename ${PWD/$HOME/"~"} )
