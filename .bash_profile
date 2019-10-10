@@ -284,6 +284,7 @@ lssince(){
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
+    [[ "${dt,,}" == "weds" ]] && dt="wed"      # i am bad at wkday abbrevs
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
@@ -552,17 +553,6 @@ shopt -s extglob
 # 	    ;;
 # esac
 
-bash ~/dotfiles/horizon.sh # populate /tmp/darksky
-
-# prepend moon
-MOON=$( bash ~/dotfiles/moony.sh )
-[[ $DISPLAY ]] && export PS1="$MOON$PS1" \
-               || export PS1="$MOON $PS1"
-
-# echo sun
-SUN=$( bash ~/dotfiles/sunny.sh )
-[[ $SUN ]] && echo $SUN # skip if no return
-
 
 # Path thangs
 
@@ -729,8 +719,28 @@ if [[ -f /etc/redhat-release ]]; then
 fi
 
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/ubuntu/google-cloud-sdk/path.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/path.bash.inc'; fi
+# The next lines update PATH for the Google Cloud SDK,
+#              & enable shell command completion for gcloud.
+# for f in "$HOME/google-cloud-sdk/{path,completion}.bash.inc"; do
+#     [[ -f "$f" ]] && source "$f"
+# done
 
-# The next line enables shell command completion for gcloud.
-if [ -f '/home/ubuntu/google-cloud-sdk/completion.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/completion.bash.inc'; fi
+
+# last but far from least...
+
+bash ~/dotfiles/horizon.sh # populate /tmp/darksky
+
+# prepend moon
+MOON=$( bash ~/dotfiles/moony.sh )
+[[ $DISPLAY ]] && export PS1="$MOON$PS1" \
+               || export PS1="$MOON $PS1"
+
+# echo sun
+SUN=$( bash ~/dotfiles/sunny.sh )
+[[ $SUN ]] && echo $SUN # skip if no return
+
+# check metrograph !
+if [[ -f /etc/debian_version ]] && \
+   [[ $( cat /etc/debian_version ) == 9.5 ]]; then # csail server only
+    bash ~/dotfiles/metrographer.sh
+fi
