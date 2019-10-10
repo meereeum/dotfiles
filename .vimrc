@@ -25,7 +25,7 @@ syntax enable
 " colorscheme plan9
 " colorscheme 256_noir_rosy
 " colorscheme paramount
-colorscheme neon-rollerblades
+" colorscheme neon-rollerblades
 
 " via https://stackoverflow.com/a/15095377
 set t_ut=
