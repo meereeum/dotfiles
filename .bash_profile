@@ -431,26 +431,32 @@ fi
 if (($linux)); then
     # find all packages uninstalled via ```$ apt-get remove```
     # redirect errors if no gzipped history log to /dev/null
+    # pkgs() {
+    #     uninstalled=$(
+    #         ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+    #         cat /var/log/apt/history.log ) |
+    #             #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
+    #             # combination sed/grep for removed pkg names, minus -options
+    #             sed -nr "s/^Commandline: apt-get remove (-. )?//p" |
+    #             # transform into regex to grep out
+    #             tr "\n " "|" | sed "s/|$//"
+    #             )
+
+    #     ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+    #     cat /var/log/apt/history.log ) |
+    #         #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
+    #         # combination sed/grep for all installed pkgs names, minus -options
+    #         sed -nr "s/^Commandline: apt-get install (-. )?//p" |
+    #         # grep out uninstalled (unless empty)
+    #         egrep -v ${uninstalled:-NADA_MUCHO};
+    # }
+
+    # ^^ this stops working when history logs get rotated out ! (== deleted)
+    # much simpler:
+    # via https://askubuntu.com/a/496042
     pkgs() {
-        uninstalled=$(
-            ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
-            cat /var/log/apt/history.log ) |
-                #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
-                # combination sed/grep for removed pkg names, minus -options
-                sed -nr "s/^Commandline: apt-get remove (-. )?//p" |
-                # transform into regex to grep out
-                tr "\n " "|" | sed "s/|$//"
-                )
-
-        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
-        cat /var/log/apt/history.log ) |
-            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
-            # combination sed/grep for all installed pkgs names, minus -options
-            sed -nr "s/^Commandline: apt-get install (-. )?//p" |
-            # grep out uninstalled (unless empty)
-            egrep -v ${uninstalled:-NADA_MUCHO};
+        apt-mark showmanual
     }
-
   else
     pkgs() {
         cd ${HOME}/dotfiles/packages
@@ -459,6 +465,7 @@ if (($linux)); then
         # brew list
     }
 fi
+export -f pkgs
 
 
 # Works as long as initialize virtual environment with "virtualenv .venv"

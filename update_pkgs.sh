@@ -22,7 +22,6 @@ if (($linux)); then
 	fi
 
 	# apt
-    source ~/.bash_profile
 	pkgs > "${PKGDIR}/${OUTFILE}"
 else
 	# homebrew
