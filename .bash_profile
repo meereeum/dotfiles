@@ -48,9 +48,18 @@ alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 alias xvlc='xargs -I{} vlc "{}"'
 alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 
-(( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
-#alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-alias cpout='xargs echo'                  # w/o X11 forwarding
+case "$TERM" in
+	"dumb")
+        alias cpout='xargs echo'                  # w/o X11 forwarding
+	    ;;
+	*)
+        (( $linux )) && alias toclipboard='xsel -i --clipboard' \
+                     || alias toclipboard='pbcopy'
+        alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+	    ;;
+esac
+# alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+# alias cpout='xargs echo'                  # w/o X11 forwarding
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
@@ -62,17 +71,24 @@ export DELTAS="${DELTA}s"
 export STRFDATE="+%y%m%d"
 
 
-lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
+lunch()  { python ${MEDIA}/wkspace/mit-lunch/get_menu.py   "$@"; }
 movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
-vixw() { python ${MEDIA}/wkspace/vixw/vixw/vixw.py "$@"; }
+lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py      "$@"; }
+vixw()   { python ${MEDIA}/wkspace/vixw/vixw/vixw.py       "$@"; }
 
 math() { bc -l <<< "$@"; }
+PI=$( bc -l <<< "scale=10; 4*a(1)" )
+
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
+
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
+# via https://unix.stackexchange.com/a/28045
+chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
+introduceyoselves() { for person in {,fe}male{1,2,3} child_{fe,}male; do spd-say "i am a $person" -t $person -w; done; }
+
 coinflip() {
     choices=( "$@" )
     echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
@@ -80,7 +96,8 @@ coinflip() {
     #echo "${choices[$i]}"
 }
 
-addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
+
+addmusic() { F="$MEDIA/txt/music";   echo -e "$@" >> $F; tail -n4 $F; }
 addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
 
 # anagram utils
@@ -283,6 +300,15 @@ day() {
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
+}
+
+
+# only print 1st `n` levels (collapse rest)
+# adapted from https://github.com/stedolan/jq/issues/306#issuecomment-35975958
+jqfirstn() {
+    n="$1"; shift
+    levels=$( yes "[]?" | head -n $n | tr -d '\n' )
+    jq 'reduce path(.'"$levels"') as $path (.; setpath($path; {}))' "$@"
 }
 
 # extract zulip msgs
@@ -540,22 +566,29 @@ shopt -s cmdhist
 # extended regex - e.g. $ ls !(*except_this)
 shopt -s extglob
 
-# succinct cmd line (working dir only)
+# succinct cmd line (abbrev working dir only)
+Wshort() { # inspired by https://askubuntu.com/a/29580
+    W=$( basename ${PWD/$HOME/"~"} )
+    (( ${#W} > 30 )) && W="${W::10}…${W:(-19)}" # 1st 10 … last 19
+    echo $W
+}
+
 # homebase vs remote / server
-[[ $DISPLAY ]] && PS1=" \W \$ " || PS1="\e[1m\h:\e[m \W \$ "
+# [[ $DISPLAY ]] && PS1=" \W \$ " || PS1="\e[1m\h:\e[m \W \$ "
+[[ $DISPLAY ]] && PS1=" \$( Wshort ) \$ " || PS1="\e[1m\h:\e[m \$( Wshort ) \$ "
+# export PS1=" \W \$ "               # homebase
+# export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
 
 case "$TERM" in
 	"dumb")
 	    export PS1="> " # make tramp compatible ?
 	    ;;
 	*)
-        #export PS1=" \W \$ "
         export PS1="$PS1"
 	    ;;
 esac
-# export PS1=" \W \$ "               # homebase
-# export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
-# export PS1="$PS1"
+
+# fancify
 
 bash ~/dotfiles/horizon.sh # populate /tmp/darksky
 
