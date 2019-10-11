@@ -177,9 +177,11 @@ allowip() {
     IP="$@"
     [[ $IP ]] || IP=$( MY_IP )
     sourceopenstack
-    openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
-    # openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $IP ssh
+
+    (( $linux )) && flag="src" || flag="remote"
+    openstack security group rule create --protocol tcp --dst-port 22 --$flag-ip $IP ssh
 }
+
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
