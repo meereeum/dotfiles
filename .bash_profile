@@ -48,18 +48,12 @@ alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 alias xvlc='xargs -I{} vlc "{}"'
 alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 
-case "$TERM" in
-	"dumb")
-        alias cpout='xargs echo'                  # w/o X11 forwarding
-	    ;;
-	*)
-        (( $linux )) && alias toclipboard='xsel -i --clipboard' \
-                     || alias toclipboard='pbcopy'
-        alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-	    ;;
-esac
-# alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-# alias cpout='xargs echo'                  # w/o X11 forwarding
+[[ $DISPLAY ]] && (
+    (( $linux )) && alias toclipboard='xsel -i --clipboard' \
+                 || alias toclipboard='pbcopy'
+    alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+    ) \
+               || alias cpout='xargs echo'   # w/o X11 forwarding
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
@@ -354,7 +348,7 @@ _get_ffox() {
     SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini )
     echo "$PREFIX/$SESSION"
 }
-export FFOX_PROFILE="$( _get_ffox )"
+[[ -d "$PREFIX" ]] && export FFOX_PROFILE="$( _get_ffox )"
 
 # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
 openTabs(){
