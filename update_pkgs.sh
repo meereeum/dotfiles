@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PKGDIR="$( dirname "$0" )/packages"
+PKGDIR="$( dirname "$0" )/pkgs"
 
 # firefox addons
 getAddons > "$PKGDIR/ffox_addons.txt"
@@ -22,20 +22,20 @@ if (($linux)); then
 	DISTRO=$( cat /etc/*-release | awk -F'=' '/^NAME/ {print $2}' | xargs )
 	
 	if [[ $DISTRO = "Ubuntu" ]]; then # server
-		OUTFILE="packages_server.txt"
+		OUTFILE="aptpkgs_server.txt"
 	else
-		OUTFILE="packages.txt"
+		OUTFILE="aptpkgs.txt"
 	fi
 
 	# apt
 	pkgs > "${PKGDIR}/${OUTFILE}"
 else
 	# homebrew
-	OUTFILE="packages_brew.txt"
+	OUTFILE="brewpkgs.txt"
 	brew list > "${PKGDIR}/${OUTFILE}"
 	echo "updated: ${PKGDIR}/${OUTFILE}"
 
-	OUTFILE="packages_brew_cask.txt"
+	OUTFILE="brewpkgs_cask.txt"
 	brew cask list > "${PKGDIR}/${OUTFILE}"
 fi &&
 

@@ -354,7 +354,7 @@ _get_ffox() {
     SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini )
     echo "$PREFIX/$SESSION"
 }
-FFOX_PROFILE="$( _get_ffox )"
+export FFOX_PROFILE="$( _get_ffox )"
 
 # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
 openTabs(){
@@ -386,7 +386,8 @@ saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
 getAddons() {
     # exclude addons that are not automatic ffox extensions
     cat "$FFOX_PROFILE/extensions.json" |
-        jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
+        # jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
+        jq -c '.addons[] | select(.location == "app-profile").defaultLocale.name' |
         tr -d '"'
 }
 export -f getAddons
