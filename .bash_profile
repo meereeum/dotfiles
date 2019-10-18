@@ -293,6 +293,13 @@ lssince() {
 }
 
 
+cdrecent() {
+    # [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -dt "$@"*/ | head -n1 )"
+    cd "$RECENTEST"
+}
+
+
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
