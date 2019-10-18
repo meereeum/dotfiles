@@ -293,10 +293,18 @@ lssince() {
 }
 
 
+cdrecent() {
+    # [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -dt "$@"*/ | head -n1 )"
+    cd "$RECENTEST"
+}
+
+
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
-    [[ "${dt,,}" == "weds" ]] && dt="wed"      # i am bad at wkday abbrevs
+    dt=$( echo $dt | sed 's/weds/wed/g' )    # i am bad at wkday abbrevs
+
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
