@@ -54,12 +54,13 @@ alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 alias xvlc='xargs -I{} vlc "{}"'
 alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 
-[[ $DISPLAY ]] && (
+if [[ $DISPLAY ]]; then
     (( $linux )) && alias toclipboard='xsel -i --clipboard' \
                  || alias toclipboard='pbcopy'
     alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-    ) \
-               || alias cpout='xargs echo'   # w/o X11 forwarding
+else
+    alias cpout='xargs echo'   # w/o X11 forwarding
+fi
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
@@ -295,7 +296,8 @@ lssince() {
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
-    [[ "${dt,,}" == "weds" ]] && dt="wed"      # i am bad at wkday abbrevs
+    dt=$( echo $dt | sed 's/weds/wed/g' )    # i am bad at wkday abbrevs
+
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
@@ -342,13 +344,14 @@ zulipjson2msgs(){
 
 
 # ffox stuff
+(( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
+             || PREFIX="$HOME/Library/Application Support/Firefox"
+
 _get_ffox() {
-    (( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
-                 || PREFIX="$HOME/Library/Application Support/Firefox"
     SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini )
     echo "$PREFIX/$SESSION"
 }
-[[ -d "$PREFIX" ]] && (
+if [[ -d "$PREFIX" ]]; then
     export FFOX_PROFILE="$( _get_ffox )"
 
     # save open ffox tabs
@@ -387,7 +390,7 @@ _get_ffox() {
             tr -d '"'
     }
     export -f getAddons
-)
+fi
 
 
 # wifi on/off
