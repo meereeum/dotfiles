@@ -533,6 +533,11 @@ alias gitcontrib='git shortlog -sn'
 alias rm='~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
+untrash() { # unrm ?
+    F="$( ls -t $TRASHDIR | head -n1 )"
+    mv "$TRASHDIR/$F" .
+    echo "recovered: $F"
+}
 
 alias grep='grep --color'
 alias ls='ls --color=auto'
