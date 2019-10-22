@@ -293,6 +293,13 @@ lssince() {
 }
 
 
+cdrecent() {
+    # [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -dt "$@"*/ | head -n1 )"
+    cd "$RECENTEST"
+}
+
+
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
@@ -634,7 +641,9 @@ export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 # Works as long as initialize virtual environment with "virtualenv .venv"
 # alias venv='source .venv/bin/activate'
 
-alias pandoc=/usr/bin/pandoc # don't let conda vs override
+# don't let conda vs override
+(( $linux )) && alias pandoc=/usr/bin/pandoc \
+             || alias pandoc=/usr/local/Cellar/pandoc/*/bin/pandoc
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
