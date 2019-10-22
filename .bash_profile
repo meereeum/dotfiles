@@ -402,7 +402,7 @@ airplane_mode() {
     to=${OPS[1 - $i]} # flip
 
     nmcli radio wifi $to
-    echo "${from^^}-->${to^^}"
+    echo "${from^^} ↪ ${to^^}"
 }
 
 
@@ -708,8 +708,10 @@ upvpn() {
     #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
     GRP="Duo-Broad-NonSplit-VPN"
     VPNURL="https://vpn.broadinstitute.org"
-    echo -e "$@" | sudo openconnect --pid-file $VPNPID --user=shiffman \
-                     --authgroup=$GRP $VPNURL --token-mode yubioath
+    # echo -e "$@" | sudo openconnect --pid-file $VPNPID --user=shiffman \
+    sudo openconnect --pid-file $VPNPID --user=shiffman \
+                     --authgroup=$GRP $VPNURL
+                     # --token-mode yubioath
                      # --background \
                      # --authgroup=$GRP https://vpn.broadinstitute.org
                      # --authgroup=Duo-Broad-NonSplit-VPN https://vpn.broadinstitute.org
