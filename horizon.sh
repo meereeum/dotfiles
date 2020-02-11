@@ -8,7 +8,7 @@ EXCLUDE=currently,minutely,hourly,alerts,flags
 
 # LATLON=42.3566978,-71.1072584 # @ 589
 # LATLON=40.6695668,-73.936074  # @ 961
-[[ -f /tmp/latlon ]] || bash $DIR/geolocate.sh
+[[ -f /tmp/latlon && $( cat /tmp/latlon ) ]] || bash $DIR/geolocate.sh
 LATLON=$( cat /tmp/latlon )
 
 # need to rerun ?

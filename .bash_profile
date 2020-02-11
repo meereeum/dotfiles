@@ -5,12 +5,11 @@
 	                           # echo "hey there, osx"
 
 (( $linux )) && export DISTRO=$(
-    cat /etc/*-release |
-    awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/*-release | # e.g. Debian GNU/Linux 9 (stretch)
-    #         '/^NAME/                                     # e.g. Debian GNU/Linux
-    #         '/^ID=/                                      # e.g. debian
+    awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/os-release | # e.g. Debian GNU/Linux 9 (stretch)
+    #         '/^NAME/                                      # e.g. Debian GNU/Linux
+    #         '/^ID=/                                       # e.g. debian
     xargs # xargs removes "
-)
+)            || export DISTRO=MacOS
 
 
 # editors
@@ -42,7 +41,7 @@ touche() { touch "$@"; e "$@"; }
 [[ $DISPLAY ]] && (( $linux )) && MEDIA="$HOME/shiff" \
                                || MEDIA="$HOME" # aqua ^^ v. rest
 
-alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
+alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 # alias rc='cd $MEDIA/wkspace/rc'
 alias wk='cd $MEDIA/wkspace'
@@ -63,6 +62,7 @@ else
 fi
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
+alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
 alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
@@ -77,6 +77,8 @@ movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
 vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
 
+8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
+
 math() { bc -l <<< "$@"; }
 PI=$( bc -l <<< "scale=10; 4*a(1)" )
 
@@ -89,13 +91,17 @@ nbrerun() {
         (jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=600 "$nb";) &done
 }
 
+# via https://stackoverflow.com/a/31560568
+alias pngcompress='convert -depth 24 -define png:compression-filter=2 -define png:compression-level=9 \
+                           -define png:compression-strategy=1' # -resize 50%
+
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 # via https://unix.stackexchange.com/a/28045
 chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
 introduceyoselves() { for person in {,fe}male{1,2,3} child_{fe,}male; do spd-say "i am a $person" -t $person -w; done; }
 
 coinflip() {
-    choices=( "$@" )
+    [[ "$@" ]] && choices=( "$@" ) || choices=( heads tails )
     echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
     #i=$(( $RANDOM % ${#choices[@]} ))
     #echo "${choices[$i]}"
@@ -143,8 +149,8 @@ pdfsplit() {
 pdfurl2txt() { # e.g. for menus
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
-    #[[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
-    [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
+    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
+    # [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
     echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
 }
 
@@ -165,6 +171,9 @@ srt2txt() {
     grep -i "[a-z]" "$@"
 }
 
+macaddress() {
+    ifconfig en0 | awk '/ether/ {print $2}' | cpout
+}
 
 # universalish / v possibly nonrobust way to query ip address
 # --> this is local (not public) ip
@@ -172,7 +181,7 @@ srt2txt() {
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
 # alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
 alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
-alias ip='echo $( MY_IP ) | cpout'
+alias myip='echo $( MY_IP ) | cpout' # TODO clobbers ip
 
 alias sourceopenstack='. ~/*openrc.sh'
 allowip() {
@@ -268,7 +277,7 @@ lstoday() {
 
 lssince() {
     # check for valid date
-    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' )"
+    maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' -e's/weds/wed/')"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
@@ -416,7 +425,7 @@ airplane_mode() {
     to=${OPS[1 - $i]} # flip
 
     nmcli radio wifi $to
-    echo "${from^^}-->${to^^}"
+    echo "${from^^} ↪ ${to^^}"
 }
 
 
@@ -479,6 +488,8 @@ if ((!$linux)); then
             osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}
         done
     }
+
+    alias kickstart='sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart'
 
 # linux only
 else
@@ -550,6 +561,11 @@ alias gitcontrib='git shortlog -sn'
 alias rm='~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
+untrash() { # unrm ?
+    F="$( ls -t $TRASHDIR | head -n1 )"
+    mv "$TRASHDIR/$F" .
+    echo "recovered: $F"
+}
 
 alias grep='grep --color'
 alias ls='ls --color=auto'
@@ -630,20 +646,26 @@ case "$TERM" in
 	    ;;
 esac
 
-
 # Path thangs
 
-CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
-export PATH="$CONDA/bin:$PATH"
-# export PATH="$PATH:$CONDA/bin"
-export PYTHONPATH="$CONDA/bin/python"
+# CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
+CONDA="$HOME/*conda3" # {ana,mini}conda
+
+if [[ ! "$CONDA" =~ "*" ]]; then # wildcard expanded to valid conda
+    export PATH="$CONDA/bin:$PATH"
+    export PYTHONPATH="$CONDA/bin/python"
+fi
 
 export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
 # alias venv='source .venv/bin/activate'
 
-alias pandoc=/usr/bin/pandoc # don't let conda vs override
+# don't let conda vs override
+for PROG in pandoc youtube-dl; do
+    (( $linux )) && alias $PROG=/usr/bin/$PROG \
+                 || alias $PROG=/usr/local/Cellar/$PROG/*/bin/$PROG
+done
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
@@ -712,17 +734,33 @@ alias downfrazer='sudo umount ~/srv/frazer'
 # broad VPN up/down
 # help via https://gist.github.com/moklett/3170636
 VPNPID="$HOME/.openconnect.pid"
-upvpn() {
-    # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
-    #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
-    GRP="Duo-Broad-NonSplit-VPN"
-    VPNURL="https://vpn.broadinstitute.org"
-    echo -e "$@" | sudo openconnect --pid-file $VPNPID --user=shiffman \
-                     --authgroup=$GRP $VPNURL --token-mode yubioath
-                     # --background \
-                     # --authgroup=$GRP https://vpn.broadinstitute.org
-                     # --authgroup=Duo-Broad-NonSplit-VPN https://vpn.broadinstitute.org
-}
+if (( $linux )); then
+    upvpn() {
+        # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
+        #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
+        # GRP="Duo-Broad-NonSplit-VPN"
+        GRP="Duo-Split-Tunnel-VPN"
+        VPNURL="https://vpn.broadinstitute.org"
+
+        # echo -e "$@" |
+        # sudo openconnect --pid-file $VPNID --user=shiffman \
+            # --authgroup=$GRP $VPNURL
+            # --token-mode yubioath
+            # --background
+        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL
+    }
+else
+    upvpn() {
+        # GRP="Duo-Broad-NonSplit-VPN"
+        GRP="Duo-Split-Tunnel-VPN"
+        VPNURL=69.173.127.10
+
+        sudo openconnect -u shiffman --authgroup $GRP $VPNURL \
+            --servercert pin-sha256:SECRET_broad
+            # --token-mode yubioath
+            # --background
+    }
+fi
 downvpn() {
     if [[ -f $VPNPID ]]; then
         sudo kill "$( cat $VPNPID )" && rm $VPNPID
@@ -749,8 +787,7 @@ export MKL_THREADING_LAYER=GNU # make theanify work
 
 
 # broad servers
-# if [[ -f /etc/redhat-release ]]; then
-if [[ ${DISTRO,,} =~ "redhat" ]]; then
+if [[ ${DISTRO,,} =~ "red hat" ]]; then
 
     DK_DEFAULTS="taciturn reuse dkcomplete"
 
@@ -762,7 +799,8 @@ if [[ ${DISTRO,,} =~ "redhat" ]]; then
         LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
                   grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
                   xargs | sed 's/ /, /g' )
-        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+        # export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+        export PS1="($LS_USE) \e[1m\h:\e[m \$( Wshort ) \$ "
     }
     load_prompt
 
@@ -772,7 +810,8 @@ if [[ ${DISTRO,,} =~ "redhat" ]]; then
     [[ -f $TMPWD ]] && source $TMPWD  # maybe `cd`, &
     echo "cd $HOME/shiffman" > $TMPWD # reset to default
 
-    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7'
+    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7 -l h_rt=3:00:00'
+    # alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab'
     alias ddt='utilize GCC-5.2 Anaconda3 && source activate ddt && cd $HOME/shiffman/tree-ddt'
     alias editbash='echo "cd $PWD" > $TMPWD; vi ~/dotfiles/.bash_profile && source ~/dotfiles/.bash_profile' # re-alias
 
@@ -798,22 +837,72 @@ if [[ ${DISTRO,,} =~ "redhat" ]]; then
     complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
     complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
 
-    OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
-    # (( $( bc <<< "$OS > 7" ) )) && vimdir='vim' || vimdir='vim_dumb' # TODO
-    # alias vim=$HOME/bin/$vimdir
-    (( $( bc <<< "$OS > 7" ) )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
-    alias vim=$vimdir
+    # inspired by https://stackoverflow.com/a/30935977
+    # verbose qstat (long jobnames)
+                                          # fewer sig figs in job priority, clean up datetime, etc:
+                                          # ARG bash won't let me inline comments
+    _vqstat() { qstat -xml | tr -d '\n' | sed -re 's/<job_list[^>]*>/\n/g' -e 's/<queue_name>[^>]*>//g' \
+                                              -e 's/<JAT_prio>([.0-9]{4})[^>]*>/\1/g' \
+                                              -e 's/<[^>]*>//g' -e 's/shiffman//g' \
+                                              -e 's/20([-0-9]*)T([0-9]*:[0-9]*)[^ ]*/\1 \2/g' \
+                           | awk '$NF'; } #| column -t; }
+    # with header..
+    vqstat() { (qstat | head -n1 | sed -re 's/(queue|user|jclass|ja-)//g' \
+                                       -e 's/submit\/start at/date time/' \
+                    && _vqstat) | column -t | awk 'NR==1 {print $0; gsub(".","-")}1'; } # dashes to underline full header
+
+    # awk 'NR==1{print $0; gsub(".","-")}1'
+    # && _vqstat) | column -t | 'NR==1 {print $0"\n"sub(/*/,"-",$0)} NR>1 {print}'; }
+    # && _vqstat) | column -t | awk -v dashes=$( dashes $COLUMNS ) 'NR==1 {print $0"\n"dashes} NR>1 {print}'; }
+    # && dashes $( math "scale=0; 3 * $COLUMNS" / 4) 
+
+    # OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
+    # # check major (int) version
+    # (( "${OS%.*} > 7" )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
+    # alias vim=$vimdir
+    # broad finally updated to >= redhat 7..
+    alias vim=$HOME/bin/vim
     alias vi=vim
 
     # refresh editors
-    export EDITOR=$vimdir
+    # export EDITOR=$vimdir
+    export EDITOR=vim
     export VISUAL=$EDITOR
     export GIT_EDITOR=$EDITOR
 
     export LANG="en_US.utf8" # b/c broad defaults are :(
     export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
 
-else
+    # make jupyter notebooks work
+    export HOSTADDR=$( hostname -i )
+
+    # shortcut to run notebook in screen
+    nb() {
+        if [[ "$( which python )" =~ "conda" ]]; then # conda already loaded
+            ENV="$( which python | sed -En 's@.*envs/([^/]*).*@\1@p' )" # empty == base
+            conda deactivate # else, will not activate in screen
+        else
+            ENV=""
+            utilize Anaconda3
+        fi
+        wait
+
+        NAME="nb"
+        screen -dmS $NAME
+        SESH=$( screen -ls | grep "\.$NAME\b" | awk '{print $1}' )
+        # via https://askubuntu.com/a/597289
+        screen -S $SESH -X stuff 'utilize Anaconda3 && source activate ddt && \
+            jupyter notebook --no-browser --port=4747'
+
+        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nbfg'
+        # cat ~/.nb | awk "/^http/ {print $1}"
+
+        wait
+        [[ $ENV ]] && source activate $ENV # restore environment, if any
+        jupyter notebook list | awk '/^http/ {print $1}'
+    }
+
+else # non-broad
 
     # last but far from least... fancify
     bash ~/dotfiles/horizon.sh # populate /tmp/darksky
@@ -831,8 +920,4 @@ else
     # csail server only
     [[ ! $DISPLAY ]] && [[ ${DISTRO,,} =~ "debian" ]] && \
         bash ~/dotfiles/metrographer.sh
-    # if [[ -f /etc/debian_version ]] && \
-    #    [[ $( cat /etc/debian_version ) == 9.5 ]]; then # csail server only
-    # fi
-
 fi

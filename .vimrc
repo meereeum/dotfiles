@@ -23,6 +23,7 @@ set nowrap
 " colors
 syntax enable
 " colorscheme plan9
+" set background=dark
 " colorscheme 256_noir_rosy
 " colorscheme paramount
 " colorscheme neon-rollerblades
@@ -51,8 +52,15 @@ autocmd BufNewFile,BufRead *.txt set syntax=markdown   " txt files -> md
 autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
 " autocmd BufNewFile,BufRead *rc set syntax=sh         " rc files -> sh
 
+"Uncomment the following to have Vim jump to the last position when
+" reopening a file
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
+
 " always UTF-8
-"set encoding=utf-8
+set encoding=utf-8
+set t_BE=
 
 " show matching brackets on hover
 set showmatch
@@ -94,6 +102,9 @@ endif
 " 80 char line widths
 " set textwidth=80
 
+" useful statusbar
+set ruler
+
 " keep backup file
 set backup
 
@@ -121,6 +132,15 @@ command JsonFmtAll %!python3 -m json.tool
 command -range JsonFmt <line1>,<line2>!python3 -m json.tool
 nnoremap & :JsonFmtAll<CR>
 vnoremap & :JsonFmt<CR>
+
+" hardcopy to pdf
+" via https://unix.stackexchange.com/a/544113
+" set printfont=Courier:h8 " select the font to use when printing
+command! -range=% Hardcopypdf <line1>,<line2> hardcopy > %.ps | !ps2pdf %.ps && rm %.ps && echo 'created: %.pdf'
+
+" hardcopy to html
+nnoremap <F2> <ESC> :TOhtml <bar> w <bar> !open iceweasel % <CR> <bar> ZQ <CR> <bar> execute '!rm %:p.html' <CR>
+
 
 " https://www.reddit.com/r/vim/comments/48zclk/i_just_found_a_simple_method_to_read_pdf_doc_odt/
 
