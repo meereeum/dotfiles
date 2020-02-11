@@ -10,7 +10,7 @@
     #         '/^NAME/                                     # e.g. Debian GNU/Linux
     #         '/^ID=/                                      # e.g. debian
     xargs # xargs removes "
-)
+)            || export DISTRO=MacOS
 
 
 # editors
@@ -63,6 +63,7 @@ else
 fi
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
+alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
@@ -75,6 +76,8 @@ lunch()  { python $MEDIA/wkspace/mit-lunch/get_menu.py   "$@"; }
 movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
 vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
+
+8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
 
 math() { bc -l <<< "$@"; }
 PI=$( bc -l <<< "scale=10; 4*a(1)" )
@@ -94,7 +97,7 @@ chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
 introduceyoselves() { for person in {,fe}male{1,2,3} child_{fe,}male; do spd-say "i am a $person" -t $person -w; done; }
 
 coinflip() {
-    choices=( "$@" )
+    [[ "$@" ]] && choices=( "$@" ) || choices=( heads tails )
     echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
     #i=$(( $RANDOM % ${#choices[@]} ))
     #echo "${choices[$i]}"
@@ -142,8 +145,8 @@ pdfsplit() {
 pdfurl2txt() { # e.g. for menus
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
-    #[[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
-    [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
+    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
+    # [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
     echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
 }
 
@@ -171,7 +174,7 @@ srt2txt() {
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
 # alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
 alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
-alias ip='echo $( MY_IP ) | cpout'
+alias myip='echo $( MY_IP ) | cpout' # TODO clobbers ip
 
 alias sourceopenstack='. ~/*openrc.sh'
 allowip() {
@@ -267,7 +270,7 @@ lstoday() {
 
 lssince() {
     # check for valid date
-    maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' )"
+    maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' -e's/weds/wed/')"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
@@ -642,8 +645,10 @@ export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 # alias venv='source .venv/bin/activate'
 
 # don't let conda vs override
-(( $linux )) && alias pandoc=/usr/bin/pandoc \
-             || alias pandoc=/usr/local/Cellar/pandoc/*/bin/pandoc
+for PROG in pandoc youtube-dl; do
+    (( $linux )) && alias $PROG=/usr/bin/$PROG \
+                 || alias $PROG=/usr/local/Cellar/$PROG/*/bin/$PROG
+done
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url

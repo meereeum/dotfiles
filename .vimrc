@@ -122,6 +122,15 @@ command -range JsonFmt <line1>,<line2>!python3 -m json.tool
 nnoremap & :JsonFmtAll<CR>
 vnoremap & :JsonFmt<CR>
 
+" hardcopy to pdf
+" via https://unix.stackexchange.com/a/544113
+" set printfont=Courier:h8 " select the font to use when printing
+command! -range=% Hardcopypdf <line1>,<line2> hardcopy > %.ps | !ps2pdf %.ps && rm %.ps && echo 'created: %.pdf'
+
+" hardcopy to html
+nnoremap <F2> <ESC> :TOhtml <bar> w <bar> !open iceweasel % <CR> <bar> ZQ <CR> <bar> execute '!rm %:p.html' <CR>
+
+
 " https://www.reddit.com/r/vim/comments/48zclk/i_just_found_a_simple_method_to_read_pdf_doc_odt/
 
 autocmd BufReadPost *.doc,*.docx,*.rtf,*.odp,*.odt silent %!pandoc "%" -tplain -o /dev/stdout
