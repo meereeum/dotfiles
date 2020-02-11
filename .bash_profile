@@ -36,7 +36,7 @@ touche() { touch "$@"; e "$@"; }
 
 MEDIA="${HOME}/shiff"
 
-alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
+alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 # alias rc='cd ${MEDIA}/wkspace/rc'
 alias wk='cd ${MEDIA}/wkspace'
@@ -53,6 +53,7 @@ alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 alias cpout='xargs echo'                  # w/o X11 forwarding
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
+alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
@@ -550,20 +551,27 @@ esac
 # export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
 # export PS1="$PS1"
 
-bash ~/dotfiles/horizon.sh # populate /tmp/darksky
 
-MOON=$( bash ~/dotfiles/moony.sh )
-export PS1="$MOON$PS1" # prepend moon
-# export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
+if [[ ! -f /etc/redhat-release ]]; then # not broad
+    bash ~/dotfiles/horizon.sh # populate /tmp/darksky
 
-SUN=$( bash ~/dotfiles/sunny.sh )
-[[ $SUN ]] && echo $SUN # skip if no return
+    MOON=$( bash ~/dotfiles/moony.sh )
+    export PS1="$MOON$PS1" # prepend moon
+    # export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
+
+    SUN=$( bash ~/dotfiles/sunny.sh )
+    [[ $SUN ]] && echo $SUN # skip if no return
+fi
 
 # Path thangs
 
-CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
-export PATH="$CONDA/bin:$PATH"
-export PYTHONPATH="$CONDA/bin/python"
+# CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
+CONDA="$HOME/*conda3" # {ana,mini}conda
+
+if [[ ! "$CONDA" =~ "*" ]]; then # wildcard expanded to valid conda
+    export PATH="$CONDA/bin:$PATH"
+    export PYTHONPATH="$CONDA/bin/python"
+fi
 
 export pandoc=/usr/bin/pandoc # don't let conda vs override
 
@@ -707,20 +715,85 @@ if [[ -f /etc/redhat-release ]]; then
     complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
     complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
 
-    OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
-    #(( $( bc <<< "$OS > 7" ) )) && vimdir='vim' || vimdir='vim_dumb' # TODO
-    #alias vim=$HOME/bin/$vimdir
-    (( $( bc <<< "$OS > 7" ) )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
-    alias vim=$vimdir
+    # inspired by https://stackoverflow.com/a/30935977
+    # verbose qstat (long jobnames)
+                                          # fewer sig figs in job priority, clean up datetime, etc:
+                                          # ARG bash won't let me inline comments
+    _vqstat() { qstat -xml | tr -d '\n' | sed -re 's/<job_list[^>]*>/\n/g' -e 's/<queue_name>[^>]*>//g' \
+                                              -e 's/<JAT_prio>([.0-9]{4})[^>]*>/\1/g' \
+                                              -e 's/<[^>]*>//g' -e 's/shiffman//g' \
+                                              -e 's/20([-0-9]*)T([0-9]*:[0-9]*)[^ ]*/\1 \2/g' \
+                           | awk '$NF'; } #| column -t; }
+    # with header..
+    vqstat() { (qstat | head -n1 | sed -re 's/(queue|user|jclass|ja-)//g' \
+                                       -e 's/submit\/start at/date time/' \
+                    && _vqstat) | column -t | awk 'NR==1 {print $0; gsub(".","-")}1'; } # dashes to underline full header
+
+    # awk 'NR==1{print $0; gsub(".","-")}1'
+    # && _vqstat) | column -t | 'NR==1 {print $0"\n"sub(/*/,"-",$0)} NR>1 {print}'; }
+    # && _vqstat) | column -t | awk -v dashes=$( dashes $COLUMNS ) 'NR==1 {print $0"\n"dashes} NR>1 {print}'; }
+    # && dashes $( math "scale=0; 3 * $COLUMNS" / 4) 
+
+    # OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
+    # # check major (int) version
+    # (( "${OS%.*} > 7" )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
+    # alias vim=$vimdir
+    # broad finally updated to >= redhat 7..
+    alias vim=$HOME/bin/vim
     alias vi=vim
 
     # refresh editors
-    export EDITOR=$vimdir
+    # export EDITOR=$vimdir
+    export EDITOR=vim
     export VISUAL=$EDITOR
     export GIT_EDITOR=$EDITOR
 
     export LANG="en_US.utf8" # b/c broad defaults are :(
     export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
+
+    # make jupyter notebooks work
+    export HOSTADDR=$( hostname -i )
+
+    # shortcut to run notebook in screen
+    nb() {
+        if [[ "$( which python )" =~ "conda" ]]; then # conda already loaded
+            ENV="$( which python | sed -En 's@.*envs/([^/]*).*@\1@p' )" # empty if base
+            conda deactivate
+        else
+            ENV=""
+            utilize Anaconda3
+        fi
+
+        # # if [[ "$( which python )" =~ "conda" ]]; then
+        # #     ENV=$( conda env list | grep "*" | awk '{print $1}' )
+        # #     [[ ! "$ENV" == "base" ]] && conda deactivate
+        # # fi
+        # utilize Anaconda3
+        # ENV="$( which python | sed -En 's@.*envs/([^/]*).*@\1@p' )" # empty if base
+        # conda deactivate
+        # # [[ $ENV ]] && echo hi $ENV && conda deactivate # else, will not activate in screen
+        wait
+
+        NAME="nb"
+        screen -dmS $NAME
+        SESH=$( screen -ls | grep "\.$NAME\b" | awk '{print $1}' )
+
+        # if conda already loaded, deactivate any environments
+        # [[ "$( which python )" =~ "conda" ]] && conda deactivate # else, will not activate in screen
+
+        # via https://askubuntu.com/a/597289
+        screen -S $SESH -X stuff 'utilize Anaconda3 && source activate ddt && \
+            jupyter notebook --no-browser --port=4747'
+
+        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nbfg'
+        # cat ~/.nb | awk "/^http/ {print $1}"
+
+        # [[ ! "$ENV" == "base" ]] && source activate $ENV # restore environment
+        wait
+        echo $ENV
+        [[ $ENV ]] && source activate $ENV # restore environment
+        jupyter notebook list | awk '/^http/ {print $1}'
+    }
 fi
 
 
