@@ -1,30 +1,35 @@
 # detect os
-if [[ "$OSTYPE" = "linux-gnu" ]]; then
-	export linux=1
-	#echo "hey there, debian"
-else
-	export linux=0
-	#echo "hey there, osx"
-fi
+	                           # echo "hey there, debian"
+[[ "$OSTYPE" = "linux-gnu" ]] && export linux=1 \
+                              || export linux=0
+	                           # echo "hey there, osx"
+
+(( $linux )) && export DISTRO=$(
+    cat /etc/*-release |
+    awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/*-release | # e.g. Debian GNU/Linux 9 (stretch)
+    #         '/^NAME/                                     # e.g. Debian GNU/Linux
+    #         '/^ID=/                                      # e.g. debian
+    xargs # xargs removes "
+)
 
 
 # editors
-#alias python="echo 'use haskell!'"
+# alias python="echo 'use haskell!'"
 export EDITOR=vim
 export VISUAL=$EDITOR
-#export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
-##export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
+# export EVERYWHERE_EDITOR='/usr/bin/emacsclient --alternate-editor="" -c'
+# export EVERYWHERE_EDITOR='/usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs'
 export GIT_EDITOR=$EDITOR
 
-#e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
+# e() { emacsclient --alternate-editor="" -nc "$@" & disown; }
 if (($linux)); then
-	#e() { emacs "$@" 2>&1 > /dev/null & disown; }
-	#e() { emacs "$@"; }
+	# e() { emacs "$@" 2>&1 > /dev/null & disown; }
+	# e() { emacs "$@"; }
 	e() { emacsclient --alternate-editor="" -nc "$@"; }
 else
-	#e() { open -a Emacs "$@" & disown; }
-	#e() { emacs "$@" & disown; }
-	#e() { /Applications/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
+	# e() { open -a Emacs "$@" & disown; }
+	# e() { emacs "$@" & disown; }
+	# e() { /Applications/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
 	e() { /usr/local/Cellar/emacs-mac/*/Emacs.app/Contents/MacOS/Emacs "$@" & disown; }
 fi
 
@@ -34,23 +39,28 @@ touche() { touch "$@"; e "$@"; }
 
 # aliasing
 
-MEDIA="${HOME}/shiff"
+[[ $DISPLAY ]] && (( $linux )) && MEDIA="$HOME/shiff" \
+                               || MEDIA="$HOME" # aqua ^^ v. rest
 
 alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
 alias http='python -m SimpleHTTPServer'
-# alias rc='cd ${MEDIA}/wkspace/rc'
-alias wk='cd ${MEDIA}/wkspace'
-alias mit='cd ${MEDIA}/mit'
-alias quotes='vi ${MEDIA}/txt/quotes.txt'
+# alias rc='cd $MEDIA/wkspace/rc'
+alias wk='cd $MEDIA/wkspace'
+alias mit='cd $MEDIA/mit'
+alias quotes='vi $MEDIA/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
 alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
-#alias urls='ssh -t csail "vi txt/urls"'
+# alias urls='ssh -t csail "vi txt/urls"'
 alias xvlc='xargs -I{} vlc "{}"'
 alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 
-(( $linux )) && alias toclipboard='xsel -i --clipboard' || alias toclipboard='pbcopy'
-#alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-alias cpout='xargs echo'                  # w/o X11 forwarding
+if [[ $DISPLAY ]]; then
+    (( $linux )) && alias toclipboard='xsel -i --clipboard' \
+                 || alias toclipboard='pbcopy'
+    alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+else
+    alias cpout='xargs echo'   # w/o X11 forwarding
+fi
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias h5tree='bash ~/dotfiles/h5tree.sh'
@@ -62,18 +72,28 @@ export DELTAS="${DELTA}s"
 
 export STRFDATE="+%y%m%d"
 
-
-lunch() { python ${MEDIA}/wkspace/mit-lunch/get_menu.py "$@"; }
-movies() { python ${MEDIA}/wkspace/cinematic/get_movies.py "$@"; }
-lsbeer() { python ${MEDIA}/wkspace/lsbeer/get_beer.py "$@"; }
-vixw() { python ${MEDIA}/wkspace/vixw/vixw/vixw.py "$@"; }
+lunch()  { python $MEDIA/wkspace/mit-lunch/get_menu.py   "$@"; }
+movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
+lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
+vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
 
 math() { bc -l <<< "$@"; }
+PI=$( bc -l <<< "scale=10; 4*a(1)" )
+
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
 token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
+nbrerun() {
+    for nb in "$@"; do
+        (jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=600 "$nb";) &done
+}
+
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
+# via https://unix.stackexchange.com/a/28045
+chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
+introduceyoselves() { for person in {,fe}male{1,2,3} child_{fe,}male; do spd-say "i am a $person" -t $person -w; done; }
+
 coinflip() {
     choices=( "$@" )
     echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
@@ -81,8 +101,13 @@ coinflip() {
     #echo "${choices[$i]}"
 }
 
-addmusic() { F="$MEDIA/txt/music"; echo -e "$@" >> $F; tail -n4 $F; }
-addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
+
+# aqua only
+[[ $DISPLAY ]] && (( $linux )) && (
+    addmusic() { F="$MEDIA/txt/music";   echo -e "$@" >> $F; tail -n4 $F; }
+    addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
+)
+
 
 # anagram utils
 sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
@@ -128,7 +153,6 @@ getbbox() {
     gs -o /dev/null -sDEVICE=bbox "$@" 2>&1 | awk '/%%B/ {print $2,$3,$4,$5}' # redirect ghostscript STDERR to STDOUT, & parse
 }
 
-
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
 vtt2txt() {
@@ -141,6 +165,7 @@ srt2txt() {
     grep -i "[a-z]" "$@"
 }
 
+
 # universalish / v possibly nonrobust way to query ip address
 # --> this is local (not public) ip
 # ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
@@ -150,30 +175,21 @@ alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias ip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
-allowip()
-{
+allowip() {
     IP="$@"
     [[ $IP ]] || IP=$( MY_IP )
     sourceopenstack
-    openstack security group rule create --protocol tcp --dst-port 22 --src-ip $IP ssh
-    # openstack security group rule create --protocol tcp --dst-port 22 --remote-ip $IP ssh
+
+    (( $linux )) && flag="src" || flag="remote"
+    openstack security group rule create --protocol tcp --dst-port 22 --$flag-ip $IP ssh
 }
 
-# reset illustrator trial
-resetadobe()
-{
-    f="/Applications/Adobe Illustrator CC 2018/Support Files/AMT/AI/AMT/application.xml"
-    oldn=$( awk -F'[<>]' '/TrialSerial/{print $3}' "$f" )
-    newn=$( math "$oldn + 1" )
-    sudo sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
-}
 
 #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
 # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
 
 # add appropriate suffix to unspecified file
-suffix()
-{
+suffix() {
   for f in "$@"; do
     SUFF=$( file -b "$f" | awk '{print $1}' )
     [ "${SUFF,,}" = "ascii" ] && SUFF="txt"
@@ -195,7 +211,7 @@ suffix()
 
 # list top `n` files (by size, including inside directory)
 # lsbiggest [-n] $dir (default: 10, working dir)
-lsbiggest(){
+lsbiggest() {
     #(( $@ )) && n=$@ || n=10
     #du -ahd1 | sort -k1,1 -h | tail -n $(( $n + 1 )) # account for total size
 
@@ -226,7 +242,7 @@ lsbiggest(){
 
 # list files filtered by date
 # lstoday [$date] $files (default: today, working dir)
-lstoday(){
+lstoday() {
     # check for valid date
     [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || with_date=0
 
@@ -250,7 +266,7 @@ lstoday(){
 }
 
 
-lssince(){
+lssince() {
     # check for valid date
     maybe_dt="$( echo "$1" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' )"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
@@ -278,13 +294,32 @@ lssince(){
 }
 
 
+cdrecent() {
+    # [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -dt "$@"*/ | head -n1 )"
+    cd "$RECENTEST"
+}
+
+
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
+    dt=$( echo $dt | sed 's/weds/wed/g' )    # i am bad at wkday abbrevs
+
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
 }
+
+
+# only print 1st `n` levels (collapse rest)
+# adapted from https://github.com/stedolan/jq/issues/306#issuecomment-35975958
+jqfirstn() {
+    n="$1"; shift
+    levels=$( yes "[]?" | head -n $n | tr -d '\n' )
+    jq 'reduce path(.'"$levels"') as $path (.; setpath($path; {}))' "$@"
+}
+
 
 # extract zulip msgs
 # zulipjson2msgs(){ cat "$@" | jq -c '.messages[].content' | # <-- without **mirtom
@@ -313,43 +348,61 @@ zulipjson2msgs(){
       grep -v '^<div class="message_inline_image">' | awk '$NF';
     # grep -v "^</?div"
 }
-
-
 # N.B. missing txt inside <span class="k">, which seems to be a latex math block
 
-# save open ffox tabs
-# inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
-openTabs(){
-    (( $linux )) && PREFIX="$HOME/.mozilla/firefox" || PREFIX="$HOME/Library/Application Support/Firefox"
-    SESSION=$( awk -F'=' '/Path/ {print $2}' "${PREFIX}"/profiles.ini )
-    #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
-    cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
-     dejsonlz4 - |
-     jq -c '.windows[].tabs[].entries[-1].url' |
-     sed -e 's/^"//' -e 's/"$//' |
 
-     # filter unwanted
-     grep -v -e'[(calendar)|(mail)].google.com' -e'owa.mit.edu' -e'webmail.csail.mit.edu' -e'^file:' -e'zulipchat.com' |
+# ffox stuff
+(( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
+             || PREFIX="$HOME/Library/Application Support/Firefox"
 
-     # site-specific edits
-     awk '!/about:sessionrestore/' |
-     awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' | # get rid of post-? junk
-     sed 's@\(google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@' |                      # get rid of post-? junk besides query
-     sed 's@\(biorxiv.org/.*\)\.full\.pdf.*$@\1@' |                                     # biorxiv pdf -> abs
-     sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
-
-     # rm trailing stuff
-     sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
+_get_ffox() {
+    SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini )
+    echo "$PREFIX/$SESSION"
 }
+if [[ -d "$PREFIX" ]]; then
+    export FFOX_PROFILE="$( _get_ffox )"
 
-getOpenTabs(){ openTabs | cpout; }
-#saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
-saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
+    # save open ffox tabs
+    # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
+    openTabs(){
+        #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
+        #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+        cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
+         dejsonlz4 - |
+         jq -c '.windows[].tabs[].entries[-1].url' |
+         sed -e 's/^"//' -e 's/"$//' |
+
+         # filter unwanted
+         grep -v -e'[(calendar)|(mail)].google.com' -e'owa.mit.edu' -e'webmail.csail.mit.edu' -e'^file:' -e'zulipchat.com' |
+
+         # site-specific edits
+         awk '!/about:sessionrestore/' |
+         awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' | # get rid of post-? junk
+         sed 's@\(google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@' |                      # get rid of post-? junk besides query
+         sed 's@\(biorxiv.org/.*\)\.full\.pdf.*$@\1@' |                                     # biorxiv pdf -> abs
+         sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
+
+         # rm trailing stuff
+         sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
+    }
+
+    getOpenTabs(){ openTabs | cpout; }
+    #saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
+    saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
+
+    getAddons() {
+        # exclude addons that are not automatic ffox extensions
+        cat "$FFOX_PROFILE/extensions.json" |
+            # jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
+            jq -c '.addons[] | select(.location == "app-profile").defaultLocale.name' |
+            tr -d '"'
+    }
+    export -f getAddons
+fi
 
 
 # wifi on/off
-airplane_mode()
-{
+airplane_mode() {
     OPS=(on off)
 
     [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
@@ -357,14 +410,13 @@ airplane_mode()
     to=${OPS[1 - $i]} # flip
 
     nmcli radio wifi $to
-    echo "${from^^}-->${to^^}"
+    echo "${from^^} ↪ ${to^^}"
 }
 
 
 # terminal tab title
 # via https://recurse.zulipchat.com/#narrow/stream/Unix.20commands/subject/change.20terminal.20tab.20title.20(OSX)
-t()
-{
+t() {
     TITLE=$@
     PATTERN="||"
     echo -en "\033]2;$PATTERN ${TITLE^^} $PATTERN\a"
@@ -403,6 +455,17 @@ if ((!$linux)); then
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
 	alias cpy='copy'
 
+    # screen shots
+    alias update_screenshots='mv ~/Desktop/Screen* ~/pix/screenshots; rsync -rz --progress ~/pix csail:./macos'
+
+    # reset illustrator trial
+    resetadobe() {
+        f="/Applications/Adobe Illustrator CC 2018/Support Files/AMT/AI/AMT/application.xml"
+        oldn=$( awk -F'[<>]' '/TrialSerial/{print $3}' "$f" )
+        newn=$( math "$oldn + 1" )
+        sudo sed -i'.tmp' -E "s/(TrialSerial.*)$oldn/\1$newn/" "$f"
+    }
+
 	# internet tabs --> file
 	tabs() {
         now=$( date $STRFDATE )
@@ -432,26 +495,32 @@ fi
 if (($linux)); then
     # find all packages uninstalled via ```$ apt-get remove```
     # redirect errors if no gzipped history log to /dev/null
+    # pkgs() {
+    #     uninstalled=$(
+    #         ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+    #         cat /var/log/apt/history.log ) |
+    #             #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
+    #             # combination sed/grep for removed pkg names, minus -options
+    #             sed -nr "s/^Commandline: apt-get remove (-. )?//p" |
+    #             # transform into regex to grep out
+    #             tr "\n " "|" | sed "s/|$//"
+    #             )
+
+    #     ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
+    #     cat /var/log/apt/history.log ) |
+    #         #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
+    #         # combination sed/grep for all installed pkgs names, minus -options
+    #         sed -nr "s/^Commandline: apt-get install (-. )?//p" |
+    #         # grep out uninstalled (unless empty)
+    #         egrep -v ${uninstalled:-NADA_MUCHO};
+    # }
+
+    # ^^ this stops working when history logs get rotated out ! (== deleted)
+    # much simpler:
+    # via https://askubuntu.com/a/496042
     pkgs() {
-        uninstalled=$(
-            ( zcat $(ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
-            cat /var/log/apt/history.log ) |
-                #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
-                # combination sed/grep for removed pkg names, minus -options
-                sed -nr "s/^Commandline: apt-get remove (-. )?//p" |
-                # transform into regex to grep out
-                tr "\n " "|" | sed "s/|$//"
-                )
-
-        ( zcat $( ls -tr /var/log/apt/history.log*.gz 2>/dev/null) 2>/dev/null;
-        cat /var/log/apt/history.log ) |
-            #egrep "^(Start-Date:|Commandline:)" | grep -v aptdaemon |
-            # combination sed/grep for all installed pkgs names, minus -options
-            sed -nr "s/^Commandline: apt-get install (-. )?//p" |
-            # grep out uninstalled (unless empty)
-            egrep -v ${uninstalled:-NADA_MUCHO};
+        apt-mark showmanual
     }
-
   else
     pkgs() {
         cd ${HOME}/dotfiles/packages
@@ -460,10 +529,7 @@ if (($linux)); then
         # brew list
     }
 fi
-
-
-# Works as long as initialize virtual environment with "virtualenv .venv"
-#alias venv='source .venv/bin/activate'
+export -f pkgs
 
 
 # pretty print git log (via Mary @RC)
@@ -478,6 +544,11 @@ alias gitcontrib='git shortlog -sn'
 alias rm='~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
+untrash() { # unrm ?
+    F="$( ls -t $TRASHDIR | head -n1 )"
+    mv "$TRASHDIR/$F" .
+    echo "recovered: $F"
+}
 
 alias grep='grep --color'
 alias ls='ls --color=auto'
@@ -489,41 +560,20 @@ alias vinilla='vi -u NONE'
 # history
 
 export HISTSIZE="INFINITE" # via https://superuser.com/questions/479726/how-to-get-infinite-command-history-in-bash
-#HISTFILESIZE=100000 # 10^6
+# HISTFILESIZE=100000 # 10^6
 export HISTFILESIZE=$HISTSIZE
 
 # ignore 1-2 letter commands, variants of ls, pwd
-#HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
+# HISTIGNORE="??:ls -?:ls -??:ls -???:pwd"
 export HISTIGNORE="?:??:pwd:history"
+
+# ignore duplicates
+# HISTCONTROL=erasedups
+export HISTCONTROL=ignorespace:ignoredups
 
 # via https://www.shellhacks.com/tune-command-line-history-bash/
 # append rather than overwriting history (which would only save last closed bash sesh)
 shopt -s histappend
-# make commands executed in one shell immediately accessible in history of others
-# i.e. append, then clear, then reload file
-# export PROMPT_COMMAND="history -a; history -c; history -r"
-# export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
-# ignore duplicates
-#HISTCONTROL=erasedups
-export HISTCONTROL=ignorespace:ignoredups
-
-# via https://unix.stackexchange.com/questions/1288/preserve-bash-history-in-multiple-terminal-windows
-
-# _bash_history_sync() {
-#   builtin history -a         #1
-#   HISTFILESIZE=$HISTSIZE     #2
-#   builtin history -c         #3
-#   builtin history -r         #4
-# }
-#
-# history() {                  #5
-#   _bash_history_sync
-#   builtin history "$@"
-# }
-#
-# PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
-PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND} ;}history -a"
-
 # reedit a history substitution line if it failed
 shopt -s histreedit
 # edit a recalled history line before executing
@@ -531,37 +581,53 @@ shopt -s histverify
 # multi-line commands in 1 history entry
 shopt -s cmdhist
 
+# make commands executed in one shell immediately accessible in history of others
+# i.e. append, then clear, then reload file
+# export PROMPT_COMMAND="history -a; history -c; history -r"
+# export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+# via https://unix.stackexchange.com/questions/1288/preserve-bash-history-in-multiple-terminal-windows
+_bash_history_sync() {
+  builtin history -a         #1
+  HISTFILESIZE=$HISTSIZE     #2
+  builtin history -c         #3
+  builtin history -r         #4
+}
+
+history() {                  #5
+  _bash_history_sync
+  builtin history "$@"
+}
+
+export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
+# PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND} ;}history -a"
+
 # extended regex - e.g. $ ls !(*except_this)
 shopt -s extglob
 
-# succinct cmd line (working dir only)
+
+# prompt stuff
+
+# succinct cmd line (abbrev working dir only)
+Wshort() { # inspired by https://askubuntu.com/a/29580
+    W=$( basename ${PWD/$HOME/"~"} )
+    (( ${#W} > 30 )) && W="${W::10}…${W:(-19)}" # 1st 10 … last 19
+    echo $W
+}
+
 # homebase vs remote / server
-[[ $DISPLAY ]] && PS1=" \W \$ " || PS1="\e[1m\h:\e[m \W \$ "
+[[ $DISPLAY ]] && export PS1=" \$( Wshort ) \$ " \
+               || export PS1="\e[1m\h:\e[m \$( Wshort ) \$ "
+# [[ $DISPLAY ]] && export PS1=" \W \$ " \
+#                || export PS1="\e[1m\h:\e[m \W \$ "
 
 case "$TERM" in
 	"dumb")
 	    export PS1="> " # make tramp compatible ?
 	    ;;
 	*)
-        #export PS1=" \W \$ "
         export PS1="$PS1"
 	    ;;
 esac
-# export PS1=" \W \$ "               # homebase
-# export PS1="\e[1m\h:\e[m \W \$ "   # remote / server
-# export PS1="$PS1"
-
-
-if [[ ! -f /etc/redhat-release ]]; then # not broad
-    bash ~/dotfiles/horizon.sh # populate /tmp/darksky
-
-    MOON=$( bash ~/dotfiles/moony.sh )
-    export PS1="$MOON$PS1" # prepend moon
-    # export PS1=$( echo "$MOON $PS1" | sed 's/  */ /g' ) # prepend moon
-
-    SUN=$( bash ~/dotfiles/sunny.sh )
-    [[ $SUN ]] && echo $SUN # skip if no return
-fi
 
 # Path thangs
 
@@ -573,17 +639,20 @@ if [[ ! "$CONDA" =~ "*" ]]; then # wildcard expanded to valid conda
     export PYTHONPATH="$CONDA/bin/python"
 fi
 
-export pandoc=/usr/bin/pandoc # don't let conda vs override
+export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 
-# will be useful after upgrading to 3.7..
-# via builtin breakpoint()
-export PYTHONBREAKPOINT="IPython.embed"
+# Works as long as initialize virtual environment with "virtualenv .venv"
+# alias venv='source .venv/bin/activate'
+
+# don't let conda vs override
+(( $linux )) && alias pandoc=/usr/bin/pandoc \
+             || alias pandoc=/usr/local/Cellar/pandoc/*/bin/pandoc
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
-#if (($linux)); then
-	#export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-#else
+# (($linux)) && export CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
+# osx stuff
 if ((!$linux)); then
 	# added for homebrew, coreutils
     GNUPATH=$( echo "/usr/local/opt/"{grep,coreutils,gnu-{sed,tar,which,indent}}"/libexec/gnubin:" |
@@ -599,11 +668,6 @@ if ((!$linux)); then
 	alias vi=vim
     export VIMRUNTIME=/usr/local/Cellar/vim/*/share/vim/*
 
-    # # refresh editors
-    # export EDITOR=vim
-    # export VISUAL=$EDITOR
-    # export GIT_EDITOR=$EDITOR
-
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
 
@@ -612,23 +676,15 @@ if ((!$linux)); then
     export LDFLAGS="-L/usr/local/lib"
 
     # brew autocomplete
+    autobrew="$(brew --prefix)/etc/bash_completion.d/brew"
+    [[ -f "$autobrew" ]] && . $autobrew
 	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
-	#  fi
+	# fi
 fi
 
 
-# ACE
-
 # ace servers
-alias acerudd='ssh acerudd'
-alias acekeating='ssh acekeating'
-alias acehawke='ssh acehawke'
-alias acebrown='ssh acebrown'
-alias acegillard='ssh acegillard'
-alias acemenzies='ssh acemenzies'
-alias acefrazer='ssh acefrazer'
-alias acecurtin='ssh acecurtin'
 
 # for faster X11 connection
 alias fastfrazer='ssh -Y -C -o CompressionLevel=9 -c arcfour,blowfish-cbc uqmschif@10.168.48.13'
@@ -650,26 +706,56 @@ alias downgillard='sudo umount ~/srv/gillard'
 alias downmenzies='sudo umount ~/srv/menzies'
 alias downfrazer='sudo umount ~/srv/frazer'
 
-
 # UQ VPN up/down
 # http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
-alias vuq='sudo vpnc uq'
-alias vdc='sudo vpnc-disconnect'
+# alias vuq='sudo vpnc uq'
+# alias vdc='sudo vpnc-disconnect'
+
+
+# broad VPN up/down
+# help via https://gist.github.com/moklett/3170636
+VPNPID="$HOME/.openconnect.pid"
+upvpn() {
+    # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
+    #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
+    GRP="Duo-Broad-NonSplit-VPN"
+    VPNURL="https://vpn.broadinstitute.org"
+    # echo -e "$@" | sudo openconnect --pid-file $VPNPID --user=shiffman \
+    sudo openconnect --pid-file $VPNPID --user=shiffman \
+                     --authgroup=$GRP $VPNURL
+                     # --token-mode yubioath
+                     # --background \
+                     # --authgroup=$GRP https://vpn.broadinstitute.org
+                     # --authgroup=Duo-Broad-NonSplit-VPN https://vpn.broadinstitute.org
+}
+downvpn() {
+    if [[ -f $VPNPID ]]; then
+        sudo kill "$( cat $VPNPID )" && rm $VPNPID
+        pgrep openconnect
+    else
+        echo "vpn not running."
+    fi
+}
+
 
 # autocomplete screen
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
 
-[[ $DISPLAY ]] || export QT_QPA_PLATFORM=offscreen # make tensorflow / matplotlib work if server
+[[ ! $DISPLAY ]] && export QT_QPA_PLATFORM=offscreen # make tensorflow / matplotlib work if server
 
-# make theanify work
-export MKL_THREADING_LAYER=GNU
+export MKL_THREADING_LAYER=GNU # make theanify work
 
 
-# screen shots
-alias update_screenshots='mv ~/Desktop/Screen* ~/pix/screenshots; rsync -rz --progress ~/pix csail:./macos'
+# The next lines update PATH for the Google Cloud SDK,
+#              & enable shell command completion for gcloud.
+# for f in "$HOME/google-cloud-sdk/{path,completion}.bash.inc"; do
+#     [[ -f "$f" ]] && source "$f"
+# done
+
 
 # broad servers
-if [[ -f /etc/redhat-release ]]; then
+if [[ ${DISTRO,,} =~ "red hat" ]]; then
+
     DK_DEFAULTS="taciturn reuse dkcomplete"
 
     use -q $DK_DEFAULTS # quietly load
@@ -687,27 +773,28 @@ if [[ -f /etc/redhat-release ]]; then
     # make CWD nice
     TMPWD="$HOME/.cwd"
 
-    [ -f $TMPWD ] && source $TMPWD   # maybe `cd`, &
+    [[ -f $TMPWD ]] && source $TMPWD  # maybe `cd`, &
     echo "cd $HOME/shiffman" > $TMPWD # reset to default
 
     alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7'
     alias ddt='utilize GCC-5.2 Anaconda3 && source activate ddt && cd $HOME/shiffman/tree-ddt'
     alias editbash='echo "cd $PWD" > $TMPWD; vi ~/dotfiles/.bash_profile && source ~/dotfiles/.bash_profile' # re-alias
 
+    # utilize >> use
     utilize()   {   use "$@" && load_prompt; }
     reutilize() { reuse "$@" && load_prompt; }
     unutilize() { unuse "$@" && load_prompt; }
 
     utilize UGER
 
-    #functions[use]='
-    #  (){ '$functions[use]'; } "$@"; local myret=$?
-    #  echo "hellooo"
-    #  return $myret'
+    # functions[use]='
+    #   (){ '$functions[use]'; } "$@"; local myret=$?
+    #   echo "hellooo"
+    #   return $myret'
 
-    #use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
-    #reuse() { reuse "$@" && load_prompt; }
-    #unuse() { unuse "$@" && load_prompt; }
+    # use() { local source /broad/software/scripts/useuse && use "$@" && load_prompt; }
+    # reuse() { reuse "$@" && load_prompt; }
+    # unuse() { unuse "$@" && load_prompt; }
 
     # turn on autocompletion
     # via /broad/software/dotkit/bash/dkcomplete.d
@@ -794,11 +881,21 @@ if [[ -f /etc/redhat-release ]]; then
         [[ $ENV ]] && source activate $ENV # restore environment
         jupyter notebook list | awk '/^http/ {print $1}'
     }
+else
+    # last but far from least... fancify
+    bash ~/dotfiles/horizon.sh # populate /tmp/darksky
+
+    # prepend moon
+    MOON=$( bash ~/dotfiles/moony.sh )
+    [[ $DISPLAY ]] && export PS1="$MOON$PS1" \
+                   || export PS1="$MOON $PS1"
+
+    # echo sun
+    SUN=$( bash ~/dotfiles/sunny.sh )
+    [[ $SUN ]] && echo $SUN # skip if no return
+
+    # check metrograph !
+    # csail server only
+    [[ ! $DISPLAY ]] && [[ ${DISTRO,,} =~ "debian" ]] && \
+        bash ~/dotfiles/metrographer.sh
 fi
-
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/ubuntu/google-cloud-sdk/path.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/path.bash.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/home/ubuntu/google-cloud-sdk/completion.bash.inc' ]; then source '/home/ubuntu/google-cloud-sdk/completion.bash.inc'; fi
