@@ -845,30 +845,17 @@ if [[ ${DISTRO,,} =~ "red hat" ]]; then
     # shortcut to run notebook in screen
     nb() {
         if [[ "$( which python )" =~ "conda" ]]; then # conda already loaded
-            ENV="$( which python | sed -En 's@.*envs/([^/]*).*@\1@p' )" # empty if base
-            conda deactivate
+            ENV="$( which python | sed -En 's@.*envs/([^/]*).*@\1@p' )" # empty == base
+            conda deactivate # else, will not activate in screen
         else
             ENV=""
             utilize Anaconda3
         fi
-
-        # # if [[ "$( which python )" =~ "conda" ]]; then
-        # #     ENV=$( conda env list | grep "*" | awk '{print $1}' )
-        # #     [[ ! "$ENV" == "base" ]] && conda deactivate
-        # # fi
-        # utilize Anaconda3
-        # ENV="$( which python | sed -En 's@.*envs/([^/]*).*@\1@p' )" # empty if base
-        # conda deactivate
-        # # [[ $ENV ]] && echo hi $ENV && conda deactivate # else, will not activate in screen
         wait
 
         NAME="nb"
         screen -dmS $NAME
         SESH=$( screen -ls | grep "\.$NAME\b" | awk '{print $1}' )
-
-        # if conda already loaded, deactivate any environments
-        # [[ "$( which python )" =~ "conda" ]] && conda deactivate # else, will not activate in screen
-
         # via https://askubuntu.com/a/597289
         screen -S $SESH -X stuff 'utilize Anaconda3 && source activate ddt && \
             jupyter notebook --no-browser --port=4747'
@@ -876,13 +863,13 @@ if [[ ${DISTRO,,} =~ "red hat" ]]; then
         # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nbfg'
         # cat ~/.nb | awk "/^http/ {print $1}"
 
-        # [[ ! "$ENV" == "base" ]] && source activate $ENV # restore environment
         wait
-        echo $ENV
-        [[ $ENV ]] && source activate $ENV # restore environment
+        [[ $ENV ]] && source activate $ENV # restore environment, if any
         jupyter notebook list | awk '/^http/ {print $1}'
     }
-else
+
+else # non-broad
+
     # last but far from least... fancify
     bash ~/dotfiles/horizon.sh # populate /tmp/darksky
 
