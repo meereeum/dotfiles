@@ -18,19 +18,19 @@ conda env export -n root > "$PKGDIR/conda_py$VPY$SUFFIX.yml" &&
 
 # system pkgs
 if (($linux)); then
-	DISTRO=$( cat /etc/*-release | awk -F'=' '/^NAME/ {print $2}' | xargs )
+    DISTRO=$( cat /etc/*-release | awk -F'=' '/^NAME/ {print $2}' | xargs )
 
-	# apt
+    # apt
     OUTFILE="aptpkgs$SUFFIX.txt"
-	pkgs > "$PKGDIR/$OUTFILE"
+    pkgs > "$PKGDIR/$OUTFILE"
 else
-	# homebrew
-	OUTFILE="brewpkgs.txt"
-	brew list > "$PKGDIR/$OUTFILE"
-	echo "updated: $PKGDIR/$OUTFILE"
+    # homebrew
+    OUTFILE="brewpkgs.txt"
+    brew list > "$PKGDIR/$OUTFILE"
+    echo "updated: $PKGDIR/$OUTFILE"
 
-	OUTFILE="brewpkgs_cask.txt"
-	brew cask list > "$PKGDIR/$OUTFILE"
+    OUTFILE="brewpkgs_cask.txt"
+    brew cask list > "$PKGDIR/$OUTFILE"
 fi &&
 
 echo "updated: $PKGDIR/$OUTFILE"
