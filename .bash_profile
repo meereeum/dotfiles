@@ -727,19 +727,33 @@ alias downfrazer='sudo umount ~/srv/frazer'
 # broad VPN up/down
 # help via https://gist.github.com/moklett/3170636
 VPNPID="$HOME/.openconnect.pid"
-upvpn() {
-    # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
-    #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
-    GRP="Duo-Broad-NonSplit-VPN"
-    VPNURL="https://vpn.broadinstitute.org"
-    # echo -e "$@" | sudo openconnect --pid-file $VPNPID --user=shiffman \
-    sudo openconnect --pid-file $VPNPID --user=shiffman \
-                     --authgroup=$GRP $VPNURL
-                     # --token-mode yubioath
-                     # --background \
-                     # --authgroup=$GRP https://vpn.broadinstitute.org
-                     # --authgroup=Duo-Broad-NonSplit-VPN https://vpn.broadinstitute.org
-}
+if (( $linux )); then
+    upvpn() {
+        # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
+        #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
+        # GRP="Duo-Broad-NonSplit-VPN"
+        GRP="Duo-Split-Tunnel-VPN"
+        VPNURL="https://vpn.broadinstitute.org"
+
+        # echo -e "$@" |
+        # sudo openconnect --pid-file $VPNID --user=shiffman \
+            # --authgroup=$GRP $VPNURL
+            # --token-mode yubioath
+            # --background
+        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL
+    }
+else
+    upvpn() {
+        # GRP="Duo-Broad-NonSplit-VPN"
+        GRP="Duo-Split-Tunnel-VPN"
+        VPNURL=69.173.127.10
+
+        sudo openconnect -u shiffman --authgroup $GRP $VPNURL \
+            --servercert pin-sha256:SECRET_broad
+            # --token-mode yubioath
+            # --background
+    }
+fi
 downvpn() {
     if [[ -f $VPNPID ]]; then
         sudo kill "$( cat $VPNPID )" && rm $VPNPID
