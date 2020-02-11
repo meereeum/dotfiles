@@ -5,9 +5,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if (($linux)); then
 
-    # symlink correct python
-    # sudo ln -s $HOME/*conda3/bin/python3 /usr/local/bin/python
-
 	# install apt-get packages/packages
 	while read line
 		do sudo apt-get install -y ${line}
@@ -74,6 +71,8 @@ TODO:
 (3) build tf for hardware optimizations ?
 
 (4) get openstack stuff
+
+(5) download geckodriver (and put in $PATH)
 "
 
 echo "$instructions"
