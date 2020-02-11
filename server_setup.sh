@@ -48,8 +48,6 @@ wget $CONDA -O ~/conda.sh && \
         yes | conda clean --all
 	}
 
-echo "backend : agg" >> $HOME/.config/matplotlib/matplotlibrc
-
 
 # minimal pkgs
 

@@ -1,0 +1,58 @@
+sudo
+vim-gui-common
+git
+dconf-editor
+vlc
+emacs
+exfat-fuse exfat-utils
+libgcrypt11-dev
+vpnc
+resolvconf
+hfsutils hfsplus
+sshfs
+texlive
+texstudio
+xzdec
+texlive-latex-extra
+transmission
+python-pip
+libcanberra-gtk-module
+libblas-dev liblapack-dev gfortran
+freetype* python-pip python-dev python-numpy python-scipy python-matplotlib
+python-pip python-dev python-virtualenv
+trash-cli
+firmware-b43-installer
+zip
+markdown
+feh
+google-chrome-stable
+xmonad xmobar
+dmenu
+gnome-panel
+gnuplot
+screen
+hfsprogs
+-y curl
+apt-transport-https
+tmux
+arandr
+libav-tools
+pandoc
+dconf-tools
+firmware-iwlwifi
+xul-ext-iceweasel-branding
+graphviz
+libmpfr-dev
+npm
+tree
+xclip
+xdotool
+xsel
+qpdfview
+pdfgrep
+okular
+texlive-fonts-extra
+pianobooster
+timidity
+jq
+zathura

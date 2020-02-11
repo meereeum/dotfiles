@@ -41,7 +41,7 @@ touche() { touch "$@"; e "$@"; }
 [[ $DISPLAY ]] && (( $linux )) && MEDIA="$HOME/shiff" \
                                || MEDIA="$HOME" # aqua ^^ v. rest
 
-alias editbash='vi ~/.bash_profile && source ~/.bash_profile'
+alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 # alias rc='cd $MEDIA/wkspace/rc'
 alias wk='cd $MEDIA/wkspace'
@@ -62,6 +62,7 @@ else
 fi
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
+alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
@@ -636,13 +637,15 @@ case "$TERM" in
 	    ;;
 esac
 
-
 # Path thangs
 
-CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
-export PATH="$CONDA/bin:$PATH"
-# export PATH="$PATH:$CONDA/bin"
-export PYTHONPATH="$CONDA/bin/python"
+# CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
+CONDA="$HOME/*conda3" # {ana,mini}conda
+
+if [[ ! "$CONDA" =~ "*" ]]; then # wildcard expanded to valid conda
+    export PATH="$CONDA/bin:$PATH"
+    export PYTHONPATH="$CONDA/bin/python"
+fi
 
 export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 
@@ -759,8 +762,7 @@ export MKL_THREADING_LAYER=GNU # make theanify work
 
 
 # broad servers
-# if [[ -f /etc/redhat-release ]]; then
-if [[ ${DISTRO,,} =~ "redhat" ]]; then
+if [[ ${DISTRO,,} =~ "red hat" ]]; then
 
     DK_DEFAULTS="taciturn reuse dkcomplete"
 
@@ -772,7 +774,8 @@ if [[ ${DISTRO,,} =~ "redhat" ]]; then
         LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
                   grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
                   xargs | sed 's/ /, /g' )
-        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+        # export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+        export PS1="($LS_USE) \e[1m\h:\e[m \$( Wshort ) \$ "
     }
     load_prompt
 
@@ -782,7 +785,8 @@ if [[ ${DISTRO,,} =~ "redhat" ]]; then
     [[ -f $TMPWD ]] && source $TMPWD  # maybe `cd`, &
     echo "cd $HOME/shiffman" > $TMPWD # reset to default
 
-    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7'
+    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7 -l h_rt=3:00:00'
+    # alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab'
     alias ddt='utilize GCC-5.2 Anaconda3 && source activate ddt && cd $HOME/shiffman/tree-ddt'
     alias editbash='echo "cd $PWD" > $TMPWD; vi ~/dotfiles/.bash_profile && source ~/dotfiles/.bash_profile' # re-alias
 
@@ -808,22 +812,72 @@ if [[ ${DISTRO,,} =~ "redhat" ]]; then
     complete -W '`$DK_ROOT/etc/use-usage 1`' unutilize
     complete -W '`$DK_ROOT/etc/use-usage 1`' reutilize
 
-    OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
-    # (( $( bc <<< "$OS > 7" ) )) && vimdir='vim' || vimdir='vim_dumb' # TODO
-    # alias vim=$HOME/bin/$vimdir
-    (( $( bc <<< "$OS > 7" ) )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
-    alias vim=$vimdir
+    # inspired by https://stackoverflow.com/a/30935977
+    # verbose qstat (long jobnames)
+                                          # fewer sig figs in job priority, clean up datetime, etc:
+                                          # ARG bash won't let me inline comments
+    _vqstat() { qstat -xml | tr -d '\n' | sed -re 's/<job_list[^>]*>/\n/g' -e 's/<queue_name>[^>]*>//g' \
+                                              -e 's/<JAT_prio>([.0-9]{4})[^>]*>/\1/g' \
+                                              -e 's/<[^>]*>//g' -e 's/shiffman//g' \
+                                              -e 's/20([-0-9]*)T([0-9]*:[0-9]*)[^ ]*/\1 \2/g' \
+                           | awk '$NF'; } #| column -t; }
+    # with header..
+    vqstat() { (qstat | head -n1 | sed -re 's/(queue|user|jclass|ja-)//g' \
+                                       -e 's/submit\/start at/date time/' \
+                    && _vqstat) | column -t | awk 'NR==1 {print $0; gsub(".","-")}1'; } # dashes to underline full header
+
+    # awk 'NR==1{print $0; gsub(".","-")}1'
+    # && _vqstat) | column -t | 'NR==1 {print $0"\n"sub(/*/,"-",$0)} NR>1 {print}'; }
+    # && _vqstat) | column -t | awk -v dashes=$( dashes $COLUMNS ) 'NR==1 {print $0"\n"dashes} NR>1 {print}'; }
+    # && dashes $( math "scale=0; 3 * $COLUMNS" / 4) 
+
+    # OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
+    # # check major (int) version
+    # (( "${OS%.*} > 7" )) && vimdir='$HOME/bin/vim' || vimdir='/usr/bin/vim'
+    # alias vim=$vimdir
+    # broad finally updated to >= redhat 7..
+    alias vim=$HOME/bin/vim
     alias vi=vim
 
     # refresh editors
-    export EDITOR=$vimdir
+    # export EDITOR=$vimdir
+    export EDITOR=vim
     export VISUAL=$EDITOR
     export GIT_EDITOR=$EDITOR
 
     export LANG="en_US.utf8" # b/c broad defaults are :(
     export LD_LIBRARY_PATH=/user/lib64:/lib64:$LD_LIBARY_PATH
 
-else
+    # make jupyter notebooks work
+    export HOSTADDR=$( hostname -i )
+
+    # shortcut to run notebook in screen
+    nb() {
+        if [[ "$( which python )" =~ "conda" ]]; then # conda already loaded
+            ENV="$( which python | sed -En 's@.*envs/([^/]*).*@\1@p' )" # empty == base
+            conda deactivate # else, will not activate in screen
+        else
+            ENV=""
+            utilize Anaconda3
+        fi
+        wait
+
+        NAME="nb"
+        screen -dmS $NAME
+        SESH=$( screen -ls | grep "\.$NAME\b" | awk '{print $1}' )
+        # via https://askubuntu.com/a/597289
+        screen -S $SESH -X stuff 'utilize Anaconda3 && source activate ddt && \
+            jupyter notebook --no-browser --port=4747'
+
+        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nbfg'
+        # cat ~/.nb | awk "/^http/ {print $1}"
+
+        wait
+        [[ $ENV ]] && source activate $ENV # restore environment, if any
+        jupyter notebook list | awk '/^http/ {print $1}'
+    }
+
+else # non-broad
 
     # last but far from least... fancify
     bash ~/dotfiles/horizon.sh # populate /tmp/darksky
@@ -841,8 +895,4 @@ else
     # csail server only
     [[ ! $DISPLAY ]] && [[ ${DISTRO,,} =~ "debian" ]] && \
         bash ~/dotfiles/metrographer.sh
-    # if [[ -f /etc/debian_version ]] && \
-    #    [[ $( cat /etc/debian_version ) == 9.5 ]]; then # csail server only
-    # fi
-
 fi

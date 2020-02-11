@@ -24,7 +24,7 @@ for COLOR in "$DIR/colors/*"; do
 done
 
 # vim postfx highlight
-OUTDIR="$HOME/.vim/after/syntax/sh"
+OUTIDIR="$HOME/.vim/after/syntax/sh"
 mkdir -p $OUTDIR
 cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
     awk '/AWK Embedding/,/^<$/' |
@@ -55,10 +55,6 @@ if [[ $SYS == "MacOSX" ]]; then
 
     # command line tools
     # xcode-select --install
-
-    # yubikey manager
-    YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
-    wget $YUBICO
 fi
 
 
@@ -148,7 +144,7 @@ change 'managed = true'
 $ service network-manager restart
 
 (4) edit /etc/anacrontab
-add line: "1	1	geolocate	bash $DIR/geolocate.sh"
+add line: "1	1	geolocate	bash $( dirname "${BASH_SOURCE[0]}" )/geolocate.sh"
 
 $ exit
 

@@ -22,10 +22,11 @@ set nowrap
 
 " colors
 syntax enable
+" set background=dark
 " colorscheme plan9
 " colorscheme 256_noir_rosy
 " colorscheme paramount
-" colorscheme neon-rollerblades
+colorscheme neon-rollerblades
 
 " via https://stackoverflow.com/a/15095377
 set t_ut=
@@ -51,8 +52,15 @@ autocmd BufNewFile,BufRead *.txt set syntax=markdown   " txt files -> md
 autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
 " autocmd BufNewFile,BufRead *rc set syntax=sh         " rc files -> sh
 
+"Uncomment the following to have Vim jump to the last position when
+" reopening a file
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
+
 " always UTF-8
-"set encoding=utf-8
+set encoding=utf-8
+set t_BE=
 
 " show matching brackets on hover
 set showmatch
@@ -93,6 +101,9 @@ endif
 
 " 80 char line widths
 " set textwidth=80
+
+" useful statusbar
+set ruler
 
 " keep backup file
 set backup

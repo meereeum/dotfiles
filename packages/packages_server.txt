@@ -1,0 +1,12 @@
+puppet
+git
+libstdc++6-4.7-dev
+libstdc++6
+libglu1
+libqt5core5a
+qtbase5-dev
+xorg openbox
+dvipng texlive-latex-extra texlive-fonts-recommended
+vpnc
+libgcrypt11-dev resolvconf
+vim-gui-common
