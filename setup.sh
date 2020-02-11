@@ -50,8 +50,8 @@ wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
 # osx stuff
 if [[ $SYS == "MacOSX" ]]; then
     # homebrew
-	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
-	brew install wget
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+    brew install wget
 
     # command line tools
     # xcode-select --install
@@ -68,7 +68,7 @@ CONDA="https://repo.anaconda.com/miniconda/Miniconda3-latest-${SYS}-x86_64.sh"
 
 # silent install
 wget $CONDA -O ~/conda.sh && \
-	bash ~/conda.sh -b && \
+    bash ~/conda.sh -b && \
                 {
                     rm ~/conda.sh
 
@@ -148,7 +148,7 @@ change 'managed = true'
 $ service network-manager restart
 
 (4) edit /etc/anacrontab
-add line: "1	1	geolocate	bash $DIR/geolocate.sh"
+add line: "1    1   geolocate   bash $DIR/geolocate.sh"
 
 $ exit
 
@@ -160,10 +160,10 @@ don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-t
 "
 
 if (($linux)); then
-	#sudo mkdir /Volumes
-	#sudo mkdir /Volumes/Media
+    #sudo mkdir /Volumes
+    #sudo mkdir /Volumes/Media
 
-	echo "$instructions"
+    echo "$instructions"
 else
     echo "$instructions_mac"
 fi

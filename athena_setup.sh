@@ -11,8 +11,8 @@ DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore
 
 for f in $DOTFILES; do
         [ ! -f ~/${f} ] || rm ~/${f} # clobber
-	ln -s ${DIR}/${f} ~/${f} && \
-		echo "~/${f} --> ${DIR}/${f}"
+    ln -s ${DIR}/${f} ~/${f} && \
+        echo "~/${f} --> ${DIR}/${f}"
 done
 
 echo "source ~/.bash_profile" >> "${HOME}/.bashrc"
@@ -32,19 +32,19 @@ FROM="${HOME}/Desktop/$(whoami)"
 TO="${HOME}/shiff"
 
 if [ -h ${TO} ]; then # true if file exists & is a symbolic link
-	rm ${TO}
+    rm ${TO}
 fi
 
 ln -s $FROM $TO && \
-	echo "${TO} --> ${FROM}"
+    echo "${TO} --> ${FROM}"
 
 
 # firefox
 
 if [[ $OS == "darwin" ]]; then
-	DEST="$HOME/Library/Application Support/Firefox/Profiles/pui47407.default"
+    DEST="$HOME/Library/Application Support/Firefox/Profiles/pui47407.default"
 else
-	DEST="$HOME/.mozilla" # TODO
+    DEST="$HOME/.mozilla" # TODO
 fi
 
 DEST="${DEST}/user.js"
@@ -62,9 +62,9 @@ echo 'user_pref("browser.shell.checkDefaultBrowser", "false")' >> "${DEST}"
 # conda
 
 if [[ $OS == "darwin" ]]; then
-	SYS="MacOSX"
+    SYS="MacOSX"
 else
-	SYS="Linux"
+    SYS="Linux"
 fi
 
 CONDA="https://repo.continuum.io/archive/Anaconda2-4.3.1-${SYS}-x86_64.sh" 
@@ -73,36 +73,36 @@ DEST="/Volumes/THAWSPACE${HOME}/conda"
 if [ ! -e ${DEST}/bin/python ]; then
 
         # get rid of leftover dir
-	[ ! -e ${DEST} ] || rm -r ${DEST}
+    [ ! -e ${DEST} ] || rm -r ${DEST}
 
-	# silent install
-	wget $CONDA -O ~/conda.sh && \
-		bash ~/conda.sh -b -p ${DEST} && \
-		{
-			rm ~/conda.sh
-	
-			export PATH="${DEST}/bin:${PATH}"
-			export PYTHONPATH="${DEST}/bin/python"
-	
-			yes | conda create -n py36 python=3.6 anaconda
-		}
+    # silent install
+    wget $CONDA -O ~/conda.sh && \
+        bash ~/conda.sh -b -p ${DEST} && \
+        {
+            rm ~/conda.sh
+    
+            export PATH="${DEST}/bin:${PATH}"
+            export PYTHONPATH="${DEST}/bin/python"
+    
+            yes | conda create -n py36 python=3.6 anaconda
+        }
 fi
 
 
 # ye olde spacemacs
 
 if [[ $OS == "darwin" ]]; then # built-in emacs is hella old
-	if [[ ! $(brew list | grep emacs | wc -l) -eq 1 ]]; then # not yet installed
-		sudo chown -R $(whoami) /usr/local/var/homebrew
-		brew install emacs --with-cocoa
-	fi
+    if [[ ! $(brew list | grep emacs | wc -l) -eq 1 ]]; then # not yet installed
+        sudo chown -R $(whoami) /usr/local/var/homebrew
+        brew install emacs --with-cocoa
+    fi
 # also pandoc
-	if [[ ! $(brew list | grep pandoc | wc -l) -eq 1 ]]; then
-		brew install pandoc
-		sudo ln -s /usr/local/Cellar/pandoc/1.19.2.1/bin/pandoc /usr/local/bin/pandoc
-	fi
+    if [[ ! $(brew list | grep pandoc | wc -l) -eq 1 ]]; then
+        brew install pandoc
+        sudo ln -s /usr/local/Cellar/pandoc/1.19.2.1/bin/pandoc /usr/local/bin/pandoc
+    fi
 else
-	sudo apt-get install pandoc
+    sudo apt-get install pandoc
 fi
 
 FROM="/Volumes/THAWSPACE${HOME}/.emacs.d"
@@ -112,7 +112,7 @@ TO="${HOME}/.emacs.d"
 [ -e ${FROM} ] || git clone https://github.com/syl20bnr/spacemacs ${FROM}
 
 ln -s ${FROM} ${TO} && \
-	echo "${TO} --> ${FROM}"
+    echo "${TO} --> ${FROM}"
 
 
 # set ~/.spacemacs python path
@@ -121,7 +121,7 @@ sed -Ei'.tmp' --follow-symlinks 's@(python-shell-virtualenv-path).*@\1 "/Volumes
 sed -Ei'.tmp' --follow-symlinks 's@(python-shell-interpreter).*@\1 "/Volumes/THAWSPACE/Users/shiffman/conda/bin/python")@' ${HOME}/.spacemacs
 
 if [ -e ${HOME}/.spacemacs.tmp ]; then
-	rm ${HOME}/.spacemacs.tmp
+    rm ${HOME}/.spacemacs.tmp
 fi
 
 
