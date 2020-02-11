@@ -5,12 +5,11 @@
 	                           # echo "hey there, osx"
 
 (( $linux )) && export DISTRO=$(
-    cat /etc/*-release |
-    awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/*-release | # e.g. Debian GNU/Linux 9 (stretch)
-    #         '/^NAME/                                     # e.g. Debian GNU/Linux
-    #         '/^ID=/                                      # e.g. debian
+    awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/os-release | # e.g. Debian GNU/Linux 9 (stretch)
+    #         '/^NAME/                                      # e.g. Debian GNU/Linux
+    #         '/^ID=/                                       # e.g. debian
     xargs # xargs removes "
-)
+)            || export DISTRO=MacOS
 
 
 # editors
@@ -88,6 +87,10 @@ nbrerun() {
         (jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=600 "$nb";) &done
 }
 
+# via https://stackoverflow.com/a/31560568
+alias pngcompress='convert -depth 24 -define png:compression-filter=2 -define png:compression-level=9 \
+                           -define png:compression-strategy=1' # -resize 50%
+
 shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
 # via https://unix.stackexchange.com/a/28045
 chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
@@ -164,6 +167,9 @@ srt2txt() {
     grep -i "[a-z]" "$@"
 }
 
+macaddress() {
+    ifconfig en0 | awk '/ether/ {print $2}' | cpout
+}
 
 # universalish / v possibly nonrobust way to query ip address
 # --> this is local (not public) ip
@@ -294,8 +300,8 @@ lssince() {
 
 
 cdrecent() {
-    # [[ "$@" ]] && DIR="$@" || DIR="."
-    RECENTEST="$( ls -dt "$@"*/ | head -n1 )"
+    [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -dt "$DIR"/*/ | head -n1 )"
     cd "$RECENTEST"
 }
 
@@ -472,6 +478,8 @@ if ((!$linux)); then
             osascript -e'set text item delimiters to linefeed' -e'tell app "'${app}'" to url of tabs of window 1 as text' >> tabs_${now}
         done
     }
+
+    alias kickstart='sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart'
 
 # linux only
 else

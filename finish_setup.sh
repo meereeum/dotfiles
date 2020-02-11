@@ -74,6 +74,8 @@ TODO:
 (3) build tf for hardware optimizations ?
 
 (4) get openstack stuff
+
+(5) download geckodriver (and put in $PATH)
 "
 
 echo "$instructions"
