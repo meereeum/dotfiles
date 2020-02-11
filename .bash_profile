@@ -5,10 +5,9 @@
 	                           # echo "hey there, osx"
 
 (( $linux )) && export DISTRO=$(
-    cat /etc/*-release |
-    awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/*-release | # e.g. Debian GNU/Linux 9 (stretch)
-    #         '/^NAME/                                     # e.g. Debian GNU/Linux
-    #         '/^ID=/                                      # e.g. debian
+    awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/os-release | # e.g. Debian GNU/Linux 9 (stretch)
+    #         '/^NAME/                                      # e.g. Debian GNU/Linux
+    #         '/^ID=/                                       # e.g. debian
     xargs # xargs removes "
 )
 
@@ -766,7 +765,8 @@ if [[ ${DISTRO,,} =~ "red hat" ]]; then
         LS_USE=$( use | grep -A 10 'Packages in use:' | grep '^  \w' |
                   grep -Eve'^  default\+*$' -e"$( echo $DK_DEFAULTS | sed 's/ /|/g' )" |
                   xargs | sed 's/ /, /g' )
-        export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+        # export PS1="($LS_USE) \e[1m\h:\e[m \W \$ "
+        export PS1="($LS_USE) \e[1m\h:\e[m \$( Wshort ) \$ "
     }
     load_prompt
 
@@ -776,7 +776,8 @@ if [[ ${DISTRO,,} =~ "red hat" ]]; then
     [[ -f $TMPWD ]] && source $TMPWD  # maybe `cd`, &
     echo "cd $HOME/shiffman" > $TMPWD # reset to default
 
-    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7'
+    alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab -l os=RedHat7 -l h_rt=3:00:00'
+    # alias insh='echo "cd $PWD" > $TMPWD; qrsh -q interactive -P regevlab'
     alias ddt='utilize GCC-5.2 Anaconda3 && source activate ddt && cd $HOME/shiffman/tree-ddt'
     alias editbash='echo "cd $PWD" > $TMPWD; vi ~/dotfiles/.bash_profile && source ~/dotfiles/.bash_profile' # re-alias
 
