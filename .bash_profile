@@ -648,10 +648,12 @@ esac
 
 # Path thangs
 
-# CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
-CONDA="$HOME/*conda3" # {ana,mini}conda
+# echo locks in expansion
+CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
 
-if [[ ! "$CONDA" =~ "*" ]]; then # wildcard expanded to valid conda
+# if ! echo $CONDA | grep -q '*'; then # wildcard expanded to valid conda
+# check for literal "*"; else:
+if [[ ! "$CONDA" =~ .*\*.* ]]; then # wildcard expanded to valid conda
     export PATH="$CONDA/bin:$PATH"
     export PYTHONPATH="$CONDA/bin/python"
 fi
