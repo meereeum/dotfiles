@@ -1,5 +1,0 @@
-gimp
-osxfuse
-phantomjs
-vlc
-xquartz
