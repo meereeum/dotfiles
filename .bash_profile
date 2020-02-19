@@ -64,6 +64,7 @@ fi
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
+alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
 export DELTA='Δ'
@@ -306,6 +307,12 @@ cdrecent() {
     [[ "$@" ]] && DIR="$@" || DIR="."
     RECENTEST="$( ls -dt "$DIR"/*/ | head -n1 )"
     cd "$RECENTEST"
+}
+
+virecent() {
+    [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -alh -dt "$DIR"/* | awk '$1!~/^d/{print $9}' | head -n1 )" # excluding directories
+    vi "$RECENTEST"
 }
 
 

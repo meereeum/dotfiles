@@ -10,8 +10,8 @@ DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore
 for f in $DOTFILES; do
         [ ! -f ~/${f} ] || rm ~/${f} # clobber
 
-	ln -s ${DIR}/${f} ~/${f} && \
-		echo "~/${f} --> ${DIR}/${f}"
+    ln -s ${DIR}/${f} ~/${f} && \
+        echo "~/${f} --> ${DIR}/${f}"
 done
 
 [ -f /etc/redhat-release ] && BASHRC="~/.my.bashrc" || BASHRC="~/.bashrc" # broad servers vs other
@@ -35,18 +35,20 @@ CONDA="https://repo.continuum.io/archive/Anaconda3-5.2.0-Linux-x86_64.sh"
 
 # silent install
 wget $CONDA -O ~/conda.sh && \
-	bash ~/conda.sh -b && \
-	{
-		rm ~/conda.sh
+    bash ~/conda.sh -b && \
+    {
+        rm ~/conda.sh
 
-		#export PATH="${HOME}/anaconda2/bin:${PATH}"
-		#export PYTHONPATH="${HOME}/anaconda2/bin/python"
+        #export PATH="${HOME}/anaconda2/bin:${PATH}"
+        #export PYTHONPATH="${HOME}/anaconda2/bin/python"
 
-		#yes | conda create -n py36 python=3.6 anaconda
+        #yes | conda create -n py36 python=3.6 anaconda
 
         # cleanup
         yes | conda clean --all
-	}
+    }
+
+echo "backend : agg" >> $HOME/.config/matplotlib/matplotlibrc
 
 
 # minimal pkgs

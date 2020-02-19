@@ -24,7 +24,7 @@ for COLOR in "$DIR/colors/*"; do
 done
 
 # vim postfx highlight
-OUTIDIR="$HOME/.vim/after/syntax/sh"
+OUTDIR="$HOME/.vim/after/syntax/sh"
 mkdir -p $OUTDIR
 cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
     awk '/AWK Embedding/,/^<$/' |
@@ -50,11 +50,15 @@ wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
 # osx stuff
 if [[ $SYS == "MacOSX" ]]; then
     # homebrew
-	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
-	brew install wget
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+    brew install wget
 
     # command line tools
     # xcode-select --install
+
+    # yubikey manager
+    YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
+    wget $YUBICO
 fi
 
 
@@ -64,7 +68,7 @@ CONDA="https://repo.anaconda.com/miniconda/Miniconda3-latest-${SYS}-x86_64.sh"
 
 # silent install
 wget $CONDA -O ~/conda.sh && \
-	bash ~/conda.sh -b && \
+    bash ~/conda.sh -b && \
                 {
                     rm ~/conda.sh
 
@@ -144,7 +148,7 @@ change 'managed = true'
 $ service network-manager restart
 
 (4) edit /etc/anacrontab
-add line: "1	1	geolocate	bash $( dirname "${BASH_SOURCE[0]}" )/geolocate.sh"
+add line: "1    1   geolocate   bash $DIR/geolocate.sh"
 
 $ exit
 
@@ -156,10 +160,10 @@ don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-t
 "
 
 if (($linux)); then
-	#sudo mkdir /Volumes
-	#sudo mkdir /Volumes/Media
+    #sudo mkdir /Volumes
+    #sudo mkdir /Volumes/Media
 
-	echo "$instructions"
+    echo "$instructions"
 else
     echo "$instructions_mac"
 fi
