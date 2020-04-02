@@ -498,6 +498,17 @@ else
 
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
+    zoom() {
+        declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
+
+        CALLID="${CALLIDS["$@"]}"
+        [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
+
+        callurl="https://zoom.us/wc/join/$CALLID"
+        echo $callurl
+        chromium $callurl &> /dev/null & disown
+    }
+
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
 
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
