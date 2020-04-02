@@ -498,15 +498,46 @@ else
 
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
-    zoom() {
-        declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
+    # zoom() {
+    #     declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
 
-        CALLID="${CALLIDS["$@"]}"
-        [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
+    #     CALLID="${CALLIDS["$@"]}"
+    #     [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
+
+    #     callurl="https://zoom.us/wc/join/$CALLID"
+    #     echo $callurl
+    #     chromium $callurl &> /dev/null & disown
+    # }
+    zoom() {
+        declare -A DATETIME2ID=(
+            [thurs 5:30pm]=595630613  # readstat
+            [thurs 12:30pm]=344880514 # groupmtg
+            [mon 2pm]=746134735       # random
+            [today 5:30pm]=725153861  # tea
+        )
+        declare -A timedelta2id
+        declare -A timedelta2datetime
+
+        NOW=$( date +%s )
+        timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
+
+        local IFS=$'\n' # via https://askubuntu.com/a/344418
+        for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | # iterate over newline-separated datetimes,
+                        sort --reverse ); do                        # reverse sorted by key: this is a total hack
+                                                                    # to make "today" have lowest priority,
+                                                                    # since it happens to come after all weekdays
+            # timedelta2id[$( timedelta "$dt" )]=${DATETIME2ID["$dt"]}
+            delta=$( timedelta "$dt" )
+            timedelta2id[$delta]=${DATETIME2ID["$dt"]}
+            timedelta2datetime[$delta]="$dt"
+        done
+
+        min=$( echo "${!timedelta2id[@]}" | tr ' ' '\n' | sort -g | head -n1 )
+        CALLID=${timedelta2id[$min]} # ID corresponding to smallest time delta
 
         callurl="https://zoom.us/wc/join/$CALLID"
-        echo $callurl
-        chromium $callurl &> /dev/null & disown
+        echo "${timedelta2datetime[$min]} --> $callurl"
+        # chromium $callurl &> /dev/null & disown
     }
 
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
