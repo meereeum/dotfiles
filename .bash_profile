@@ -513,31 +513,29 @@ else
             [thurs 5:30pm]=595630613  # readstat
             [thurs 12:30pm]=344880514 # groupmtg
             [mon 2pm]=746134735       # random
-            [today 5:30pm]=725153861  # tea
+            [5:30pm]=725153861        # tea
         )
-        declare -A timedelta2id
         declare -A timedelta2datetime
 
         NOW=$( date +%s )
         timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
 
+        # iterate over newline-separated datetimes, alphabetically sorted
+        # this is a total hack to make "everyday" meetings have lowest priority,
+        # since numbers come before letters (so will be clobbered)
+
         local IFS=$'\n' # via https://askubuntu.com/a/344418
-        for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | # iterate over newline-separated datetimes,
-                        sort --reverse ); do                        # reverse sorted by key: this is a total hack
-                                                                    # to make "today" have lowest priority,
-                                                                    # since it happens to come after all weekdays
-            # timedelta2id[$( timedelta "$dt" )]=${DATETIME2ID["$dt"]}
-            delta=$( timedelta "$dt" )
-            timedelta2id[$delta]=${DATETIME2ID["$dt"]}
-            timedelta2datetime[$delta]="$dt"
+        for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | sort ); do
+            timedelta2datetime[$( timedelta "$dt" )]="$dt"
         done
 
-        min=$( echo "${!timedelta2id[@]}" | tr ' ' '\n' | sort -g | head -n1 )
-        CALLID=${timedelta2id[$min]} # ID corresponding to smallest time delta
+        min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
+        closest=${timedelta2datetime[$min]} # closest matching meeting datetime
+        callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
 
-        callurl="https://zoom.us/wc/join/$CALLID"
-        echo "${timedelta2datetime[$min]} --> $callurl"
-        # chromium $callurl &> /dev/null & disown
+        callurl="https://zoom.us/wc/join/$callid"
+        echo "$closest ►► $callurl"
+        chromium $callurl &> /dev/null & disown
     }
 
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
