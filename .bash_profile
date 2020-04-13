@@ -510,9 +510,9 @@ else
     # }
     zoom() {
         declare -A DATETIME2ID=(
-            [thurs 5:30pm]=595630613  # readstat
-            [thurs 12:30pm]=344880514 # groupmtg
-            [mon 2pm]=746134735       # random
+            [thurs 12:30pm]=595630613 # readstat
+            [thurs 5:30pm]=344880514  # groupmtg
+            [mon 1pm]=746134735       # random
             [5:30pm]=725153861        # tea
         )
         declare -A timedelta2datetime
