@@ -41,9 +41,9 @@ else
     # install brew packages
     # spacemacs
     # the debate: https://github.com/d12frosted/homebrew-emacs-plus/issues/10
-    brew tap railwaycat/emacsmacport # for emacs-mac
-    brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
-    brew linkapps emacs-mac
+    # brew tap railwaycat/emacsmacport # for emacs-mac
+    # brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
+    # brew linkapps emacs-mac
 
     #brew tap d12frosted/emacs-plus
     #brew install emacs-plus --with-no-title-bars
@@ -51,20 +51,33 @@ else
 
     while read line
         do brew install ${line}
-    done < pkgs/brewpkgs.txt
+    # done < pkgs/brewpkgs.txt
+    done < pkgs/brewpkgs.minimal.txt
+
+    while read line
+        do brew install ${line}
+    done < pkgs/brewpkgs_cask.txt
 
 fi
 
 
 # reveal-md
-npm install -g reveal-md
+# npm install -g reveal-md
 
 
 # vim color
-# TODO for osx ?
-for COLORSCHEME in "${DIR}/*.vim"; do
-    sudo ln -s "$COLORSCHEME" /usr/share/vim/vim*/colors
+(( $linux )) && COLORDIR="/usr/share/vim/vim*/colors" \
+             || COLORDIR="$VIMRUNTIME/colors"
+           # || COLORDIR="/usr/local/Cellar/vim/*/share/vim/*/colors"
+for COLORSCHEME in "${DIR}/colors/*.vim"; do
+    sudo ln -s $COLORSCHEME $COLORDIR # quotes destroy ?
 done
+# for mac, may need to replace colors in $VIMRUNTIME/syntax/syncolor.vim
+# e.g. SlateBlue -> #6a5acd
+#      Orange -> #ffa500
+!(( $linux )) && sed -ri'.tmp' -e's/=SlateBlue/=#6a5acd/g' \
+                               -e's/=Orange/=#ffa500/g' "$VIMRUNTIME/syntax/syncolor.vim"
+
 
 
 instructions="
