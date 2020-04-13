@@ -12,7 +12,7 @@ if (($linux)); then
     while read line
         do sudo apt-get install -y ${line}
         #do sudo apt-get install ${line}
-    done < packages/packages.txt
+    done < pkgs/aptpkgs.txt
 
     # set default apps
     AUDIOVIZ_APP="vlc"
@@ -23,6 +23,9 @@ if (($linux)); then
 
     mv "$F_DEFAULTS" "$F_DEFAULTS_BKP"
     awk -F'=' '{OFS="="}; /video|audio/{print $1,"'$AUDIOVIZ_APP'.desktop;"} /pdf/{print $1, "'$PDF_APP'.desktop;"} !/video|audio|pdf/' $F_DEFAULTS_BKP > $F_DEFAULTS
+
+    # enable copying
+    echo "set-selection-clipboard clipboard" >> ~/.config/zathura/zathurarc
 
     # update uq vpn profile
     cp template_uq.conf uq.conf
@@ -48,7 +51,7 @@ else
 
     while read line
         do brew install ${line}
-    done < packages/packages_brew.txt
+    done < pkgs/brewpkgs.txt
 
 fi
 
@@ -76,6 +79,14 @@ TODO:
 (4) get openstack stuff
 
 (5) download geckodriver (and put in $PATH)
+
+(6) consider installing https://github.com/RemoteDebug/remotedebug-ios-webkit-adapter
+
+(7) copy over & set up ssh keys:
+    chmod 600 ~/.ssh/config
+    chown $USER ~/.ssh/config
+    chmod 600 ~/.ssh/*key *rsa
+    chmod 644 ~/.ssh/*pub
 "
 
 echo "$instructions"
