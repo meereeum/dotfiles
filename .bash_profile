@@ -608,6 +608,7 @@ untrash() { # unrm ?
 }
 
 alias grep='grep --color'
+alias psychogrep='grep -RIi'
 alias ls='ls --color=auto'
 export LESS=-r # allow colorcodes & symbols in less
 
