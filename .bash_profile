@@ -277,12 +277,12 @@ lstoday() {
 
 lssince() {
     # check for valid date
-    maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' -e's/weds/wed/')"
+    maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? *$)/\1 ago/' -e's/weds/wed/')"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
     [[ $( date -d"$maybe_dt" 2> /dev/null ) ]] && with_date=1 || with_date=0
-    [[ $( date -d"last $maybe_dt" 2> /dev/null ) ]] && with_date=1 && maybe_dt="last $maybe_dt"
+    [[ $( date -d"last $maybe_dt" 2> /dev/null ) ]] && with_date=1 && maybe_dt="last $maybe_dt" # last weds
 
     (( $with_date )) && dt="$maybe_dt" || dt="today" # default: today
     (( $with_date )) && shift                        # default: .
@@ -498,6 +498,54 @@ else
 
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
+    # zoom() {
+    #     declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
+
+    #     CALLID="${CALLIDS["$@"]}"
+    #     [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
+
+    #     callurl="https://zoom.us/wc/join/$CALLID"
+    #     echo $callurl
+    #     chromium $callurl &> /dev/null & disown
+    # }
+    zoom() {
+        if [[ "$@" ]]; then
+            # closest=
+            callid="$@"
+        else
+            declare -A DATETIME2ID=(
+                [thurs 12:30pm]=595630613 # readstat
+                [thurs 5:30pm]=344880514  # groupmtg
+                [mon 1:30pm]=746134735    # random (pw: bayesbayes)
+                [tues 5:30pm]=725153861   # tea
+                [fri 5:30pm]=725153861    # tea
+                # [5:30pm]=725153861        # tea
+                [wed 5:30pm]=708633336   # tamara 1-1
+            )
+            declare -A timedelta2datetime
+
+            NOW=$( date +%s )
+            timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
+
+            # iterate over newline-separated datetimes, alphabetically sorted
+            # this is a total hack to make "everyday" meetings have lowest priority,
+            # since numbers come before letters (so will be clobbered)
+
+            local IFS=$'\n' # via https://askubuntu.com/a/344418
+            for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | sort ); do
+                timedelta2datetime[$( timedelta "$dt" )]="$dt"
+            done
+
+            min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
+            closest=${timedelta2datetime[$min]} # closest matching meeting datetime
+            callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
+        fi
+
+        callurl="https://zoom.us/wc/join/$callid"
+        echo "$closest ►► $callurl"
+        chromium $callurl &> /dev/null & disown
+    }
+
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
 
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
@@ -568,6 +616,7 @@ untrash() { # unrm ?
 }
 
 alias grep='grep --color'
+alias psychogrep='grep -RIi'
 alias ls='ls --color=auto'
 export LESS=-r # allow colorcodes & symbols in less
 
