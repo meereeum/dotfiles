@@ -62,7 +62,7 @@ npm install -g reveal-md
 
 # vim color
 # TODO for osx ?
-for COLORSCHEME in "${DIR}/*.vim"; do
+for COLORSCHEME in "${DIR}/colors/*.vim"; do
     sudo ln -s "$COLORSCHEME" /usr/share/vim/vim*/colors
 done
 
