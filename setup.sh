@@ -17,6 +17,9 @@ source ~/.bash_profile
 # infinite HIST
 sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
 
+# permanently store git pw on osx
+sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
+
 # vim dir
 mkdir -p ~/.vim/{.swp,.backup,.undo,colors}
 for COLOR in "$DIR/colors/*"; do
