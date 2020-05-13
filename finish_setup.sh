@@ -54,10 +54,14 @@ else
     # done < pkgs/brewpkgs.txt
     done < pkgs/brewpkgs.minimal.txt
 
+    brew tap homebrew/cask
     while read line
-        do brew install ${line}
+        do brew cask install ${line}
     done < pkgs/brewpkgs_cask.txt
 
+    # pdftk (old version when it still worked for mac)
+    # via https://leancrew.com/all-this/2017/01/pdftk/
+    # brew install https://raw.githubusercontent.com/turforlag/homebrew-cervezas/master/pdftk.rb
 fi
 
 
@@ -94,6 +98,7 @@ TODO:
 (5) download geckodriver (and put in $PATH)
 
 (6) consider installing https://github.com/RemoteDebug/remotedebug-ios-webkit-adapter
+    & $ sudo spctl --master-disable (for more control, e.g. installing apps from non-Apple)
 
 (7) copy over & set up ssh keys:
     chmod 600 ~/.ssh/config
