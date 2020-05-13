@@ -5,6 +5,8 @@ set -u # don't delete my hd plz
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
 
+(( ! $linux )) && sed -ri'.tmp' --follow-symlinks 's/\bstore$/osxkeychain/' $DIR/.gitconfig # credential helper
+
 for f in $DOTFILES; do
         [ ! -f ~/${f} ] || rm ~/${f}
         ln -s ${DIR}/${f} ~/${f}
@@ -15,7 +17,7 @@ echo "source ~/.bash_profile" >> ~/.bashrc
 source ~/.bash_profile
 
 # infinite HIST
-sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
+(( $linux )) && sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
 
 # permanently store git pw on osx
 sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
@@ -110,6 +112,7 @@ done
 # vim-anywhere
 cd $HOME
 git clone https://github.com/meereeum/vim-anywhere.git
+cd vim-anywhere
 ./install
 cd $DIR # back to dotfiles
 
