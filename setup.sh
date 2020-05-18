@@ -117,8 +117,11 @@ cd vim-anywhere
 cd $DIR # back to dotfiles
 
 
+# gists
 # arxivate
 wget 'https://gist.github.com/meereeum/d14cfd9c17e8abda5d0a09eed477bd27/raw/00b7851cb2bfc80d34431c2ee2ca249586e5f920/arxivate.sh'
+# h5tree
+wget 'https://gist.github.com/meereeum/87e267dc80421aea50cbb1ce63be5612/raw/afa2bb7c498927455622807fd59b7744330073e0/h5tree.sh'
 
 
 # gecko driver
