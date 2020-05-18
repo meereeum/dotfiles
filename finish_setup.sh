@@ -67,7 +67,7 @@ done
 instructions="
 TODO:
 
-(1) install firefox [ plus ublock, ghostery, zotero plugin ]
+(1) install firefox [ plus ublock, ghostery, zotero plugin, pinboard applets ]
 
 (2) install mactex
 

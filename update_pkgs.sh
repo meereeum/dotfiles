@@ -24,9 +24,12 @@ if (($linux)); then
     OUTFILE="aptpkgs$SUFFIX.txt"
     pkgs > "$PKGDIR/$OUTFILE"
 else
+    # TODO: see: https://github.com/Homebrew/legacy-homebrew/issues/36069
+
     # homebrew
     OUTFILE="brewpkgs.txt"
-    brew list > "$PKGDIR/$OUTFILE"
+    # brew list > "$PKGDIR/$OUTFILE"
+    pkgs > "$PKGDIR/$OUTFILE"
     echo "updated: $PKGDIR/$OUTFILE"
 
     OUTFILE="brewpkgs_cask.txt"
