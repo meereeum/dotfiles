@@ -540,10 +540,17 @@ if (($linux)); then
     }
   else
     pkgs() {
-        cd ${HOME}/dotfiles/packages
-        rm Brewfile && brew bundle dump # with package-install options
-	    cd -
+        # cd ${HOME}/dotfiles/pkgs
+        # rm Brewfile && brew bundle dump # with package-install options
+
         # brew list
+        BREWPREFIX="$( brew --prefix)/opt"
+        for keg in $( ls $BREWPREFIX ); do
+            printf "%s " $keg
+            jq -r '.used_options | join(" ")' < $BREWPREFIX/$keg/INSTALL_RECEIPT.json
+        done | sort
+
+	    # cd -
     }
 fi
 export -f pkgs
@@ -626,7 +633,7 @@ shopt -s extglob
 
 # succinct cmd line (abbrev working dir only)
 Wshort() { # inspired by https://askubuntu.com/a/29580
-    W=$( basename ${PWD/$HOME/"~"} )
+    W=$( basename "${PWD/$HOME/"~"}" )
     (( ${#W} > 30 )) && W="${W::10}…${W:(-19)}" # 1st 10 … last 19
     echo $W
 }
@@ -749,7 +756,7 @@ if (( $linux )); then
             # --authgroup=$GRP $VPNURL
             # --token-mode yubioath
             # --background
-        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL
+        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL "$@"
     }
 else
     upvpn() {
@@ -757,7 +764,7 @@ else
         GRP="Duo-Split-Tunnel-VPN"
         VPNURL=69.173.127.10
 
-        sudo openconnect -u shiffman --authgroup $GRP $VPNURL \
+        sudo openconnect -u shiffman --authgroup $GRP $VPNURL "$@" \
             --servercert pin-sha256:SECRET_broad
             # --token-mode yubioath
             # --background
