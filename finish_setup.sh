@@ -12,7 +12,7 @@ if (($linux)); then
     while read line
         do sudo apt-get install -y ${line}
         #do sudo apt-get install ${line}
-    done < packages/packages.txt
+    done < pkgs/aptpkgs.txt
 
     # set default apps
     AUDIOVIZ_APP="vlc"
@@ -23,6 +23,9 @@ if (($linux)); then
 
     mv "$F_DEFAULTS" "$F_DEFAULTS_BKP"
     awk -F'=' '{OFS="="}; /video|audio/{print $1,"'$AUDIOVIZ_APP'.desktop;"} /pdf/{print $1, "'$PDF_APP'.desktop;"} !/video|audio|pdf/' $F_DEFAULTS_BKP > $F_DEFAULTS
+
+    # enable copying
+    echo "set-selection-clipboard clipboard" >> ~/.config/zathura/zathurarc
 
     # update uq vpn profile
     cp template_uq.conf uq.conf
@@ -38,9 +41,9 @@ else
     # install brew packages
     # spacemacs
     # the debate: https://github.com/d12frosted/homebrew-emacs-plus/issues/10
-    brew tap railwaycat/emacsmacport # for emacs-mac
-    brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
-    brew linkapps emacs-mac
+    # brew tap railwaycat/emacsmacport # for emacs-mac
+    # brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
+    # brew linkapps emacs-mac
 
     #brew tap d12frosted/emacs-plus
     #brew install emacs-plus --with-no-title-bars
@@ -48,20 +51,37 @@ else
 
     while read line
         do brew install ${line}
-    done < packages/packages_brew.txt
+    # done < pkgs/brewpkgs.txt
+    done < pkgs/brewpkgs.minimal.txt
 
+    brew tap homebrew/cask
+    while read line
+        do brew cask install ${line}
+    done < pkgs/brewpkgs_cask.txt
+
+    # pdftk (old version when it still worked for mac)
+    # via https://leancrew.com/all-this/2017/01/pdftk/
+    # brew install https://raw.githubusercontent.com/turforlag/homebrew-cervezas/master/pdftk.rb
 fi
 
 
 # reveal-md
-npm install -g reveal-md
+# npm install -g reveal-md
 
 
 # vim color
-# TODO for osx ?
-for COLORSCHEME in "${DIR}/*.vim"; do
-    sudo ln -s "$COLORSCHEME" /usr/share/vim/vim*/colors
+(( $linux )) && COLORDIR="/usr/share/vim/vim*/colors" \
+             || COLORDIR="$VIMRUNTIME/colors"
+           # || COLORDIR="/usr/local/Cellar/vim/*/share/vim/*/colors"
+for COLORSCHEME in "${DIR}/colors/*.vim"; do
+    sudo ln -s $COLORSCHEME $COLORDIR # quotes destroy ?
 done
+# for mac, may need to replace colors in $VIMRUNTIME/syntax/syncolor.vim
+# e.g. SlateBlue -> #6a5acd
+#      Orange -> #ffa500
+!(( $linux )) && sed -ri'.tmp' -e's/=SlateBlue/=#6a5acd/g' \
+                               -e's/=Orange/=#ffa500/g' "$VIMRUNTIME/syntax/syncolor.vim"
+
 
 
 instructions="
@@ -76,6 +96,15 @@ TODO:
 (4) get openstack stuff
 
 (5) download geckodriver (and put in $PATH)
+
+(6) consider installing https://github.com/RemoteDebug/remotedebug-ios-webkit-adapter
+    & $ sudo spctl --master-disable (for more control, e.g. installing apps from non-Apple)
+
+(7) copy over & set up ssh keys:
+    chmod 600 ~/.ssh/config
+    chown $USER ~/.ssh/config
+    chmod 600 ~/.ssh/*key *rsa
+    chmod 644 ~/.ssh/*pub
 "
 
 echo "$instructions"

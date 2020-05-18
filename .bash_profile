@@ -38,6 +38,7 @@ touche() { touch "$@"; e "$@"; }
 
 # aliasing
 
+((!$linux)) && DISPLAY=1 # fix for mac
 [[ $DISPLAY ]] && (( $linux )) && MEDIA="$HOME/shiff" \
                                || MEDIA="$HOME" # aqua ^^ v. rest
 
@@ -64,7 +65,6 @@ fi
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
-alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
 export DELTA='Δ'
@@ -203,6 +203,7 @@ suffix() {
     SUFF=$( file -b "$f" | awk '{print $1}' )
     [ "${SUFF,,}" = "ascii" ] && SUFF="txt"
     [ "${SUFF,,}" = "bourne-again" ] && SUFF="sh"
+    [ "${SUFF,,}" = "mpeg" ] && SUFF="mp4"
 
     # unknown
     if [[ "$SUFF" = "???" ]]; then
@@ -277,12 +278,12 @@ lstoday() {
 
 lssince() {
     # check for valid date
-    maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? [^(ago)])/\1 ago/' -e's/weds/wed/')"
+    maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? *$)/\1 ago/' -e's/weds/wed/')"
     maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
                            # else, check for (1st of) month
 
     [[ $( date -d"$maybe_dt" 2> /dev/null ) ]] && with_date=1 || with_date=0
-    [[ $( date -d"last $maybe_dt" 2> /dev/null ) ]] && with_date=1 && maybe_dt="last $maybe_dt"
+    [[ $( date -d"last $maybe_dt" 2> /dev/null ) ]] && with_date=1 && maybe_dt="last $maybe_dt" # last weds
 
     (( $with_date )) && dt="$maybe_dt" || dt="today" # default: today
     (( $with_date )) && shift                        # default: .
@@ -371,8 +372,16 @@ zulipjson2msgs(){
              || PREFIX="$HOME/Library/Application Support/Firefox"
 
 _get_ffox() {
-    SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini )
+    SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini |
+                head -n1 ) # assumes the "right" one is first.. # TODO: can prob incorporate into awk
     echo "$PREFIX/$SESSION"
+}
+_catjsonlz() {
+    if (( $linux )); then
+        cat "$@" | dejsonlz4 -
+    else
+        dejsonlz4 "$@"
+    fi
 }
 if [[ -d "$PREFIX" ]]; then
     export FFOX_PROFILE="$( _get_ffox )"
@@ -382,8 +391,9 @@ if [[ -d "$PREFIX" ]]; then
     openTabs(){
         #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
         #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
-        cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
-         dejsonlz4 - |
+        # cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
+        #  dejsonlz4 - |
+        dejsonlz4 "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
          jq -c '.windows[].tabs[].entries[-1].url' |
          sed -e 's/^"//' -e 's/"$//' |
 
@@ -416,16 +426,77 @@ if [[ -d "$PREFIX" ]]; then
 fi
 
 
-# wifi on/off
-airplane_mode() {
-    OPS=(on off)
+# el zoom
+# zoom() {
+#     declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
 
-    [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
-    from=${OPS[$i]}
-    to=${OPS[1 - $i]} # flip
+#     CALLID="${CALLIDS["$@"]}"
+#     [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
 
-    nmcli radio wifi $to
-    echo "${from^^} ↪ ${to^^}"
+#     callurl="https://zoom.us/wc/join/$CALLID"
+#     echo $callurl
+#     chromium $callurl &> /dev/null & disown
+# }
+
+zoom() {
+    if [[ "$@" ]]; then # if argument passed, use as ID for call
+
+        unset closest
+        callid="$@"
+
+    else                # else, find nearest meeting
+
+        declare -A DATETIME2ID=(
+            [thurs 12:30pm]=595630613 # readstat
+            [thurs 5:30pm]=344880514  # groupmtg
+            [mon 1:30pm]=746134735    # random (pw: bayesbayes)
+            # [5:30pm]=725153861        # tea
+            [tues 5:30pm]=725153861   # tea
+            [fri 5:30pm]=725153861    # tea
+            # [fri 12pm]=165131186      # regev grad students
+            [wed 5:30pm]=708633336    # tamara 1-1
+        )
+        declare -A timedelta2datetime
+
+        NOW=$( date +%s )
+        timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
+
+        # iterate over newline-separated datetimes, alphabetically sorted
+        # this is a total hack to make "everyday" meetings have lowest priority,
+        # since numbers come before letters (so will be clobbered)
+
+        local IFS=$'\n' # via https://askubuntu.com/a/344418
+        for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | sort ); do
+            timedelta2datetime[$( timedelta "$dt" )]="$dt"
+        done
+
+        min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
+        closest=${timedelta2datetime[$min]} # closest matching meeting datetime
+        callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
+
+    fi
+
+    callurl="https://zoom.us/wc/join/$callid"
+    echo "$closest ►► $callurl"
+
+    if (( $linux )); then
+        _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
+        CHROME() { $_chrome --app="$@" &> /dev/null & disown; }
+    else
+        _chrome="$( ls -d /Applications/Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
+        CHROME() { open -a "$_chrome" --args --app="$@"; }
+        # CHROME() { open -a Chromium.app "$@"; }
+    fi
+
+    if [[ $_chrome ]]; then
+        CHROME $callurl
+    else
+        echo "[[ chrom{e,ium} not found ]]"
+    fi
+
+    # (( $_chrome )) && CHROME $callurl \
+    #                || echo "[[ chrom{e,ium} not found ]]"
+    # CHROME $callurl
 }
 
 
@@ -472,6 +543,7 @@ if ((!$linux)); then
 
     # screen shots
     alias update_screenshots='mv ~/Desktop/Screen* ~/pix/screenshots; rsync -rz --progress ~/pix csail:./macos'
+    last_screenshot() { ls ~/Desktop/Screen\ Shot\ 2* | tail -n1; }
 
     # reset illustrator trial
     resetadobe() {
@@ -504,6 +576,18 @@ else
 
 	# mass xdg-open
 	open(){ for f in "$@"; do xdg-open "$f" &> /dev/null & disown; done; }
+
+    # wifi on/off
+    airplane_mode() {
+        OPS=(on off)
+
+        [ $( nmcli radio wifi ) == "enabled" ] && i=0 || i=1
+        from=${OPS[$i]}
+        to=${OPS[1 - $i]} # flip
+
+        nmcli radio wifi $to
+        echo "${from^^} ↪ ${to^^}"
+    }
 fi
 
 
@@ -575,6 +659,7 @@ untrash() { # unrm ?
 }
 
 alias grep='grep --color'
+alias psychogrep='grep -RIi'
 alias ls='ls --color=auto'
 export LESS=-r # allow colorcodes & symbols in less
 
@@ -643,6 +728,8 @@ Wshort() { # inspired by https://askubuntu.com/a/29580
                || export PS1="\e[1m\h:\e[m \$( Wshort ) \$ "
 # [[ $DISPLAY ]] && export PS1=" \W \$ " \
 #                || export PS1="\e[1m\h:\e[m \W \$ "
+# extra space before Wshort for osx
+(( !$linux )) && export PS1=" $PS1"
 
 case "$TERM" in
 	"dumb")
