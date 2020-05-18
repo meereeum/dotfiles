@@ -5,6 +5,8 @@ set -u # don't delete my hd plz
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
 
+(( ! $linux )) && sed -ri'.tmp' --follow-symlinks 's/\bstore$/osxkeychain/' $DIR/.gitconfig # credential helper
+
 for f in $DOTFILES; do
         [ ! -f ~/${f} ] || rm ~/${f}
         ln -s ${DIR}/${f} ~/${f}
@@ -15,7 +17,7 @@ echo "source ~/.bash_profile" >> ~/.bashrc
 source ~/.bash_profile
 
 # infinite HIST
-sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
+(( $linux )) && sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
 
 # permanently store git pw on osx
 sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
@@ -110,12 +112,16 @@ done
 # vim-anywhere
 cd $HOME
 git clone https://github.com/meereeum/vim-anywhere.git
+cd vim-anywhere
 ./install
 cd $DIR # back to dotfiles
 
 
+# gists
 # arxivate
 wget 'https://gist.github.com/meereeum/d14cfd9c17e8abda5d0a09eed477bd27/raw/00b7851cb2bfc80d34431c2ee2ca249586e5f920/arxivate.sh'
+# h5tree
+wget 'https://gist.github.com/meereeum/87e267dc80421aea50cbb1ce63be5612/raw/afa2bb7c498927455622807fd59b7744330073e0/h5tree.sh'
 
 
 # gecko driver

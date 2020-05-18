@@ -41,9 +41,9 @@ else
     # install brew packages
     # spacemacs
     # the debate: https://github.com/d12frosted/homebrew-emacs-plus/issues/10
-    brew tap railwaycat/emacsmacport # for emacs-mac
-    brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
-    brew linkapps emacs-mac
+    # brew tap railwaycat/emacsmacport # for emacs-mac
+    # brew install emacs-mac --with-gnutls --with-imagemagick --with-modules --with-texinfo --with-xml2 --with-spacemacs-icon
+    # brew linkapps emacs-mac
 
     #brew tap d12frosted/emacs-plus
     #brew install emacs-plus --with-no-title-bars
@@ -51,20 +51,37 @@ else
 
     while read line
         do brew install ${line}
-    done < pkgs/brewpkgs.txt
+    # done < pkgs/brewpkgs.txt
+    done < pkgs/brewpkgs.minimal.txt
 
+    brew tap homebrew/cask
+    while read line
+        do brew cask install ${line}
+    done < pkgs/brewpkgs_cask.txt
+
+    # pdftk (old version when it still worked for mac)
+    # via https://leancrew.com/all-this/2017/01/pdftk/
+    # brew install https://raw.githubusercontent.com/turforlag/homebrew-cervezas/master/pdftk.rb
 fi
 
 
 # reveal-md
-npm install -g reveal-md
+# npm install -g reveal-md
 
 
 # vim color
-# TODO for osx ?
+(( $linux )) && COLORDIR="/usr/share/vim/vim*/colors" \
+             || COLORDIR="$VIMRUNTIME/colors"
+           # || COLORDIR="/usr/local/Cellar/vim/*/share/vim/*/colors"
 for COLORSCHEME in "${DIR}/colors/*.vim"; do
-    sudo ln -s "$COLORSCHEME" /usr/share/vim/vim*/colors
+    sudo ln -s $COLORSCHEME $COLORDIR # quotes destroy ?
 done
+# for mac, may need to replace colors in $VIMRUNTIME/syntax/syncolor.vim
+# e.g. SlateBlue -> #6a5acd
+#      Orange -> #ffa500
+!(( $linux )) && sed -ri'.tmp' -e's/=SlateBlue/=#6a5acd/g' \
+                               -e's/=Orange/=#ffa500/g' "$VIMRUNTIME/syntax/syncolor.vim"
+
 
 
 instructions="
@@ -81,6 +98,7 @@ TODO:
 (5) download geckodriver (and put in $PATH)
 
 (6) consider installing https://github.com/RemoteDebug/remotedebug-ios-webkit-adapter
+    & $ sudo spctl --master-disable (for more control, e.g. installing apps from non-Apple)
 
 (7) copy over & set up ssh keys:
     chmod 600 ~/.ssh/config
