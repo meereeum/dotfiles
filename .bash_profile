@@ -65,7 +65,6 @@ fi
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias restart='bash ~/dotfiles/bashcollager.sh'
-alias h5tree='bash ~/dotfiles/h5tree.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
 export DELTA='Δ'
@@ -438,19 +437,24 @@ fi
 #     echo $callurl
 #     chromium $callurl &> /dev/null & disown
 # }
+
 zoom() {
-    if [[ "$@" ]]; then
-        # closest=
+    if [[ "$@" ]]; then # if argument passed, use as ID for call
+
+        unset closest
         callid="$@"
-    else
+
+    else                # else, find nearest meeting
+
         declare -A DATETIME2ID=(
             [thurs 12:30pm]=595630613 # readstat
             [thurs 5:30pm]=344880514  # groupmtg
             [mon 1:30pm]=746134735    # random (pw: bayesbayes)
+            # [5:30pm]=725153861        # tea
             [tues 5:30pm]=725153861   # tea
             [fri 5:30pm]=725153861    # tea
-            # [5:30pm]=725153861        # tea
-            [wed 5:30pm]=708633336   # tamara 1-1
+            # [fri 12pm]=165131186      # regev grad students
+            [wed 5:30pm]=708633336    # tamara 1-1
         )
         declare -A timedelta2datetime
 
@@ -469,18 +473,30 @@ zoom() {
         min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
         closest=${timedelta2datetime[$min]} # closest matching meeting datetime
         callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
+
     fi
 
     callurl="https://zoom.us/wc/join/$callid"
     echo "$closest ►► $callurl"
 
     if (( $linux )); then
-        CHROME() { chromium "$@" &> /dev/null & disown; }
+        _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
+        CHROME() { $_chrome --app="$@" &> /dev/null & disown; }
     else
-        CHROME() { open -a Chromium.app "$@"; }
+        _chrome="$( ls -d /Applications/Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
+        CHROME() { open -a "$_chrome" --args --app="$@"; }
+        # CHROME() { open -a Chromium.app "$@"; }
     fi
-    # chromium $callurl &> /dev/null & disown
-    CHROME $callurl
+
+    if [[ $_chrome ]]; then
+        CHROME $callurl
+    else
+        echo "[[ chrom{e,ium} not found ]]"
+    fi
+
+    # (( $_chrome )) && CHROME $callurl \
+    #                || echo "[[ chrom{e,ium} not found ]]"
+    # CHROME $callurl
 }
 
 
@@ -553,7 +569,6 @@ else
 	# alias iceweasel='/usr/lib/iceweasel &> /dev/null & disown'
 
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
-
 
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
 
