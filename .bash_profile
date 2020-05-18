@@ -159,6 +159,16 @@ getbbox() {
     gs -o /dev/null -sDEVICE=bbox "$@" 2>&1 | awk '/%%B/ {print $2,$3,$4,$5}' # redirect ghostscript STDERR to STDOUT, & parse
 }
 
+convertvid4mac() {
+    INFILE="$@"
+    INFMT="${INFILE##*.}"
+    # via https://apple.stackexchange.com/a/166554
+    ffmpeg -i "$INFILE" -pix_fmt yuv420p "${INFILE/$INFMT/mp4}"
+    # if necessary: ("height not divisible by 2")
+    # -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2"
+    # ^ via https://stackoverflow.com/a/20848224
+}
+
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
 vtt2txt() {
