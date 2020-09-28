@@ -488,7 +488,7 @@ zoom() {
         _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
         CHROME() { $_chrome --app="$@" &> /dev/null & disown; }
     else
-        _chrome="$( ls -d /Applications/Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
+        _chrome="$( ls -d /Applications/*Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
         CHROME() { open -a "$_chrome" --args --app="$@"; }
         # CHROME() { open -a Chromium.app "$@"; }
     fi
