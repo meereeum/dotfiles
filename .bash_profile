@@ -77,6 +77,8 @@ movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
 vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
 
+alias ls🏜️='curl -su pintxo:barbaro https://amindfv.com/watch-list/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t "(" -k2,2'
+
 8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
 
 math() { bc -l <<< "$@"; }
@@ -442,24 +444,37 @@ zoom() {
     if [[ "$@" ]]; then # if argument passed, use as ID for call
 
         unset closest
-        callid="$@"
+        [[ "$@" != 47 ]] && callid="$@" ||  callid=4747477474?pwd=WEt1V21uTU1IN3BJQzg5b2UrL2RTQT09
+        # callid="$@"
 
     else                # else, find nearest meeting
 
         declare -A DATETIME2ID=(
-            [thurs 12:30pm]=595630613 # readstat
-            [thurs 5:30pm]=344880514  # groupmtg
-            [mon 1:30pm]=746134735    # random (pw: bayesbayes)
-            # [5:30pm]=725153861        # tea
-            [tues 5:30pm]=725153861   # tea
-            [fri 5:30pm]=725153861    # tea
-            [fri 9am]=91525301625     # broad IDMP
-            # [fri 12pm]=165131186      # regev grad students
-            [fri 12pm]=98253011013    # regev grad students
-            [mon 3pm]=91634107951     # regev journal club
-            [tues 9am]=99867060812    # broad-isf symposium (https://broadinstitute.zoom.us/w/99867060812?tk=hC_q-IYMXw_KpglKWqyjbnBuSZRu9tBTtsHwRzU_G4I.DQIAAAAXQIpqTBZKUFpQNVFqQlRtV2NhNVZzUXhic09RAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=YnBRdEY0UjdqOUdyR2xZeExiVkpXZz09)
-            [wed 5:30pm]=708633336    # tamara 1-1
-            # [fri 1pm]=94886246707     # csbify
+            [fri 9am]=92990426784?pwd=Vk5ZR3YwRzF0cDZFc1pJWGNKUzdWQT09 # kingdom science mtg
+            [fri 11am]=4747477474?pwd=WEt1V21uTU1IN3BJQzg5b2UrL2RTQT09 # ryan robustness
+            [fri 1pm]=91637182254?pwd=aFpWdnp0K1NzT28vUXhLMk12cC96dz09 # kingdom weekly check-in
+            [fri 1:30pm]=95075253136?pwd=ZEpMZS8rdC9XZW13S2NRL2IwL3EwZz09 # readstat
+            [thurs 12pm]=92368367400?pwd=QVQxVE1kcWU0dE96VThEZExCOVJrZz09 # ravi 1-1
+            [thurs 10am]=83399040014 # kendall 1-1
+
+            # [mon 11am]=98921534174?pwd=aXhJT0kwTE5JZWFvbGwxYk1aQUQ0QT09   # groupmtg
+            # # [fri 11:30am]=4747477474?pwd=WEt1V21uTU1IN3BJQzg5b2UrL2RTQT09 # tam 1-1
+            # [fri 12:15pm]=4747477474?pwd=WEt1V21uTU1IN3BJQzg5b2UrL2RTQT09 # ddt etc
+            # [fri 3pm]=94451388867?pwd=Uk9oalFhRGhSeXl2ZVZIR3RYeStwdz09    # readstat
+            # [tues 11:30am]=93863855430                                    # 7.00 covid
+            # [thurs 12:30pm]=595630613 # readstat
+            # [thurs 5:30pm]=344880514  # groupmtg
+            # [mon 1:30pm]=746134735    # random (pw: bayesbayes)
+            # # [5:30pm]=725153861        # tea
+            # [tues 5:30pm]=725153861   # tea
+            # [fri 5:30pm]=725153861    # tea
+            # [fri 9am]=91525301625     # broad IDMP
+            # # [fri 12pm]=165131186      # regev grad students
+            # [fri 12pm]=98253011013    # regev grad students
+            # [mon 3pm]=91634107951     # regev journal club
+            # [tues 9am]=99867060812    # broad-isf symposium (https://broadinstitute.zoom.us/w/99867060812?tk=hC_q-IYMXw_KpglKWqyjbnBuSZRu9tBTtsHwRzU_G4I.DQIAAAAXQIpqTBZKUFpQNVFqQlRtV2NhNVZzUXhic09RAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=YnBRdEY0UjdqOUdyR2xZeExiVkpXZz09)
+            # [wed 5:30pm]=708633336    # tamara 1-1
+            # # [fri 1pm]=94886246707     # csbify
         )
         declare -A timedelta2datetime
 
@@ -489,8 +504,11 @@ zoom() {
         CHROME() { $_chrome --app="$@" &> /dev/null & disown; }
     else
         _chrome="$( ls -d /Applications/*Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
-        CHROME() { open -a "$_chrome" --args --app="$@"; }
-        # CHROME() { open -a Chromium.app "$@"; }
+        CHROME() { open -a "$_chrome" --args --app="$@" && \
+                    # caffeinate -d -w $( ps aux | grep zoom | awk 'NR==1{print $2}' ); }
+                    caffeinate -d -w $( ps aux | awk '/zoom/ {print $2; exit}' ); }
+                    # caffeinate -d -w $( ps aux | awk -v callurl="$callurl" '/callurl/ {print $2; exit}' ); }
+                    # ^ don't sleep display during mtg
     fi
 
     if [[ $_chrome ]]; then
@@ -498,10 +516,6 @@ zoom() {
     else
         echo "[[ chrom{e,ium} not found ]]"
     fi
-
-    # (( $_chrome )) && CHROME $callurl \
-    #                || echo "[[ chrom{e,ium} not found ]]"
-    # CHROME $callurl
 }
 
 
@@ -532,6 +546,7 @@ if ((!$linux)); then
     alias chrome='open -a /Applications/Google\ Chrome.app'
     alias ffox='open -a /Applications/Firefox.app'
     alias preview='open -a /Applications/Preview.app'
+    alias zotero='open -a /Applications/Zotero.app'
 
     #for g in gcc g++; do
        #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${g}* | grep ${g}-[0-9] | tail -n1)

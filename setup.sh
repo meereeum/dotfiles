@@ -1,6 +1,9 @@
 #!/bin/bash
 set -u # don't delete my hd plz
 
+[[ "$OSTYPE" = "linux-gnu" ]] && export linux=1 \
+                              || export linux=0
+
 # symlink
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
