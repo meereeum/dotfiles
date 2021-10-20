@@ -80,7 +80,7 @@ done
 # e.g. SlateBlue -> #6a5acd
 #      Orange -> #ffa500
 !(( $linux )) && sed -ri'.tmp' -e's/=SlateBlue/=#6a5acd/g' \
-                               -e's/=Orange/=#ffa500/g' "$VIMRUNTIME/syntax/syncolor.vim"
+                               -e's/=Orange/=#ffa500/g' ${VIMRUNTIME}"/syntax/syncolor.vim"
 
 
 

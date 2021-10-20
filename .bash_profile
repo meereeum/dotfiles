@@ -77,6 +77,8 @@ movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
 vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
 
+alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t "(" -k2,2'
+
 8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
 
 math() { bc -l <<< "$@"; }
@@ -442,19 +444,11 @@ zoom() {
     if [[ "$@" ]]; then # if argument passed, use as ID for call
 
         unset closest
-        callid="$@"
+        # callid="$@"
 
     else                # else, find nearest meeting
 
         declare -A DATETIME2ID=(
-            [thurs 12:30pm]=595630613 # readstat
-            [thurs 5:30pm]=344880514  # groupmtg
-            [mon 1:30pm]=746134735    # random (pw: bayesbayes)
-            # [5:30pm]=725153861        # tea
-            [tues 5:30pm]=725153861   # tea
-            [fri 5:30pm]=725153861    # tea
-            # [fri 12pm]=165131186      # regev grad students
-            [wed 5:30pm]=708633336    # tamara 1-1
         )
         declare -A timedelta2datetime
 
@@ -481,11 +475,14 @@ zoom() {
 
     if (( $linux )); then
         _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
-        CHROME() { $_chrome --app="$@" &> /dev/null & disown; }
+        CHROME() { $_chrome --new-window --app="$@" &> /dev/null & disown; }
     else
-        _chrome="$( ls -d /Applications/Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
-        CHROME() { open -a "$_chrome" --args --app="$@"; }
-        # CHROME() { open -a Chromium.app "$@"; }
+        _chrome="$( ls -d /Applications/*Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
+        CHROME() { open -na "$_chrome" --args --new-window --app="$@" && \
+                    # caffeinate -d -w $( ps aux | grep zoom | awk 'NR==1{print $2}' ); }
+                    caffeinate -d -w $( ps aux | awk '/zoom/ {print $2; exit}' ); }
+                    # caffeinate -d -w $( ps aux | awk -v callurl="$callurl" '/callurl/ {print $2; exit}' ); }
+                    # ^ don't sleep display during mtg
     fi
 
     if [[ $_chrome ]]; then
@@ -493,10 +490,6 @@ zoom() {
     else
         echo "[[ chrom{e,ium} not found ]]"
     fi
-
-    # (( $_chrome )) && CHROME $callurl \
-    #                || echo "[[ chrom{e,ium} not found ]]"
-    # CHROME $callurl
 }
 
 
@@ -531,6 +524,7 @@ if ((!$linux)); then
     alias chrome='open -a /Applications/Google\ Chrome.app'
     alias ffox='open -a /Applications/Firefox.app'
     alias preview='open -a /Applications/Preview.app'
+    alias zotero='open -a /Applications/Zotero.app'
 
     #for g in gcc g++; do
        #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${g}* | grep ${g}-[0-9] | tail -n1)
@@ -540,6 +534,10 @@ if ((!$linux)); then
 
 	alias phil='chrome "https://docs.google.com/document/d/1Bcfz3Tl_T78nx9VLnOyoyn4rrvpjFH2ol8PJ9JMk97U/edit";
 			open -a Skype; open -a Evernote'
+
+    # fix
+    alias fixvimcolors='sed -ri".tmp" -e"s/=SlateBlue/=#6a5acd/g" \
+                                      -e"s/=Orange/=#ffa500/g" ${VIMRUNTIME}"/syntax/syncolor.vim"'
 
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
@@ -575,6 +573,8 @@ else
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
+
+    alias fixscroll='tput rmcup' # via https://askubuntu.com/a/123296
 
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
 
