@@ -449,15 +449,6 @@ zoom() {
     else                # else, find nearest meeting
 
         declare -A DATETIME2ID=(
-
-            # [thurs 12:30pm]=595630613 # readstat
-            # [thurs 5:30pm]=344880514  # groupmtg
-            # [mon 1:30pm]=746134735    # random (pw: bayesbayes)
-            # # [5:30pm]=725153861        # tea
-            # [tues 5:30pm]=725153861   # tea
-            # [fri 5:30pm]=725153861    # tea
-            # # [fri 12pm]=165131186      # regev grad students
-            # [wed 5:30pm]=708633336    # tamara 1-1
         )
         declare -A timedelta2datetime
 
@@ -484,10 +475,10 @@ zoom() {
 
     if (( $linux )); then
         _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
-        CHROME() { $_chrome --app="$@" &> /dev/null & disown; }
+        CHROME() { $_chrome --new-window --app="$@" &> /dev/null & disown; }
     else
         _chrome="$( ls -d /Applications/*Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
-        CHROME() { open -a "$_chrome" --args --app="$@" && \
+        CHROME() { open -na "$_chrome" --args --new-window --app="$@" && \
                     # caffeinate -d -w $( ps aux | grep zoom | awk 'NR==1{print $2}' ); }
                     caffeinate -d -w $( ps aux | awk '/zoom/ {print $2; exit}' ); }
                     # caffeinate -d -w $( ps aux | awk -v callurl="$callurl" '/callurl/ {print $2; exit}' ); }
@@ -540,6 +531,10 @@ if ((!$linux)); then
 	alias phil='chrome "https://docs.google.com/document/d/1Bcfz3Tl_T78nx9VLnOyoyn4rrvpjFH2ol8PJ9JMk97U/edit";
 			open -a Skype; open -a Evernote'
 
+    # fix
+    alias fixvimcolors='sed -ri".tmp" -e"s/=SlateBlue/=#6a5acd/g" \
+                                      -e"s/=Orange/=#ffa500/g" ${VIMRUNTIME}"/syntax/syncolor.vim"'
+
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
 	alias cpy='copy'
@@ -574,6 +569,8 @@ else
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
+
+    alias fixscroll='tput rmcup' # via https://askubuntu.com/a/123296
 
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
 
