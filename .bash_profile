@@ -521,6 +521,10 @@ t() {
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
 
+pyfind(){
+    python -c "import ${1}; print(${1}.__file__)"
+}
+
 # osx only
 if ((!$linux)); then
     alias vlc='open -a VLC'
