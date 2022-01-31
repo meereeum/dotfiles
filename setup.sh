@@ -25,11 +25,21 @@ source ~/.bash_profile
 # permanently store git pw on osx
 sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
 
-# vim dir
-mkdir -p ~/.vim/{.swp,.backup,.undo,colors}
-for COLOR in "$DIR/colors/*"; do
-    ln -s $COLOR ~/.vim/colors
+# replicate below, but unify
+VIMDIR="$HOME/.vim"
+find vim -type d -mindepth 1 | sed "s@^vim*@$VIMDIR@" | xargs mkdir -p
+for f in $( find vim -type f -mindepth 1 ); do
+    LINK_TO=$( echo $f | sed -e "s@^[^/]*@$VIMDIR@" ) # -e 's@/[^/]*$@@')
+    ln -s "$DIR/$f" "$LINK_TO"
 done
+
+# vim dir
+# mkdir -p ~/.vim/{.swp,.backup,.undo,colors}
+
+# vim colorschemes
+# for COLOR in "$DIR/colors/*"; do
+#     ln -s $COLOR ~/.vim/colors
+# done
 
 # vim postfx highlight
 OUTDIR="$HOME/.vim/after/syntax/sh"
@@ -43,7 +53,7 @@ cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
 wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
     {
         gunzip sh.vim.gz
-        [[ -d ~/.vim/syntax ]] || mkdir ~/.vim/syntax
+        mkdir -p ~/.vim/syntax
         mv sh.vim ~/.vim/syntax
     }
 
