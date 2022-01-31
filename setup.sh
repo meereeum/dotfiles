@@ -8,8 +8,6 @@ set -u # don't delete my hd plz
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
 
-(( ! $linux )) && sed -ri'.tmp' --follow-symlinks 's/\bstore$/osxkeychain/' $DIR/.gitconfig # credential helper
-
 for f in $DOTFILES; do
         [ ! -f ~/${f} ] || rm ~/${f}
         ln -s ${DIR}/${f} ~/${f}
@@ -25,21 +23,13 @@ source ~/.bash_profile
 # permanently store git pw on osx
 sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
 
-# replicate below, but unify
+# unified vim setup
 VIMDIR="$HOME/.vim"
 find vim -type d -mindepth 1 | sed "s@^vim*@$VIMDIR@" | xargs mkdir -p
 for f in $( find vim -type f -mindepth 1 ); do
     LINK_TO=$( echo $f | sed -e "s@^[^/]*@$VIMDIR@" ) # -e 's@/[^/]*$@@')
     ln -s "$DIR/$f" "$LINK_TO"
 done
-
-# vim dir
-# mkdir -p ~/.vim/{.swp,.backup,.undo,colors}
-
-# vim colorschemes
-# for COLOR in "$DIR/colors/*"; do
-#     ln -s $COLOR ~/.vim/colors
-# done
 
 # vim postfx highlight
 OUTDIR="$HOME/.vim/after/syntax/sh"
@@ -67,6 +57,11 @@ wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
 
 # osx stuff
 if [[ $SYS == "MacOSX" ]]; then
+
+    # permanently store git pw on osx
+    sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
+    # (( ! $linux )) && sed -ri'.tmp' --follow-symlinks 's/\bstore$/osxkeychain/' $DIR/.gitconfig # credential helper
+
     # homebrew
     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
     brew install wget
@@ -177,9 +172,9 @@ $ exit
 $ bash finish_setup.sh
 "
 
-instructions_mac="
+instructions_mac="""
 don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos`
-"
+"""
 
 if (($linux)); then
     #sudo mkdir /Volumes
