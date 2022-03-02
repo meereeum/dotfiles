@@ -754,6 +754,10 @@ fi
 
 export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 
+# via https://stackoverflow.com/a/61355987
+# rename conda environment
+mvenv () { conda create --prefix ~/.conda/envs/${2} --copy --clone $1 ; conda remove --name $1 --all ;}
+
 # Works as long as initialize virtual environment with "virtualenv .venv"
 # alias venv='source .venv/bin/activate'
 
@@ -796,6 +800,8 @@ if ((!$linux)); then
 	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	# fi
+# else
+#     export VIMRUNTIME="$HOME/.bin/usr/bin/vim.basic"
 fi
 
 

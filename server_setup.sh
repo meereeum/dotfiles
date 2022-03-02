@@ -30,8 +30,12 @@ done
 
 # conda
 
-CONDA="https://repo.continuum.io/archive/Anaconda3-5.2.0-Linux-x86_64.sh"
-#CONDA="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+# via https://stackoverflow.com/a/54839819
+CONDA="$( wget -O - https://www.anaconda.com/distribution/ 2>/dev/null |
+          grep "64-Bit (x86) Installer" | sed -nE 's/.*href="([^"]*)".*/\1/p' )"
+          # sed -ne 's@.*\(https:\/\/repo\.anaconda\.com\/archive\/Anaconda3-.*-Linux-x86_64\.sh\)\">64-Bit (x86) Installer.*@\1@p' )"
+# CONDA="https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh"
+# CONDA="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 # silent install
 wget $CONDA -O ~/conda.sh && \
@@ -42,10 +46,11 @@ wget $CONDA -O ~/conda.sh && \
         #export PATH="${HOME}/anaconda2/bin:${PATH}"
         #export PYTHONPATH="${HOME}/anaconda2/bin/python"
 
-        #yes | conda create -n py36 python=3.6 anaconda
-
         # cleanup
         yes | conda clean --all
+
+        # update
+        conda update -n base -c defaults conda
     }
 
 echo "backend : agg" >> $HOME/.config/matplotlib/matplotlibrc
