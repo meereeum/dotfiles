@@ -441,14 +441,15 @@ fi
 # }
 
 zoom() {
+    source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
+
     if [[ "$@" ]]; then # if argument passed, use as ID for call
 
         unset closest
+        [[ "$@" != 47 ]] && callid="$@" || callid=$MI_CUARTO
         # callid="$@"
 
     else                # else, find nearest meeting
-
-        source ~/dotfiles/zoomsched.sh # for DATETIME2ID
         declare -A timedelta2datetime
 
         NOW=$( date +%s )
