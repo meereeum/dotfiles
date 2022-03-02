@@ -441,15 +441,15 @@ fi
 # }
 
 zoom() {
+    source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
+
     if [[ "$@" ]]; then # if argument passed, use as ID for call
 
         unset closest
+        [[ "$@" != 47 ]] && callid="$@" || callid=$MI_CUARTO
         # callid="$@"
 
     else                # else, find nearest meeting
-
-        declare -A DATETIME2ID=(
-        )
         declare -A timedelta2datetime
 
         NOW=$( date +%s )
@@ -513,6 +513,10 @@ t() {
 
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
+
+pyfind(){
+    python -c "import ${1}; print(${1}.__file__)"
+}
 
 # osx only
 if ((!$linux)); then
