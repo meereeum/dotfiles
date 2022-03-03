@@ -1,105 +1,15 @@
 #!/bin/bash
 set -u # don't delete my hd plz
 
-[[ "$OSTYPE" = "linux-gnu" ]] && export linux=1 \
-                              || export linux=0
+./_setup.sh
 
-# symlink
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
-
-for f in $DOTFILES; do
-        [ ! -f ~/${f} ] || rm ~/${f}
-        ln -s ${DIR}/${f} ~/${f}
-        echo "~/${f} --> ${DIR}/${f}"
-done
-
-echo "source ~/.bash_profile" >> ~/.bashrc
-source ~/.bash_profile
-
-# infinite HIST
-(( $linux )) && sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
-
-# permanently store git pw on osx
-sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
-
-# unified vim setup
-VIMDIR="$HOME/.vim"
-find vim -type d -mindepth 1 | sed "s@^vim*@$VIMDIR@" | xargs mkdir -p
-for f in $( find vim -type f -mindepth 1 ); do
-    LINK_TO=$( echo $f | sed -e "s@^[^/]*@$VIMDIR@" ) # -e 's@/[^/]*$@@')
-    ln -s "$DIR/$f" "$LINK_TO"
-done
-
-# vim postfx highlight
-OUTDIR="$HOME/.vim/after/syntax/sh"
-mkdir -p $OUTDIR
-cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
-    awk '/AWK Embedding/,/^<$/' |
-    grep -v '^<$' > ${OUTDIR}/awkembed.vim
-
-# vim syntax highlighting fix
-# via https://github.com/vim/vim/issues/1008
-wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
-    {
-        gunzip sh.vim.gz
-        mkdir -p ~/.vim/syntax
-        mv sh.vim ~/.vim/syntax
-    }
 
 # ye olde spacemacs
-[ -d ~/.emacs.d ] || git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+# [ -d ~/.emacs.d ] || git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 # wget https://github.com/nashamri/spacemacs-logo/raw/master/spacemacs.icns
 
 
-# determine os
-[[ ${OSTYPE//[0-9.]/} == "darwin" ]] && SYS="MacOSX" || SYS="Linux"
-
-# osx stuff
-if [[ $SYS == "MacOSX" ]]; then
-
-    # permanently store git pw on osx
-    sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
-    # (( ! $linux )) && sed -ri'.tmp' --follow-symlinks 's/\bstore$/osxkeychain/' $DIR/.gitconfig # credential helper
-
-    # homebrew
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
-    brew install wget
-
-    # command line tools
-    # xcode-select --install
-
-    # yubikey manager
-    YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
-    wget $YUBICO
-fi
-
-
-# anaconda
-#CONDA="https://repo.continuum.io/archive/Anaconda3-2019.07-${SYS}-x86_64.sh"
-CONDA="https://repo.anaconda.com/miniconda/Miniconda3-latest-${SYS}-x86_64.sh"
-
-# silent install
-wget $CONDA -O ~/conda.sh && \
-    bash ~/conda.sh -b && \
-                {
-                    rm ~/conda.sh
-
-                    # if need separate py2 & py3 envs:
-                    # yes | conda create -n py37 python=3.7 anaconda
-                    # yes | conda env create -f ${DIR}/packages/conda_py36.yml
-
-                    # cleanup
-                    yes | conda clean --all
-                }
-
-# jupyter defaults
-echo -e "import numpy as np\nimport itertools\nimport re" >> $HOME/.ipython/profile_default/startup/00.py
-
 # vim for jupyter
-
-#./install/vimjupyter.sh "$DIR"
-
 mkdir -p $(jupyter --data-dir)/nbextensions
 cd $(jupyter --data-dir)/nbextensions
 [ -d vim_binding ] || git clone https://github.com/lambdalisue/jupyter-vim-binding vim_binding
@@ -125,23 +35,29 @@ cd vim-anywhere
 cd $DIR # back to dotfiles
 
 
-# gists
-# arxivate
-[[ -f ~/dotfiles/arxivate.sh ]] || wget 'https://gist.github.com/meereeum/d14cfd9c17e8abda5d0a09eed477bd27/raw/00b7851cb2bfc80d34431c2ee2ca249586e5f920/arxivate.sh'
-# h5tree
-[[ -f ~/dotfiles/h5tree.sh ]] || wget 'https://gist.github.com/meereeum/87e267dc80421aea50cbb1ce63be5612/raw/afa2bb7c498927455622807fd59b7744330073e0/h5tree.sh'
+# determine os
+[[ ${OSTYPE//[0-9.]/} == "darwin" ]] && SYS="MacOSX" || SYS="Linux"
+
+# osx stuff
+if [[ $SYS == "MacOSX" ]]; then
+
+    # permanently store git pw on osx
+    sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
+
+    # homebrew
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+        brew install wget
+
+    # command line tools
+    xcode-select --install
+
+    # yubikey manager
+    # YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
+    # wget $YUBICO
+fi
 
 
-# gecko driver
-[[ $SYS == "Linux" ]] && osname="linux64" || osname="macos"
-gecko_url=$( curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest |
-             jq -r '.assets[].browser_download_url | select(contains("'$osname'"))' )
-
-curl -s -L "$gecko_url" | tar -xz && \
-    chmod +x geckodriver && sudo mv geckodriver /usr/local/bin
-
-
-instructions="
+instructions="""
 TODO:
 $ su
 
@@ -170,7 +86,7 @@ add line: "1    1   geolocate   bash $DIR/geolocate.sh"
 $ exit
 
 $ bash finish_setup.sh
-"
+"""
 
 instructions_mac="""
 don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos`
@@ -179,7 +95,6 @@ don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-t
 if (($linux)); then
     #sudo mkdir /Volumes
     #sudo mkdir /Volumes/Media
-
     echo "$instructions"
 else
     echo "$instructions_mac"
