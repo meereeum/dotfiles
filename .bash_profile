@@ -77,6 +77,8 @@ movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
 vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
 
+alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t "(" -k2,2'
+
 8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
 
 math() { bc -l <<< "$@"; }
@@ -450,23 +452,15 @@ fi
 # }
 
 zoom() {
+    source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
+
     if [[ "$@" ]]; then # if argument passed, use as ID for call
 
         unset closest
-        callid="$@"
+        [[ "$@" != 47 ]] && callid="$@" || callid=$MI_CUARTO
+        # callid="$@"
 
     else                # else, find nearest meeting
-
-        declare -A DATETIME2ID=(
-            [thurs 12:30pm]=595630613 # readstat
-            [thurs 5:30pm]=344880514  # groupmtg
-            [mon 1:30pm]=746134735    # random (pw: bayesbayes)
-            # [5:30pm]=725153861        # tea
-            [tues 5:30pm]=725153861   # tea
-            [fri 5:30pm]=725153861    # tea
-            # [fri 12pm]=165131186      # regev grad students
-            [wed 5:30pm]=708633336    # tamara 1-1
-        )
         declare -A timedelta2datetime
 
         NOW=$( date +%s )
@@ -492,11 +486,14 @@ zoom() {
 
     if (( $linux )); then
         _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
-        CHROME() { $_chrome --app="$@" &> /dev/null & disown; }
+        CHROME() { $_chrome --new-window --app="$@" &> /dev/null & disown; }
     else
-        _chrome="$( ls -d /Applications/Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
-        CHROME() { open -a "$_chrome" --args --app="$@"; }
-        # CHROME() { open -a Chromium.app "$@"; }
+        _chrome="$( ls -d /Applications/*Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
+        CHROME() { open -na "$_chrome" --args --new-window --app="$@" && \
+                    # caffeinate -d -w $( ps aux | grep zoom | awk 'NR==1{print $2}' ); }
+                    caffeinate -d -w $( ps aux | awk '/zoom/ {print $2; exit}' ); }
+                    # caffeinate -d -w $( ps aux | awk -v callurl="$callurl" '/callurl/ {print $2; exit}' ); }
+                    # ^ don't sleep display during mtg
     fi
 
     if [[ $_chrome ]]; then
@@ -504,10 +501,6 @@ zoom() {
     else
         echo "[[ chrom{e,ium} not found ]]"
     fi
-
-    # (( $_chrome )) && CHROME $callurl \
-    #                || echo "[[ chrom{e,ium} not found ]]"
-    # CHROME $callurl
 }
 
 
@@ -549,12 +542,17 @@ t() {
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
 
+pyfind(){
+    python -c "import ${1}; print(${1}.__file__)"
+}
+
 # osx only
 if ((!$linux)); then
     alias vlc='open -a VLC'
     alias chrome='open -a /Applications/Google\ Chrome.app'
     alias ffox='open -a /Applications/Firefox.app'
     alias preview='open -a /Applications/Preview.app'
+    alias zotero='open -a /Applications/Zotero.app'
 
     #for g in gcc g++; do
        #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${g}* | grep ${g}-[0-9] | tail -n1)
@@ -564,6 +562,10 @@ if ((!$linux)); then
 
 	alias phil='chrome "https://docs.google.com/document/d/1Bcfz3Tl_T78nx9VLnOyoyn4rrvpjFH2ol8PJ9JMk97U/edit";
 			open -a Skype; open -a Evernote'
+
+    # fix
+    alias fixvimcolors='sed -ri".tmp" -e"s/=SlateBlue/=#6a5acd/g" \
+                                      -e"s/=Orange/=#ffa500/g" ${VIMRUNTIME}"/syntax/syncolor.vim"'
 
 	# copy to clipboard without trailing \n
 	alias copy='tr -d "\n" | pbcopy; echo; echo pbcopied; echo'
@@ -599,6 +601,8 @@ else
 	alias netflix='google-chrome --app=https://www.netflix.com &> /dev/null'
 
 	alias zotero='/usr/lib/zotero/zotero &> /dev/null & disown'
+
+    alias fixscroll='tput rmcup' # via https://askubuntu.com/a/123296
 
 	screenshot(){ sleep 5; gnome-screenshot -af ~/Downloads/"$@"; }
 
@@ -652,10 +656,17 @@ if (($linux)); then
     }
   else
     pkgs() {
-        cd ${HOME}/dotfiles/packages
-        rm Brewfile && brew bundle dump # with package-install options
-	    cd -
+        # cd ${HOME}/dotfiles/pkgs
+        # rm Brewfile && brew bundle dump # with package-install options
+
         # brew list
+        BREWPREFIX="$( brew --prefix)/opt"
+        for keg in $( ls $BREWPREFIX ); do
+            printf "%s " $keg
+            jq -r '.used_options | join(" ")' < $BREWPREFIX/$keg/INSTALL_RECEIPT.json
+        done | sort
+
+	    # cd -
     }
 fi
 export -f pkgs
@@ -741,7 +752,7 @@ shopt -s extglob
 
 # succinct cmd line (abbrev working dir only)
 Wshort() { # inspired by https://askubuntu.com/a/29580
-    W=$( basename ${PWD/$HOME/"~"} )
+    W=$( basename "${PWD/$HOME/"~"}" )
     (( ${#W} > 30 )) && W="${W::10}…${W:(-19)}" # 1st 10 … last 19
     echo $W
 }
@@ -776,6 +787,10 @@ if [[ ! "$CONDA" =~ .*\*.* ]]; then # wildcard expanded to valid conda
 fi
 
 export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
+
+# via https://stackoverflow.com/a/61355987
+# rename conda environment
+mvenv () { conda create --prefix ~/.conda/envs/${2} --copy --clone $1 ; conda remove --name $1 --all ;}
 
 # Works as long as initialize virtual environment with "virtualenv .venv"
 # alias venv='source .venv/bin/activate'
@@ -819,6 +834,8 @@ if ((!$linux)); then
 	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	# fi
+# else
+#     export VIMRUNTIME="$HOME/.bin/usr/bin/vim.basic"
 fi
 
 
@@ -866,7 +883,7 @@ if (( $linux )); then
             # --authgroup=$GRP $VPNURL
             # --token-mode yubioath
             # --background
-        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL
+        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL "$@"
     }
 else
     upvpn() {
@@ -874,7 +891,7 @@ else
         GRP="Duo-Split-Tunnel-VPN"
         VPNURL=69.173.127.10
 
-        sudo openconnect -u shiffman --authgroup $GRP $VPNURL \
+        sudo openconnect -u shiffman --authgroup $GRP $VPNURL "$@" \
             --servercert pin-sha256:SECRET_broad
             # --token-mode yubioath
             # --background

@@ -4,4 +4,7 @@ uq.conf
 blurb
 usersandbox*
 arxivate.sh
+h5tree.sh
 SECRET*
+*tmp
+zoomsched.sh
