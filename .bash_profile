@@ -332,6 +332,7 @@ day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
     dt=$( echo $dt | sed 's/weds/wed/g' )    # i am bad at wkday abbrevs
 
+    [[ "${dt,,}" == "tomorr" ]] && dt+="ow"    # tomorr -> tomorrow
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
@@ -507,6 +508,23 @@ zoom() {
     # (( $_chrome )) && CHROME $callurl \
     #                || echo "[[ chrom{e,ium} not found ]]"
     # CHROME $callurl
+}
+
+
+# download big (>100 Mb) files from google drive
+# via https://medium.com/@acpanjan/download-google-drive-files-using-wget-3c2c025a8b99
+gdownload() {
+    SHARE_URL=$1
+    FILE_OUT=$2
+
+    FILE_ID=$( echo "$SHARE_URL" | sed -E 's@^.*file/d/([^/]*)/.*$@\1@' )
+    CONFIRM=$( wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=${FILE_ID}" -O- |
+                sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p' )
+    wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}" -O "$FILE_OUT" \
+        && rm /tmp/cookies.txt
+
+    # gdownloadsmall:
+    # wget --no-check-certificate "https://docs.google.com/uc?export=download&id=FILE_ID" -O "$FILE_OUT"
 }
 
 
@@ -692,6 +710,8 @@ shopt -s histreedit
 shopt -s histverify
 # multi-line commands in 1 history entry
 shopt -s cmdhist
+# allow import of aliases from sourced scripts (i.e. when expand aliases even when shell is not interactive)
+shopt -s expand_aliases
 
 # make commands executed in one shell immediately accessible in history of others
 # i.e. append, then clear, then reload file
