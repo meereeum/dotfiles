@@ -13,8 +13,7 @@ for f in $DOTFILES; do
         echo "~/${f} --> ${DIR}/${f}"
 done
 
-
-[ -f /etc/redhat-release ] && BASHRC="~/.my.bashrc" || BASHRC="~/.bashrc" # broad servers vs other
+BASHRC=$( ls ~/.*bashrc )
 echo "source ~/.bash_profile" >> $BASHRC
 source ~/.bash_profile
 
