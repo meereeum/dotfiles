@@ -3,7 +3,7 @@ if filereadable('/etc/debian_version')
 	inoremap jk 
 	inoremap kj 
 else
-	inoremap jk <Esc>  
+	inoremap jk <Esc>
 	inoremap kj <Esc>
 endif
 
@@ -19,6 +19,19 @@ set hlsearch
 
 " don't wrap lines by default
 set nowrap
+
+" set limits for register
+" via https://stackoverflow.com/a/3676914
+" * marks for last $X edited files,
+" * $X lines for each register,
+" * skip registers with more than $X kb
+" * disable search highlighting on start
+set viminfo='100,<1000,s100,h
+
+" rm trailing whitespace on :w
+" via https://vim.fandom.com/wiki/Remove_unwanted_spaces
+autocmd BufWritePre * %s/\s\+$//e
+" autocmd BufWritePre *.py %s/\s\+$//e # just py files
 
 " colors
 syntax enable
