@@ -448,18 +448,6 @@ if [[ $DISPLAY ]]; then
     fi
 
 
-    # el zoom
-    zoom() {
-        declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
-
-        CALLID="${CALLIDS["$@"]}"
-        [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
-
-        callurl="https://zoom.us/wc/join/$CALLID"
-        echo $callurl
-        chromium $callurl &> /dev/null & disown
-    }
-
     zoom() {
         source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
 
