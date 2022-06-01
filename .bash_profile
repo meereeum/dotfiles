@@ -395,7 +395,7 @@ if [[ $DISPLAY ]]; then
 
     _get_ffox() {
         SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini |
-                    head -n1 ) # assumes the "right" one is first.. # TODO: can prob incorporate into awk
+                    tail -n1 ) # assumes the "right" one is last.. # TODO: can prob incorporate into awk
         echo "$PREFIX/$SESSION"
     }
     _catjsonlz() {
@@ -673,6 +673,13 @@ alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(whi
 
 alias gitcontrib='git shortlog -sn'
 
+if [ -f ~/.git-completion.bash ]; then
+      . ~/.git-completion.bash
+fi
+if [ -f ~/.git-annex-completion.bash ]; then
+      . ~/.git-annex-completion.bash
+fi
+
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
 (($linux)) && export TRASHDIR="${HOME}/.local/share/Trash/files" \
@@ -688,7 +695,8 @@ untrash() { # unrm ?
 
 alias grep='grep --color'
 alias psychogrep='grep -RIi'
-alias ls='ls --color=auto'
+(( $linux )) && alias ls='ls --color=auto' \
+             || { eval $( gdircolors ); alias ls='gls --color=auto'; }
 export LESS=-r # allow colorcodes & symbols in less
 
 alias vinilla='vi -u NONE'

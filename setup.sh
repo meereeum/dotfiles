@@ -54,6 +54,13 @@ if [[ $SYS == "MacOSX" ]]; then
     # yubikey manager
     # YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
     # wget $YUBICO
+
+    # via https://www.macinstruct.com/tutorials/how-to-enable-git-tab-autocomplete-on-your-mac/
+    curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o ~/.git-completion.bash
+    chmod +x ~/.git-completion.bash
+    wget https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash -o ~/.git-annex-completion.bash
+    chmod +x ~/.git-annex-completion.bash
+    # TODO and add to .bash_profile ?
 fi
 
 
@@ -90,11 +97,13 @@ $ bash finish_setup.sh
 
 instructions_mac="""
 don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos`
+&
+`https://stackoverflow.com/a/4227294`
 """
 
 if (($linux)); then
-    #sudo mkdir /Volumes
-    #sudo mkdir /Volumes/Media
+    # sudo mkdir /Volumes
+    # sudo mkdir /Volumes/Media
     echo "$instructions"
 else
     echo "$instructions_mac"
