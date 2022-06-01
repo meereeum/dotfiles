@@ -71,6 +71,11 @@ wget $CONDA -O ~/conda.sh && \
 
         # update
         conda update -n base -c defaults conda
+        pip install --upgrade pip
+
+        # ensure bash commands working
+        conda init bash
+        source ~/anaconda3/etc/profile.d/conda.sh
     }
 
 

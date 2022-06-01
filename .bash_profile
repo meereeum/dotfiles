@@ -1,8 +1,10 @@
 # detect os
+# [[ "$OSTYPE" = "linux-gnu" ]]
 	                           # echo "hey there, debian"
-[[ "$OSTYPE" = "linux-gnu" ]] && export linux=1 \
-                              || export linux=0
+[[ $( uname ) = "Linux" ]] && export linux=1 \
+                           || export linux=0
 	                           # echo "hey there, osx"
+
 
 (( $linux )) && export DISTRO=$(
     awk -F'=' '/^PRETTY_NAME/ {print $2}' /etc/os-release | # e.g. Debian GNU/Linux 9 (stretch)
@@ -53,6 +55,7 @@ alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 # alias urls='ssh -t csail "vi txt/urls"'
 alias xvlc='xargs -I{} vlc "{}"'
 alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
+alias fixscroll='tput rmcup' # via https://unix.stackexchange.com/a/259971
 
 if [[ $DISPLAY ]]; then
     (( $linux )) && alias toclipboard='xsel -i --clipboard' \
@@ -330,6 +333,12 @@ day() {
 }
 
 
+browse_csv() {
+    cat "$1" | sed -E 's/(\.[0-9][0-9][0-9])[0-9]*/\1/g' | # 3 digit significance
+        column -t -s, | less -S
+}
+
+
 # only print 1st `n` levels (collapse rest)
 # adapted from https://github.com/stedolan/jq/issues/306#issuecomment-35975958
 jqfirstn() {
@@ -368,129 +377,130 @@ zulipjson2msgs(){
 }
 # N.B. missing txt inside <span class="k">, which seems to be a latex math block
 
+if [[ $DISPLAY ]]; then
+    # ffox stuff
+    (( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
+                 || PREFIX="$HOME/Library/Application Support/Firefox"
 
-# ffox stuff
-(( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
-             || PREFIX="$HOME/Library/Application Support/Firefox"
+    _get_ffox() {
+        SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini |
+                    head -n1 ) # assumes the "right" one is first.. # TODO: can prob incorporate into awk
+        echo "$PREFIX/$SESSION"
+    }
+    _catjsonlz() {
+        if (( $linux )); then
+            cat "$@" | dejsonlz4 -
+        else
+            dejsonlz4 "$@"
+        fi
+    }
+    if [[ -d "$PREFIX" ]]; then
+        export FFOX_PROFILE="$( _get_ffox )"
 
-_get_ffox() {
-    SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini |
-                head -n1 ) # assumes the "right" one is first.. # TODO: can prob incorporate into awk
-    echo "$PREFIX/$SESSION"
-}
-_catjsonlz() {
-    if (( $linux )); then
-        cat "$@" | dejsonlz4 -
-    else
-        dejsonlz4 "$@"
+        # save open ffox tabs
+        # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
+        openTabs(){
+            # cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
+            # cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+            # cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
+            #  dejsonlz4 - |
+            dejsonlz4 "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
+             jq -c '.windows[].tabs[].entries[-1].url' |
+             sed -e 's/^"//' -e 's/"$//' |
+
+             # filter unwanted
+             grep -v -e'[(calendar)|(mail)].google.com' -e'owa.mit.edu' -e'webmail.csail.mit.edu' -e'^file:' -e'zulipchat.com' |
+
+             # site-specific edits
+             awk '!/about:sessionrestore/' |
+             awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' | # get rid of post-? junk
+             sed 's@\(google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@' |                      # get rid of post-? junk besides query
+             sed 's@\(biorxiv.org/.*\)\.full\.pdf.*$@\1@' |                                     # biorxiv pdf -> abs
+             sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
+
+             # rm trailing stuff
+             sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
+        }
+
+        getOpenTabs(){ openTabs | cpout; }
+        #saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
+        saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
+
+        getAddons() {
+            # exclude addons that are not automatic ffox extensions
+            cat "$FFOX_PROFILE/extensions.json" |
+                # jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
+                jq -c '.addons[] | select(.location == "app-profile").defaultLocale.name' |
+                tr -d '"'
+        }
+        export -f getAddons
     fi
-}
-if [[ -d "$PREFIX" ]]; then
-    export FFOX_PROFILE="$( _get_ffox )"
 
-    # save open ffox tabs
-    # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
-    openTabs(){
-        #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
-        #cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
-        # cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
-        #  dejsonlz4 - |
-        dejsonlz4 "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
-         jq -c '.windows[].tabs[].entries[-1].url' |
-         sed -e 's/^"//' -e 's/"$//' |
 
-         # filter unwanted
-         grep -v -e'[(calendar)|(mail)].google.com' -e'owa.mit.edu' -e'webmail.csail.mit.edu' -e'^file:' -e'zulipchat.com' |
+    # el zoom
+    zoom() {
+        declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
 
-         # site-specific edits
-         awk '!/about:sessionrestore/' |
-         awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' | # get rid of post-? junk
-         sed 's@\(google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@' |                      # get rid of post-? junk besides query
-         sed 's@\(biorxiv.org/.*\)\.full\.pdf.*$@\1@' |                                     # biorxiv pdf -> abs
-         sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
+        CALLID="${CALLIDS["$@"]}"
+        [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
 
-         # rm trailing stuff
-         sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
+        callurl="https://zoom.us/wc/join/$CALLID"
+        echo $callurl
+        chromium $callurl &> /dev/null & disown
     }
 
-    getOpenTabs(){ openTabs | cpout; }
-    #saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
-    saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
+    zoom() {
+        source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
 
-    getAddons() {
-        # exclude addons that are not automatic ffox extensions
-        cat "$FFOX_PROFILE/extensions.json" |
-            # jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
-            jq -c '.addons[] | select(.location == "app-profile").defaultLocale.name' |
-            tr -d '"'
+        if [[ "$@" ]]; then # if argument passed, use as ID for call
+
+            unset closest
+            [[ "$@" != 47 ]] && callid="$@" || callid=$MI_CUARTO
+            # callid="$@"
+
+        else                # else, find nearest meeting
+            declare -A timedelta2datetime
+
+            NOW=$( date +%s )
+            timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
+
+            # iterate over newline-separated datetimes, alphabetically sorted
+            # this is a total hack to make "everyday" meetings have lowest priority,
+            # since numbers come before letters (so will be clobbered)
+
+            local IFS=$'\n' # via https://askubuntu.com/a/344418
+            for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | sort ); do
+                timedelta2datetime[$( timedelta "$dt" )]="$dt"
+            done
+
+            min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
+            closest=${timedelta2datetime[$min]} # closest matching meeting datetime
+            callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
+
+        fi
+
+        callurl="https://zoom.us/wc/join/$callid"
+        echo "$closest ►► $callurl"
+
+        if (( $linux )); then
+            _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
+            CHROME() { $_chrome --new-window --app="$@" &> /dev/null & disown; }
+        else
+            _chrome="$( ls -d /Applications/*Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
+            CHROME() { open -na "$_chrome" --args --new-window --app="$@" && \
+                        # caffeinate -d -w $( ps aux | grep zoom | awk 'NR==1{print $2}' ); }
+                        caffeinate -d -w $( ps aux | awk '/zoom/ {print $2; exit}' ); }
+                        # caffeinate -d -w $( ps aux | awk -v callurl="$callurl" '/callurl/ {print $2; exit}' ); }
+                        # ^ don't sleep display during mtg
+        fi
+
+        if [[ $_chrome ]]; then
+            CHROME $callurl
+        else
+            echo "[[ chrom{e,ium} not found ]]"
+        fi
     }
-    export -f getAddons
 fi
-
-
-# el zoom
-# zoom() {
-#     declare -A CALLIDS=( [readstat]=595630613 [groupmtg]=344880514 [random]=746134735 [tea]=725153861)
-
-#     CALLID="${CALLIDS["$@"]}"
-#     [[ "$CALLID" ]] || CALLID="$( echo $@ | sed 's/[- ]//g' )" # fallback
-
-#     callurl="https://zoom.us/wc/join/$CALLID"
-#     echo $callurl
-#     chromium $callurl &> /dev/null & disown
-# }
-
-zoom() {
-    source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
-
-    if [[ "$@" ]]; then # if argument passed, use as ID for call
-
-        unset closest
-        [[ "$@" != 47 ]] && callid="$@" || callid=$MI_CUARTO
-        # callid="$@"
-
-    else                # else, find nearest meeting
-        declare -A timedelta2datetime
-
-        NOW=$( date +%s )
-        timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
-
-        # iterate over newline-separated datetimes, alphabetically sorted
-        # this is a total hack to make "everyday" meetings have lowest priority,
-        # since numbers come before letters (so will be clobbered)
-
-        local IFS=$'\n' # via https://askubuntu.com/a/344418
-        for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | sort ); do
-            timedelta2datetime[$( timedelta "$dt" )]="$dt"
-        done
-
-        min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
-        closest=${timedelta2datetime[$min]} # closest matching meeting datetime
-        callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
-
-    fi
-
-    callurl="https://zoom.us/wc/join/$callid"
-    echo "$closest ►► $callurl"
-
-    if (( $linux )); then
-        _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
-        CHROME() { $_chrome --new-window --app="$@" &> /dev/null & disown; }
-    else
-        _chrome="$( ls -d /Applications/*Chrom* | xargs | awk -F'/Applications/' '{print $2}' )"
-        CHROME() { open -na "$_chrome" --args --new-window --app="$@" && \
-                    # caffeinate -d -w $( ps aux | grep zoom | awk 'NR==1{print $2}' ); }
-                    caffeinate -d -w $( ps aux | awk '/zoom/ {print $2; exit}' ); }
-                    # caffeinate -d -w $( ps aux | awk -v callurl="$callurl" '/callurl/ {print $2; exit}' ); }
-                    # ^ don't sleep display during mtg
-    fi
-
-    if [[ $_chrome ]]; then
-        CHROME $callurl
-    else
-        echo "[[ chrom{e,ium} not found ]]"
-    fi
-}
 
 
 # terminal tab title
@@ -514,9 +524,7 @@ t() {
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
 
-pyfind(){
-    python -c "import ${1}; print(${1}.__file__)"
-}
+pyfind(){ python -c "import ${1}; print(${1}.__file__)"; }
 
 # osx only
 if ((!$linux)); then
@@ -892,8 +900,64 @@ export MKL_THREADING_LAYER=GNU # make theanify work
 # done
 
 
+# non-broad
+if ! [[ ${DISTRO,,} =~ "red hat" ]]; then
+
+    # last but far from least... fancify
+    bash ~/dotfiles/horizon.sh # populate /tmp/darksky
+
+    # prepend moon
+    MOON=$( bash ~/dotfiles/moony.sh )
+    [[ $DISPLAY ]] && export PS1="$MOON$PS1" \
+                   || export PS1="$MOON $PS1"
+
+    # echo sun
+    SUN=$( bash ~/dotfiles/sunny.sh )
+    [[ $SUN ]] && echo $SUN # skip if no return
+
+    # check metrograph !
+    # csail server only
+    [[ ! $DISPLAY ]] && [[ ${DISTRO,,} =~ "debian" ]] && \
+        bash ~/dotfiles/metrographer.sh
+
+    # david lynch horoscope, etc
+    # brodecomp only
+    [[ ! $DISPLAY ]] && [[ ${DISTRO,,} =~ "ubuntu" ]] && {
+        # STUFF=$( wget -q https://www.astrology.com/horoscope/daily/gemini.html -O - |
+        #             grep -A10 '"content-date"' | grep font | sed -E 's/^.*">([^<]*)<.*$/\1/' )
+        # STUFF=$( wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |
+        #           grep -A 1 display | grep -v -e "^--$" -e "^<div" | sed "s/&#39;/'/g" | shuf | head -n1 )
+
+        F="/tmp/dkl_$( day )"
+        [[ -f "$F" ]] || {
+            wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |
+                grep -A 1 display | grep -v -e "^--$" -e "^<div" | sed "s/&#39;/'/g" | shuf | head -n1 > $F
+        }
+        STUFF=$( cat $F | sed 's/\. /.\n/g' )
+        echo -e "\n\e[3m${STUFF}\e[0m\n — David Lynch\n"
+        # echo -e "\n\e[3m` cat $F `\e[0m\n— David Lynch\n"
+
+        export PATH="/usr/local/texlive/2020/bin/x86_64-linux:$PATH"
+        export PATH="$HOME/.bin:$PATH"
+        export LD_LIBRARY_PATH="$HOME/.bin/usr/lib:$LD_LIBRARY_PATH"
+
+        # pprof
+        export PATH="$PATH:${HOME}/bin/go/bin"
+        alias pprof='${HOME}/go/bin/pprof'
+
+        alias lsgpu=nvidia-smi
+
+        sudo_apt_get_install() {
+            apt-get download "$@" && \
+                DEB="$( echo "$@"*.deb )" && \
+                dpkg -x "$DEB" ~/.bin && \
+                echo "--> installed $@ to ~/.bin"
+        }
+
+    }
+
 # broad servers
-if [[ ${DISTRO,,} =~ "red hat" ]]; then
+else
 
     DK_DEFAULTS="taciturn reuse dkcomplete"
 
@@ -960,7 +1024,7 @@ if [[ ${DISTRO,,} =~ "red hat" ]]; then
     # awk 'NR==1{print $0; gsub(".","-")}1'
     # && _vqstat) | column -t | 'NR==1 {print $0"\n"sub(/*/,"-",$0)} NR>1 {print}'; }
     # && _vqstat) | column -t | awk -v dashes=$( dashes $COLUMNS ) 'NR==1 {print $0"\n"dashes} NR>1 {print}'; }
-    # && dashes $( math "scale=0; 3 * $COLUMNS" / 4) 
+    # && dashes $( math "scale=0; 3 * $COLUMNS" / 4)
 
     # OS=$( cat /etc/redhat-release | sed -e"s/^.*release //" -e"s/ (.*$//" )
     # # check major (int) version
@@ -1007,23 +1071,4 @@ if [[ ${DISTRO,,} =~ "red hat" ]]; then
         [[ $ENV ]] && source activate $ENV # restore environment, if any
         jupyter notebook list | awk '/^http/ {print $1}'
     }
-
-else # non-broad
-
-    # last but far from least... fancify
-    bash ~/dotfiles/horizon.sh # populate /tmp/darksky
-
-    # prepend moon
-    MOON=$( bash ~/dotfiles/moony.sh )
-    [[ $DISPLAY ]] && export PS1="$MOON$PS1" \
-                   || export PS1="$MOON $PS1"
-
-    # echo sun
-    SUN=$( bash ~/dotfiles/sunny.sh )
-    [[ $SUN ]] && echo $SUN # skip if no return
-
-    # check metrograph !
-    # csail server only
-    [[ ! $DISPLAY ]] && [[ ${DISTRO,,} =~ "debian" ]] && \
-        bash ~/dotfiles/metrographer.sh
 fi
