@@ -7,3 +7,5 @@ arxivate.sh
 h5tree.sh
 nbmerge.py
 SECRET*
+*tmp
+zoomsched.sh

@@ -1,97 +1,15 @@
 #!/bin/bash
 set -u # don't delete my hd plz
 
-# symlink
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
+./_setup.sh
 
-(( ! $linux )) && sed -ri'.tmp' --follow-symlinks 's/\bstore$/osxkeychain/' $DIR/.gitconfig # credential helper
-
-for f in $DOTFILES; do
-        [ ! -f ~/${f} ] || rm ~/${f}
-        ln -s ${DIR}/${f} ~/${f}
-        echo "~/${f} --> ${DIR}/${f}"
-done
-
-echo "source ~/.bash_profile" >> ~/.bashrc
-source ~/.bash_profile
-
-# infinite HIST
-(( $linux )) && sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' ~/.bashrc
-
-# permanently store git pw on osx
-sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
-
-# vim dir
-mkdir -p ~/.vim/{.swp,.backup,.undo,colors}
-for COLOR in "$DIR/colors/*"; do
-    ln -s $COLOR ~/.vim/colors
-done
-
-# vim postfx highlight
-OUTDIR="$HOME/.vim/after/syntax/sh"
-mkdir -p $OUTDIR
-cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
-    awk '/AWK Embedding/,/^<$/' |
-    grep -v '^<$' > ${OUTDIR}/awkembed.vim
-
-# vim syntax highlighting fix
-# via https://github.com/vim/vim/issues/1008
-wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
-    {
-        gunzip sh.vim.gz
-        [[ -d ~/.vim/syntax ]] || mkdir ~/.vim/syntax
-        mv sh.vim ~/.vim/syntax
-    }
 
 # ye olde spacemacs
-[ -d ~/.emacs.d ] || git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+# [ -d ~/.emacs.d ] || git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 # wget https://github.com/nashamri/spacemacs-logo/raw/master/spacemacs.icns
 
 
-# determine os
-[[ ${OSTYPE//[0-9.]/} == "darwin" ]] && SYS="MacOSX" || SYS="Linux"
-
-# osx stuff
-if [[ $SYS == "MacOSX" ]]; then
-    # homebrew
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
-    brew install wget
-
-    # command line tools
-    # xcode-select --install
-
-    # yubikey manager
-    YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
-    wget $YUBICO
-fi
-
-
-# anaconda
-#CONDA="https://repo.continuum.io/archive/Anaconda3-2019.07-${SYS}-x86_64.sh"
-CONDA="https://repo.anaconda.com/miniconda/Miniconda3-latest-${SYS}-x86_64.sh"
-
-# silent install
-wget $CONDA -O ~/conda.sh && \
-    bash ~/conda.sh -b && \
-                {
-                    rm ~/conda.sh
-
-                    # if need separate py2 & py3 envs:
-                    # yes | conda create -n py37 python=3.7 anaconda
-                    # yes | conda env create -f ${DIR}/packages/conda_py36.yml
-
-                    # cleanup
-                    yes | conda clean --all
-                }
-
-# jupyter defaults
-echo -e "import numpy as np\nimport itertools\nimport re" >> $HOME/.ipython/profile_default/startup/00.py
-
 # vim for jupyter
-
-#./install/vimjupyter.sh "$DIR"
-
 mkdir -p $(jupyter --data-dir)/nbextensions
 cd $(jupyter --data-dir)/nbextensions
 [ -d vim_binding ] || git clone https://github.com/lambdalisue/jupyter-vim-binding vim_binding
@@ -126,16 +44,36 @@ wget https://gist.github.com/meereeum/87e267dc80421aea50cbb1ce63be5612/raw/afa2b
 wget https://gist.githubusercontent.com/fperez/e2bbc0a208e82e450f69/raw/8e4fe4536a3e9bd739036fc733020fa3ed8f61c9/nbmerge.py
 
 
-# gecko driver
-[[ $SYS == "Linux" ]] && osname="linux64" || osname="macos"
-gecko_url=$( curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest |
-             jq -r '.assets[].browser_download_url | select(contains("'$osname'"))' )
+# determine os
+[[ ${OSTYPE//[0-9.]/} == "darwin" ]] && SYS="MacOSX" || SYS="Linux"
 
-curl -s -L "$gecko_url" | tar -xz && \
-    chmod +x geckodriver && sudo mv geckodriver /usr/local/bin
+# osx stuff
+if [[ $SYS == "MacOSX" ]]; then
+
+    # permanently store git pw on osx
+    sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
+
+    # homebrew
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+        brew install wget
+
+    # command line tools
+    xcode-select --install
+
+    # yubikey manager
+    # YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
+    # wget $YUBICO
+
+    # via https://www.macinstruct.com/tutorials/how-to-enable-git-tab-autocomplete-on-your-mac/
+    curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o ~/.git-completion.bash
+    chmod +x ~/.git-completion.bash
+    wget https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash -o ~/.git-annex-completion.bash
+    chmod +x ~/.git-annex-completion.bash
+    # TODO and add to .bash_profile ?
+fi
 
 
-instructions="
+instructions="""
 TODO:
 $ su
 
@@ -164,16 +102,17 @@ add line: "1    1   geolocate   bash $DIR/geolocate.sh"
 $ exit
 
 $ bash finish_setup.sh
-"
+"""
 
-instructions_mac="
+instructions_mac="""
 don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos`
-"
+&
+`https://stackoverflow.com/a/4227294`
+"""
 
 if (($linux)); then
-    #sudo mkdir /Volumes
-    #sudo mkdir /Volumes/Media
-
+    # sudo mkdir /Volumes
+    # sudo mkdir /Volumes/Media
     echo "$instructions"
 else
     echo "$instructions_mac"

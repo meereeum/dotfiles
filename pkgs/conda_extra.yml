@@ -1,0 +1,48 @@
+# $ conda install:
+beautifulsoup4
+cython
+h5py
+hdf5
+ipython
+jupyter
+lxml
+more-itertools
+networkx
+notebook
+numpy
+pandas
+pydot
+pydotplus
+python-dateutil
+pyyaml
+requests
+scikit-learn
+scipy
+seaborn
+selenium
+statsmodels
+tensorflow
+tqdm
+urllib3
+yaml
+matplotlib
+
+# $ pip install:
+git+https://github.com/mdickinson/bigfloat.git # bigfloat 0.4.0
+# git+https://github.com/meereeum/CLIppy.git
+# $ git clone https://github.com/slinderman/pypolyagamma.git
+# $ cd ./pypolyagamma
+# $ CC=gcc CXX=g++ USE_OPENMP=True pip install -e .
+blessed
+edx-dl
+pprofile
+puzpy
+pydicom
+tensorflow_probability
+youtube-dl
+
+# first: $ conda uninstall cairo
+pycairo
+pygobject
+graphviz
+pydot

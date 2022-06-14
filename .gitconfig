@@ -4,7 +4,8 @@
 	email = meereeum@gmail.com
 [credential]
 	username = meereeum
-	#helper = cache --timeout=3600
+	# helper = cache --timeout=3600
+	# helper = osxkeychain
 	helper = store
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
@@ -13,6 +14,7 @@
 	clean = git-lfs clean -- %f
 [credential "https://github.com"]
 	username = meereeum
+	# helper = osxkeychain
 	helper = store
 [color]
 	ui = auto

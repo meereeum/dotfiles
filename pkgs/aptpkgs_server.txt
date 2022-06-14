@@ -23,6 +23,7 @@ cloud-init
 cloud-initramfs-growroot
 cloud-utils
 cm-super
+cmake
 coreutils
 cpio
 cron
@@ -52,6 +53,7 @@ font-manager
 fonts-gfs-bodoni-classic
 fonts-inconsolata
 g++
+gawk
 gcc
 gcc-6-base
 gdisk
@@ -176,6 +178,8 @@ libnettle6
 libnewt0.52
 libnfnetlink0
 libnpth0
+libomp-dev
+libopenblas-base
 libopts25
 libp11-kit0
 libpam-modules
@@ -205,6 +209,7 @@ libsigc++-2.0-0v5
 libslang2
 libsmartcols1
 libsqlite3-0
+libsqlite3-dev
 libss2
 libssl1.0.2
 libssl1.1
@@ -309,6 +314,7 @@ rsyslog
 screen
 sed
 sensible-utils
+sqlite3
 sudo
 systemd
 systemd-sysv
