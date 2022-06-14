@@ -38,463 +38,463 @@ fi
     touche() { touch "$@"; e "$@"; }
 
 
-    # aliasing
+# aliasing
 
-    ((!$linux)) && DISPLAY=1 # fix for mac
-    [[ $DISPLAY ]] && (( $linux )) && MEDIA="$HOME/shiff" \
-                                   || MEDIA="$HOME" # aqua ^^ v. rest
+((!$linux)) && DISPLAY=1 # fix for mac
+[[ $DISPLAY ]] && (( $linux )) && MEDIA="$HOME/shiff" \
+                               || MEDIA="$HOME" # aqua ^^ v. rest
 
-    alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
-    alias http='python -m SimpleHTTPServer'
-    # alias rc='cd $MEDIA/wkspace/rc'
-    alias wk='cd $MEDIA/wkspace'
-    alias mit='cd $MEDIA/mit'
-    alias quotes='vi $MEDIA/txt/quotes.txt'
-    alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
-    alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
-    # alias urls='ssh -t csail "vi txt/urls"'
-    alias xvlc='xargs -I{} vlc "{}"'
-    alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
-    alias fixscroll='tput rmcup' # via https://unix.stackexchange.com/a/259971
+alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
+alias http='python -m SimpleHTTPServer'
+# alias rc='cd $MEDIA/wkspace/rc'
+alias wk='cd $MEDIA/wkspace'
+alias mit='cd $MEDIA/mit'
+alias quotes='vi $MEDIA/txt/quotes.txt'
+alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
+alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
+# alias urls='ssh -t csail "vi txt/urls"'
+alias xvlc='xargs -I{} vlc "{}"'
+alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
+alias fixscroll='tput rmcup' # via https://unix.stackexchange.com/a/259971
 
-    if [[ $DISPLAY ]]; then
-        (( $linux )) && alias toclipboard='xsel -i --clipboard' \
-                     || alias toclipboard='pbcopy'
-        alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
-    else
-        alias cpout='xargs echo'   # w/o X11 forwarding
+if [[ $DISPLAY ]]; then
+    (( $linux )) && alias toclipboard='xsel -i --clipboard' \
+                 || alias toclipboard='pbcopy'
+    alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+else
+    alias cpout='xargs echo'   # w/o X11 forwarding
+fi
+
+alias arxivate='bash ~/dotfiles/arxivate.sh'
+alias h5tree='bash ~/dotfiles/h5tree.sh'
+alias nbmerge='python ~/dotfiles/nbmerge.py'
+alias restart='bash ~/dotfiles/bashcollager.sh'
+alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
+
+export DELTA='Δ'
+export DELTAS="${DELTA}s"
+
+export STRFDATE="+%y%m%d"
+
+lunch()  { python $MEDIA/wkspace/mit-lunch/get_menu.py   "$@"; }
+movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
+lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
+vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
+8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
+
+alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t "(" -k2,2'
+
+math() { bc -l <<< "$@"; }
+PI=$( bc -l <<< "scale=10; 4*a(1)" )
+
+# tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
+# tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
+tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
+token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
+nbrerun() {
+    for nb in "$@"; do
+        (jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=600 "$nb";) &done
+}
+
+# via https://stackoverflow.com/a/31560568
+alias pngcompress='convert -depth 24 -define png:compression-filter=2 -define png:compression-level=9 \
+                           -define png:compression-strategy=1' # -resize 50%
+
+shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
+# via https://unix.stackexchange.com/a/28045
+chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
+introduceyoselves() { for person in {,fe}male{1,2,3} child_{fe,}male; do spd-say "i am a $person" -t $person -w; done; }
+
+coinflip() {
+    [[ "$@" ]] && choices=( "$@" ) || choices=( heads tails )
+    echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
+    #i=$(( $RANDOM % ${#choices[@]} ))
+    #echo "${choices[$i]}"
+}
+
+
+# aqua only
+[[ $DISPLAY ]] && (( $linux )) && (
+    addmusic() { F="$MEDIA/txt/music";   echo -e "$@" >> $F; tail -n4 $F; }
+    addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
+)
+
+
+# anagram utils
+sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
+anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
+
+spiral() { jp2a $MEDIA/media/giphy_096.jpg --term-width --chars=" ${@^^}${@,,}"; }
+
+#dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
+dashes() {
+    [[ $2 ]] && dash="$2" || dash="-"
+    yes "$dash" | head -n"$1" | tr -d '\n'; echo;
+}
+
+# via https://misc.flogisoft.com/bash/tip_colors_and_formatting#colors2
+_iter256() {
+    fgbg=$1
+    for color in {0..255} ; do
+        [[ $2 ]] && str=$2 \
+                 || str=$color # default: str is colornumber
+
+        # display the color
+        printf "\e[${fgbg};5;%sm  %3s  \e[0m" $color $str
+        [[ $(( ($color + 1) % 6 )) == 4 ]] && echo # newline (6 colors per line)
+    done
+}
+iterbg256() { _iter256 48 "$@"; }
+iterfg256() { _iter256 38 "$@"; }
+
+pdfsplit() {
+    PDF="$@"
+    pdfseparate $PDF ${PDF%.pdf}.%d.pdf
+}
+pdfurl2txt() { # e.g. for menus
+    URL="$@"
+    F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
+    [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
+    # [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
+    echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
+}
+
+# check available URLs for given TLD
+checkURLs() {
+    TLD="$@" # https://data.iana.org/TLD/tlds-alpha-by-domain.txt
+
+    testresponse="$( whois a.$TLD )"
+    if [[ "${testresponse,,}" =~ "no whois server" ]]; then
+        echo "$testresponse"
+        return # "it short-circuits" -scruff
     fi
 
-    alias arxivate='bash ~/dotfiles/arxivate.sh'
-    alias h5tree='bash ~/dotfiles/h5tree.sh'
-    alias nbmerge='python ~/dotfiles/nbmerge.py'
-    alias restart='bash ~/dotfiles/bashcollager.sh'
-    alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
+    for word in $( grep ".\+${TLD}$" /usr/share/dict/words ); do # 1+ letters, ending in $TLD
+        wordasURL=${word/$TLD/.$TLD}
+        # [[ $( whois $wordasURL | head -n1 ) == "NOT FOUND" ]] && echo $wordasURL # unregistered # agggg not standardized at. all.
+                                                                                                  # e.g. see https://learnonlinephp.wordpress.com/2015/02/11/domain-availability-check
+        (( $( whois $wordasURL | grep -ic "^registr" ) )) || echo $wordasURL # unregistered
+    done
+}
 
-    export DELTA='Δ'
-    export DELTAS="${DELTA}s"
+# get bounding box of img (e.g. for when pdflatex is being dumb)
+getbbox() {
+    gs -o /dev/null -sDEVICE=bbox "$@" 2>&1 | awk '/%%B/ {print $2,$3,$4,$5}' # redirect ghostscript STDERR to STDOUT, & parse
+}
 
-    export STRFDATE="+%y%m%d"
+convertvid4mac() {
+    INFILE="$@"
+    INFMT="${INFILE##*.}"
+    # via https://apple.stackexchange.com/a/166554
+    ffmpeg -i "$INFILE" -pix_fmt yuv420p "${INFILE/$INFMT/mp4}"
+    # if necessary: ("height not divisible by 2")
+    # -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2"
+    # ^ via https://stackoverflow.com/a/20848224
+}
 
-    lunch()  { python $MEDIA/wkspace/mit-lunch/get_menu.py   "$@"; }
-    movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
-    lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
-    vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
+# e.g. from youtube-dled subtitles
+# $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
+vtt2txt() {
+    grep "<" "$@" |
+    # eliminate <stuff>, get ' back, remove blank lines
+    sed -e 's/<[^>]*>//g' -e "s/&#39;/'/g" -e '/^\s*$/d' |
+    uniq
+}
+srt2txt() {
+    grep -i "[a-z]" "$@"
+}
 
-    alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t "(" -k2,2'
+macaddress() {
+    ifconfig en0 | awk '/ether/ {print $2}' | cpout
+}
 
-    8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
+# universalish / v possibly nonrobust way to query ip address
+# --> this is local (not public) ip
+# ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
+# instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
+# alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
+alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
+alias myip='echo $( MY_IP ) | cpout' # TODO clobbers ip
 
-    math() { bc -l <<< "$@"; }
-    PI=$( bc -l <<< "scale=10; 4*a(1)" )
+alias sourceopenstack='. ~/*openrc.sh'
+allowip() {
+    IP="$@"
+    [[ $IP ]] || IP=$( MY_IP )
+    sourceopenstack
 
-    # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
-    # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
-    tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
-    token() { jupyter notebook list | awk -F 'token=' '/token/ {print $2}' | awk '{print $1}' | cpout; } # jupyter notebook token
-    nbrerun() {
-        for nb in "$@"; do
-            (jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=600 "$nb";) &done
+    (( $linux )) && flag="src" || flag="remote"
+    openstack security group rule create --protocol tcp --dst-port 22 --$flag-ip $IP ssh
+}
+
+
+#alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
+# rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
+
+# add appropriate suffix to unspecified file
+suffix() {
+  for f in "$@"; do
+    SUFF=$( file -b "$f" | awk '{print $1}' )
+    [ "${SUFF,,}" = "ascii" ] && SUFF="txt"
+    [ "${SUFF,,}" = "bourne-again" ] && SUFF="sh"
+    [ "${SUFF,,}" = "mpeg" ] && SUFF="mp4"
+
+    # unknown
+    if [[ "$SUFF" = "???" ]]; then
+       echo 'suffix: filetype unknown'
+    # already suffixed
+    elif [[ "${f##*.}" =~ ("${SUFF,,}"|"${SUFF^^}") ]]; then
+       echo "suffix: $f -> \"\""
+    # suffix
+    else
+       echo "suffix: $f -> $f.${SUFF,,}"
+       mv "$f" "$f.${SUFF,,}"
+    fi
+  done
+}
+
+# list top `n` files (by size, including inside directory)
+# lsbiggest [-n] $dir (default: 10, working dir)
+lsbiggest() {
+    #(( $@ )) && n=$@ || n=10
+    #du -ahd1 | sort -k1,1 -h | tail -n $(( $n + 1 )) # account for total size
+
+    #FLAG="-n ?" # with optional space
+
+    #ARGS=$( printf "%s" "$@" | sed -r "s/^(.*) ?$FLAG(\w*) ?(.*)$/\2\t\1\3/" ) # N  DIR
+
+    #N=$( echo $ARGS | awk '{print $1}' )
+    #DIR=$( echo $ARGS | awk '{print $2}' | sed 's/\/$//' )
+
+    # defaults
+    #(( $N )) || N=10
+    #[[ "$DIR" ]] || DIR="."
+
+    FLAG="-n ?" # with optional space
+
+    # N.B. need printf b/c echo interprets -n
+    N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )          # extract $FLAG
+    (( $N )) || N=10                                                    # default
+
+    DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" )   # extract positional, remove trailing /
+    [[ "$DIR" ]] || DIR="."                                             # default
+
+    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 )) # account for total size
+}
+
+#alias lsbiggest='echo "use du | sort | tail !"'
+
+# list files filtered by date
+# lstoday [$date] $files (default: today, working dir)
+lstoday() {
+    # check for valid date
+    [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || with_date=0
+
+    (( $with_date )) && dt="$1" || dt="today" # default: today
+    (( $with_date )) && shift                 # default: .
+
+    today=$( date -d"$dt" $STRFDATE )
+
+    # ls the thing/s
+    ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
+        for f in "$@"; do
+            [[ -d "$f" ]] && ls -Adl --time-style=$STRFDATE $f/* \
+                          || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".." (directory not contents)
+        done )) |
+
+    sed -Ee's@/+@/@g' -ne"s/^.*${today} (.*)$/\1/p" | # filter, eliminate // in path
+    #grep -Ev '^\.+(git)?$' |                          # ignore . & .. & .git
+    sed -e's@\/\/*@/@g' -e"s/'/\\\'/" -e"s/'/\\\'/" | # eliminate // in path, escape '|
+    grep -Ev '^\.git$' |                              # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;         # pprint
+}
+
+
+lssince() {
+    # check for valid date
+    maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? *$)/\1 ago/' -e's/weds/wed/')"
+    maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
+                           # else, check for (1st of) month
+
+    [[ $( date -d"$maybe_dt" 2> /dev/null ) ]] && with_date=1 || with_date=0
+    [[ $( date -d"last $maybe_dt" 2> /dev/null ) ]] && with_date=1 && maybe_dt="last $maybe_dt" # last weds
+
+    (( $with_date )) && dt="$maybe_dt" || dt="today" # default: today
+    (( $with_date )) && shift                        # default: .
+
+    today=$( day "$dt" )
+
+    # ls the thing/s
+    ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
+        for f in "$@"; do
+            [[ -d "$f" ]] && ls -Ald --time-style=$STRFDATE $f/* \
+                          || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".."
+        done )) |
+
+    awk -v today=$today '$6 >= today' |                              # filter by "since"
+    sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/*@/@g' -e"s/'/\\\'/" | # extract filename, eliminate // in path, escape '
+    grep -Ev '^\.git$' |                                             # ignore .git
+    xargs -I{} ls -d --color=auto 2>&1 "{}" ;                        # pprint
+}
+
+
+cdrecent() {
+    [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -dt "$DIR"/*/ | head -n1 )"
+    cd "$RECENTEST"
+}
+
+virecent() {
+    [[ "$@" ]] && DIR="$@" || DIR="."
+    RECENTEST="$( ls -alh -dt "$DIR"/* | awk '$1!~/^d/{print $9}' | head -n1 )" # excluding directories
+    vi "$RECENTEST"
+}
+
+
+# get YYMMDD (default: today)
+day() {
+    [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
+    dt=$( echo $dt | sed 's/\bweds\b/wed/g' |  # i am bad at wkday abbrevs
+                     sed 's/\bwk\b/week/g' )
+
+    [[ "${dt,,}" == "tomorr" ]] && dt+="ow"    # tomorr -> tomorrow
+    [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
+    [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
+                                    || date -d "$dt" $STRFDATE;
+}
+
+
+browse_csv() {
+    cat "$1" | sed -E 's/(\.[0-9][0-9][0-9])[0-9]*/\1/g' | # 3 digit significance
+        column -t -s, | less -S
+}
+
+
+# only print 1st `n` levels (collapse rest)
+# adapted from https://github.com/stedolan/jq/issues/306#issuecomment-35975958
+jqfirstn() {
+    n="$1"; shift
+    levels=$( yes "[]?" | head -n $n | tr -d '\n' )
+    jq 'reduce path(.'"$levels"') as $path (.; setpath($path; {}))' "$@"
+}
+
+
+# extract zulip msgs
+# zulipjson2msgs(){ cat "$@" | jq -c '.messages[].content' | # <-- without **mirtom
+zulipjson2msgs(){
+    cat "$@" | jq -c '.messages[] | [.sender_short_name, .content]' |
+      # star the ~best~ lines, then rm the jq crud
+      sed -re's/^\["(meereeum|amindfv)","/** /' -e's/"]$//' -e's/^\["[^"]*","//' |
+      # " (just the escaped ones) and &
+      sed -re's/(^|[^\])"/\1/g' -e's/\\"/"/g' -e's/amp;//g' |
+      # `code` and *bold* and ```
+      #                       multiline code
+      #                       ```
+      sed -re's@</?code>@`@g' -e's@</?strong>@*@g' -e's@<div class="codehilite">([^<]*)</div>@```\n\1\n```@' |
+      # rm extraneous tags
+      sed -re's@</?(p|br|pre)>@@g' -e's@<a href[^>]*>pasted image</a>@@g' |
+      # rescue just the linknames + spantxt (including @folks and some emoji)
+      sed -re's@<a href[^>]*>([^<]*)</a>@\1@g' -e's@<span class[^>]*>([^<]*)</span>@\1@g' |
+                                             # -e's@<span class="emoji[^>]*>([^<]*)</span>@\1@g'
+                                             # -e's@<span class="user-mention"[^>]*>([^<]*)</span>@\1@g'
+      # rescue more emoji
+      sed -re's@<img alt="([^"]*)" class="emoji[^>]*>@\1@g' |
+      # clobber remaining spans; make actual newlines
+      sed -re's@</?span>@@g' -e 's/\\n/\n/g' |
+         # -e's@<span[^>]*>[^>]*>@@g'
+      # rm remaining crud, including emptylines, et voila
+      grep -v '^<div class="message_inline_image">' | awk '$NF';
+    # grep -v "^</?div"
+}
+# N.B. missing txt inside <span class="k">, which seems to be a latex math block
+
+
+if [[ $DISPLAY ]]; then
+    # ffox stuff
+    (( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
+                 || PREFIX="$HOME/Library/Application Support/Firefox"
+
+    _get_ffox() {
+        SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini |
+                    tail -n1 ) # assumes the "right" one is last.. # TODO: can prob incorporate into awk
+        echo "$PREFIX/$SESSION"
     }
-
-    # via https://stackoverflow.com/a/31560568
-    alias pngcompress='convert -depth 24 -define png:compression-filter=2 -define png:compression-level=9 \
-                               -define png:compression-strategy=1' # -resize 50%
-
-    shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';) &done; }
-    # via https://unix.stackexchange.com/a/28045
-    chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
-    introduceyoselves() { for person in {,fe}male{1,2,3} child_{fe,}male; do spd-say "i am a $person" -t $person -w; done; }
-
-    coinflip() {
-        [[ "$@" ]] && choices=( "$@" ) || choices=( heads tails )
-        echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
-        #i=$(( $RANDOM % ${#choices[@]} ))
-        #echo "${choices[$i]}"
-    }
-
-
-    # aqua only
-    [[ $DISPLAY ]] && (( $linux )) && (
-        addmusic() { F="$MEDIA/txt/music";   echo -e "$@" >> $F; tail -n4 $F; }
-        addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
-    )
-
-
-    # anagram utils
-    sortword() { echo "$@" | grep -o '\w' | sort | xargs; }
-    anagrams() { [[ $( sortword "${1,,}" ) == $( sortword "${2,,}" ) ]] && echo "ANAGRAM" || echo "NOT AN ANAGRAM"; }
-
-    spiral() { jp2a $MEDIA/media/giphy_096.jpg --term-width --chars=" ${@^^}${@,,}"; }
-
-    #dashes() { yes - | head -n"$@" | tr -d '\n'; echo; }
-    dashes() {
-        [[ $2 ]] && dash="$2" || dash="-"
-        yes "$dash" | head -n"$1" | tr -d '\n'; echo;
-    }
-
-    # via https://misc.flogisoft.com/bash/tip_colors_and_formatting#colors2
-    _iter256() {
-        fgbg=$1
-        for color in {0..255} ; do
-            [[ $2 ]] && str=$2 \
-                     || str=$color # default: str is colornumber
-
-            # display the color
-            printf "\e[${fgbg};5;%sm  %3s  \e[0m" $color $str
-            [[ $(( ($color + 1) % 6 )) == 4 ]] && echo # newline (6 colors per line)
-        done
-    }
-    iterbg256() { _iter256 48 "$@"; }
-    iterfg256() { _iter256 38 "$@"; }
-
-    pdfsplit() {
-        PDF="$@"
-        pdfseparate $PDF ${PDF%.pdf}.%d.pdf
-    }
-    pdfurl2txt() { # e.g. for menus
-        URL="$@"
-        F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
-        [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
-        # [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
-        echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
-    }
-
-    # check available URLs for given TLD
-    checkURLs() {
-        TLD="$@" # https://data.iana.org/TLD/tlds-alpha-by-domain.txt
-
-        testresponse="$( whois a.$TLD )"
-        if [[ "${testresponse,,}" =~ "no whois server" ]]; then
-            echo "$testresponse"
-            return # "it short-circuits" -scruff
-        fi
-
-        for word in $( grep ".\+${TLD}$" /usr/share/dict/words ); do # 1+ letters, ending in $TLD
-            wordasURL=${word/$TLD/.$TLD}
-            # [[ $( whois $wordasURL | head -n1 ) == "NOT FOUND" ]] && echo $wordasURL # unregistered # agggg not standardized at. all.
-                                                                                                      # e.g. see https://learnonlinephp.wordpress.com/2015/02/11/domain-availability-check
-            (( $( whois $wordasURL | grep -ic "^registr" ) )) || echo $wordasURL # unregistered
-        done
-    }
-
-    # get bounding box of img (e.g. for when pdflatex is being dumb)
-    getbbox() {
-        gs -o /dev/null -sDEVICE=bbox "$@" 2>&1 | awk '/%%B/ {print $2,$3,$4,$5}' # redirect ghostscript STDERR to STDOUT, & parse
-    }
-
-    convertvid4mac() {
-        INFILE="$@"
-        INFMT="${INFILE##*.}"
-        # via https://apple.stackexchange.com/a/166554
-        ffmpeg -i "$INFILE" -pix_fmt yuv420p "${INFILE/$INFMT/mp4}"
-        # if necessary: ("height not divisible by 2")
-        # -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2"
-        # ^ via https://stackoverflow.com/a/20848224
-    }
-
-    # e.g. from youtube-dled subtitles
-    # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
-    vtt2txt() {
-        grep "<" "$@" |
-        # eliminate <stuff>, get ' back, remove blank lines
-        sed -e 's/<[^>]*>//g' -e "s/&#39;/'/g" -e '/^\s*$/d' |
-        uniq
-    }
-    srt2txt() {
-        grep -i "[a-z]" "$@"
-    }
-
-    macaddress() {
-        ifconfig en0 | awk '/ether/ {print $2}' | cpout
-    }
-
-    # universalish / v possibly nonrobust way to query ip address
-    # --> this is local (not public) ip
-    # ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
-    # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-    # alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
-    alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
-    alias myip='echo $( MY_IP ) | cpout' # TODO clobbers ip
-
-    alias sourceopenstack='. ~/*openrc.sh'
-    allowip() {
-        IP="$@"
-        [[ $IP ]] || IP=$( MY_IP )
-        sourceopenstack
-
-        (( $linux )) && flag="src" || flag="remote"
-        openstack security group rule create --protocol tcp --dst-port 22 --$flag-ip $IP ssh
-    }
-
-
-    #alias rvmv='history | tail -n2 | head -n1 | awk "/\$2==\"mv\"/{print \$2,\$4,\$3;next} {print \"not mv\"}" | sh'
-    # rvmv() { history | tail -n2 | head -n1 | awk '{print $2,$4,$3}' | sh; }
-
-    # add appropriate suffix to unspecified file
-    suffix() {
-      for f in "$@"; do
-        SUFF=$( file -b "$f" | awk '{print $1}' )
-        [ "${SUFF,,}" = "ascii" ] && SUFF="txt"
-        [ "${SUFF,,}" = "bourne-again" ] && SUFF="sh"
-        [ "${SUFF,,}" = "mpeg" ] && SUFF="mp4"
-
-        # unknown
-        if [[ "$SUFF" = "???" ]]; then
-           echo 'suffix: filetype unknown'
-        # already suffixed
-        elif [[ "${f##*.}" =~ ("${SUFF,,}"|"${SUFF^^}") ]]; then
-           echo "suffix: $f -> \"\""
-        # suffix
+    _catjsonlz() {
+        if (( $linux )); then
+            cat "$@" | dejsonlz4 -
         else
-           echo "suffix: $f -> $f.${SUFF,,}"
-           mv "$f" "$f.${SUFF,,}"
+            dejsonlz4 "$@"
         fi
-      done
     }
+    if [[ -d "$PREFIX" ]]; then
+        export FFOX_PROFILE="$( _get_ffox )"
 
-    # list top `n` files (by size, including inside directory)
-    # lsbiggest [-n] $dir (default: 10, working dir)
-    lsbiggest() {
-        #(( $@ )) && n=$@ || n=10
-        #du -ahd1 | sort -k1,1 -h | tail -n $(( $n + 1 )) # account for total size
+        # save open ffox tabs
+        # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
+        openTabs(){
+            # cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
+            # cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
+            # cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
+            #  dejsonlz4 - |
+            dejsonlz4 "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
+             jq -c '.windows[].tabs[].entries[-1].url' |
+             sed -e 's/^"//' -e 's/"$//' |
 
-        #FLAG="-n ?" # with optional space
+             # filter unwanted
+             grep -v -e'[(calendar)|(mail)].google.com' -e'owa.mit.edu' -e'webmail.csail.mit.edu' -e'^file:' -e'zulipchat.com' |
 
-        #ARGS=$( printf "%s" "$@" | sed -r "s/^(.*) ?$FLAG(\w*) ?(.*)$/\2\t\1\3/" ) # N  DIR
+             # site-specific edits
+             awk '!/about:sessionrestore/' |
+             awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' | # get rid of post-? junk
+             sed 's@\(google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@' |                      # get rid of post-? junk besides query
+             sed 's@\(biorxiv.org/.*\)\.full\.pdf.*$@\1@' |                                     # biorxiv pdf -> abs
+             sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
 
-        #N=$( echo $ARGS | awk '{print $1}' )
-        #DIR=$( echo $ARGS | awk '{print $2}' | sed 's/\/$//' )
-
-        # defaults
-        #(( $N )) || N=10
-        #[[ "$DIR" ]] || DIR="."
-
-        FLAG="-n ?" # with optional space
-
-        # N.B. need printf b/c echo interprets -n
-        N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )          # extract $FLAG
-        (( $N )) || N=10                                                    # default
-
-        DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" )   # extract positional, remove trailing /
-        [[ "$DIR" ]] || DIR="."                                             # default
-
-        du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 )) # account for total size
-    }
-
-    #alias lsbiggest='echo "use du | sort | tail !"'
-
-    # list files filtered by date
-    # lstoday [$date] $files (default: today, working dir)
-    lstoday() {
-        # check for valid date
-        [[ $( date -d"$1" 2> /dev/null ) ]] && with_date=1 || with_date=0
-
-        (( $with_date )) && dt="$1" || dt="today" # default: today
-        (( $with_date )) && shift                 # default: .
-
-        today=$( date -d"$dt" $STRFDATE )
-
-        # ls the thing/s
-        ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
-            for f in "$@"; do
-                [[ -d "$f" ]] && ls -Adl --time-style=$STRFDATE $f/* \
-                              || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".." (directory not contents)
-            done )) |
-
-        sed -Ee's@/+@/@g' -ne"s/^.*${today} (.*)$/\1/p" | # filter, eliminate // in path
-        #grep -Ev '^\.+(git)?$' |                          # ignore . & .. & .git
-        sed -e's@\/\/*@/@g' -e"s/'/\\\'/" -e"s/'/\\\'/" | # eliminate // in path, escape '|
-        grep -Ev '^\.git$' |                              # ignore .git
-        xargs -I{} ls -d --color=auto 2>&1 "{}" ;         # pprint
-    }
-
-
-    lssince() {
-        # check for valid date
-        maybe_dt="$( echo "${1,,}" | sed -re's/wk/week/' -e's/\b(((day)|(week)|(month))s? *$)/\1 ago/' -e's/weds/wed/')"
-        maybe_dt="$maybe_dt 1" # 1 just sets time if not necessary
-                               # else, check for (1st of) month
-
-        [[ $( date -d"$maybe_dt" 2> /dev/null ) ]] && with_date=1 || with_date=0
-        [[ $( date -d"last $maybe_dt" 2> /dev/null ) ]] && with_date=1 && maybe_dt="last $maybe_dt" # last weds
-
-        (( $with_date )) && dt="$maybe_dt" || dt="today" # default: today
-        (( $with_date )) && shift                        # default: .
-
-        today=$( day "$dt" )
-
-        # ls the thing/s
-        ( [[ "$@" == "" ]] && ls -Al --time-style=$STRFDATE || (    # "A"lmost all - not . or ..
-            for f in "$@"; do
-                [[ -d "$f" ]] && ls -Ald --time-style=$STRFDATE $f/* \
-                              || ls -Al --time-style=$STRFDATE "$f" # e.g. can't ls ".."
-            done )) |
-
-        awk -v today=$today '$6 >= today' |                              # filter by "since"
-        sed -Ee's/^([^ ]* *){6}(.*)/\2/' -e's@\/\/*@/@g' -e"s/'/\\\'/" | # extract filename, eliminate // in path, escape '
-        grep -Ev '^\.git$' |                                             # ignore .git
-        xargs -I{} ls -d --color=auto 2>&1 "{}" ;                        # pprint
-    }
-
-
-    cdrecent() {
-        [[ "$@" ]] && DIR="$@" || DIR="."
-        RECENTEST="$( ls -dt "$DIR"/*/ | head -n1 )"
-        cd "$RECENTEST"
-    }
-
-    virecent() {
-        [[ "$@" ]] && DIR="$@" || DIR="."
-        RECENTEST="$( ls -alh -dt "$DIR"/* | awk '$1!~/^d/{print $9}' | head -n1 )" # excluding directories
-        vi "$RECENTEST"
-    }
-
-
-    # get YYMMDD (default: today)
-    day() {
-        [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
-        dt=$( echo $dt | sed 's/\bweds\b/wed/g' |  # i am bad at wkday abbrevs
-                         sed 's/\bwk\b/week/g' )
-
-        [[ "${dt,,}" == "tomorr" ]] && dt+="ow"    # tomorr -> tomorrow
-        [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
-        [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
-                                        || date -d "$dt" $STRFDATE;
-    }
-
-
-    browse_csv() {
-        cat "$1" | sed -E 's/(\.[0-9][0-9][0-9])[0-9]*/\1/g' | # 3 digit significance
-            column -t -s, | less -S
-    }
-
-
-    # only print 1st `n` levels (collapse rest)
-    # adapted from https://github.com/stedolan/jq/issues/306#issuecomment-35975958
-    jqfirstn() {
-        n="$1"; shift
-        levels=$( yes "[]?" | head -n $n | tr -d '\n' )
-        jq 'reduce path(.'"$levels"') as $path (.; setpath($path; {}))' "$@"
-    }
-
-
-    # extract zulip msgs
-    # zulipjson2msgs(){ cat "$@" | jq -c '.messages[].content' | # <-- without **mirtom
-    zulipjson2msgs(){
-        cat "$@" | jq -c '.messages[] | [.sender_short_name, .content]' |
-          # star the ~best~ lines, then rm the jq crud
-          sed -re's/^\["(meereeum|amindfv)","/** /' -e's/"]$//' -e's/^\["[^"]*","//' |
-          # " (just the escaped ones) and &
-          sed -re's/(^|[^\])"/\1/g' -e's/\\"/"/g' -e's/amp;//g' |
-          # `code` and *bold* and ```
-          #                       multiline code
-          #                       ```
-          sed -re's@</?code>@`@g' -e's@</?strong>@*@g' -e's@<div class="codehilite">([^<]*)</div>@```\n\1\n```@' |
-          # rm extraneous tags
-          sed -re's@</?(p|br|pre)>@@g' -e's@<a href[^>]*>pasted image</a>@@g' |
-          # rescue just the linknames + spantxt (including @folks and some emoji)
-          sed -re's@<a href[^>]*>([^<]*)</a>@\1@g' -e's@<span class[^>]*>([^<]*)</span>@\1@g' |
-                                                 # -e's@<span class="emoji[^>]*>([^<]*)</span>@\1@g'
-                                                 # -e's@<span class="user-mention"[^>]*>([^<]*)</span>@\1@g'
-          # rescue more emoji
-          sed -re's@<img alt="([^"]*)" class="emoji[^>]*>@\1@g' |
-          # clobber remaining spans; make actual newlines
-          sed -re's@</?span>@@g' -e 's/\\n/\n/g' |
-             # -e's@<span[^>]*>[^>]*>@@g'
-          # rm remaining crud, including emptylines, et voila
-          grep -v '^<div class="message_inline_image">' | awk '$NF';
-        # grep -v "^</?div"
-    }
-    # N.B. missing txt inside <span class="k">, which seems to be a latex math block
-
-    if [[ $DISPLAY ]]; then
-        # ffox stuff
-        (( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
-                     || PREFIX="$HOME/Library/Application Support/Firefox"
-
-        _get_ffox() {
-            SESSION=$( awk -F'=' '/Path/ {print $2}' "$PREFIX"/profiles.ini |
-                        tail -n1 ) # assumes the "right" one is last.. # TODO: can prob incorporate into awk
-            echo "$PREFIX/$SESSION"
+             # rm trailing stuff
+             sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
         }
-        _catjsonlz() {
-            if (( $linux )); then
-                cat "$@" | dejsonlz4 -
-            else
-                dejsonlz4 "$@"
-            fi
+
+        getOpenTabs(){ openTabs | cpout; }
+        #saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
+        saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
+
+        getAddons() {
+            # exclude addons that are not automatic ffox extensions
+            cat "$FFOX_PROFILE/extensions.json" |
+                # jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
+                jq -c '.addons[] | select(.location == "app-profile").defaultLocale.name' |
+                tr -d '"'
         }
-        if [[ -d "$PREFIX" ]]; then
-            export FFOX_PROFILE="$( _get_ffox )"
-
-            # save open ffox tabs
-            # inspired by https://superuser.com/questions/96739/is-there-a-method-to-export-the-urls-of-the-open-tabs-of-a-firefox-window
-            openTabs(){
-                # cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.js |
-                # cat "$PREFIX"/$SESSION/sessionstore-backups/recovery.jsonlz4 |
-                # cat "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
-                #  dejsonlz4 - |
-                dejsonlz4 "$FFOX_PROFILE/sessionstore-backups/recovery.jsonlz4" |
-                 jq -c '.windows[].tabs[].entries[-1].url' |
-                 sed -e 's/^"//' -e 's/"$//' |
-
-                 # filter unwanted
-                 grep -v -e'[(calendar)|(mail)].google.com' -e'owa.mit.edu' -e'webmail.csail.mit.edu' -e'^file:' -e'zulipchat.com' |
-
-                 # site-specific edits
-                 awk '!/about:sessionrestore/' |
-                 awk -v SITE='nytimes.com|washingtonpost.com' -F'?' '$0~SITE {print $1} $0!~SITE' | # get rid of post-? junk
-                 sed 's@\(google.com/search?\).*\b\(q=[^&]*\).*[&$].*@\1\2@' |                      # get rid of post-? junk besides query
-                 sed 's@\(biorxiv.org/.*\)\.full\.pdf.*$@\1@' |                                     # biorxiv pdf -> abs
-                 sed 's@\(arxiv.org/\)pdf\(/.*\)\.pdf$@\1abs\2@' |                                  # arxiv pdf -> abs
-
-                 # rm trailing stuff
-                 sed -e 's@/$@@' ; #-e 's@\?needAccess=[(true)|(false)]$@@'; # TODO
-            }
-
-            getOpenTabs(){ openTabs | cpout; }
-            #saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo -e "\n--> $f\n"; }
-            saveOpenTabs(){ f=./tabs_$( day ); openTabs > "$f"; echo "     --> $f"; }
-
-            getAddons() {
-                # exclude addons that are not automatic ffox extensions
-                cat "$FFOX_PROFILE/extensions.json" |
-                    # jq -c '.addons[] | select(.path | test("/extensions/")).defaultLocale.name' |
-                    jq -c '.addons[] | select(.location == "app-profile").defaultLocale.name' |
-                    tr -d '"'
-            }
-            export -f getAddons
-        fi
+        export -f getAddons
+    fi
 
 
-        zoom() {
-            source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
+    zoom() {
+        source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
 
-            if [[ "$@" ]]; then # if argument passed, use as ID for call
+        if [[ "$@" ]]; then # if argument passed, use as ID for call
 
-                unset closest
-                [[ "$@" != 47 ]] && callid="$@" || callid=$MI_CUARTO
-                # callid="$@"
+            unset closest
+            [[ "$@" != 47 ]] && callid="$@" || callid=$MI_CUARTO
+            # callid="$@"
 
-            else                # else, find nearest meeting
-                declare -A timedelta2datetime
+        else                # else, find nearest meeting
+            declare -A timedelta2datetime
 
-                NOW=$( date +%s )
-                timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
+            NOW=$( date +%s )
+            timedelta() { echo $(( $NOW - $( date -d "$@" +%s ) )) | tr -d '-'; } # absolute value (;
 
-                # iterate over newline-separated datetimes, alphabetically sorted
-                # this is a total hack to make "everyday" meetings have lowest priority,
-                # since numbers come before letters (so will be clobbered)
+            # iterate over newline-separated datetimes, alphabetically sorted
+            # this is a total hack to make "everyday" meetings have lowest priority,
+            # since numbers come before letters (so will be clobbered)
 
-                local IFS=$'\n' # via https://askubuntu.com/a/344418
-                for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | sort ); do
-                    timedelta2datetime[$( timedelta "$dt" )]="$dt"
-                done
+            local IFS=$'\n' # via https://askubuntu.com/a/344418
+            for dt in $( echo "${!DATETIME2ID[@]}" | sed 's/m /m\n/g' | sort ); do
+                timedelta2datetime[$( timedelta "$dt" )]="$dt"
+            done
 
-                min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
-                closest=${timedelta2datetime[$min]} # closest matching meeting datetime
-                callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
+            min=$( echo "${!timedelta2datetime[@]}" | tr ' ' '\n' | sort -g | head -n1 )
+            closest=${timedelta2datetime[$min]} # closest matching meeting datetime
+            callid=${DATETIME2ID[$closest]}     #  & corresponding meeting ID
 
         fi
 
