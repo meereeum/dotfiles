@@ -61,21 +61,23 @@ CONDA="$( wget -O - https://www.anaconda.com/distribution/ 2>/dev/null |
 # CONDA="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 # silent install
-wget $CONDA -O ~/conda.sh && \
-    bash ~/conda.sh -b && \
-    {
-        # cleanup
-        rm ~/conda.sh
-        yes | conda clean --all
+command -v conda &> /dev/null || { # iff conda does not yet exist
+    wget $CONDA -O ~/conda.sh && \
+        bash ~/conda.sh -b && \
+        {
+            # cleanup
+            rm ~/conda.sh
+            yes | conda clean --all
 
-        # update
-        conda update -n base -c defaults conda
-        pip install --upgrade pip
+            # update
+            conda update -n base -c defaults conda
+            pip install --upgrade pip
 
-        # ensure bash commands working
-        conda init bash
-        source ~/anaconda3/etc/profile.d/conda.sh
-    }
+            # ensure bash commands working
+            conda init bash
+            source ~/anaconda3/etc/profile.d/conda.sh
+        }
+}
 
 
 echo "backend : agg" >> $HOME/.config/matplotlib/matplotlibrc
