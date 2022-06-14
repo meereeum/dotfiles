@@ -64,6 +64,7 @@ fi
 
 alias arxivate='bash ~/dotfiles/arxivate.sh'
 alias h5tree='bash ~/dotfiles/h5tree.sh'
+alias nbmerge='python ~/dotfiles/nbmerge.py'
 alias restart='bash ~/dotfiles/bashcollager.sh'
 alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
@@ -152,6 +153,24 @@ pdfurl2txt() { # e.g. for menus
     [[ -f $F ]] || wget "$URL" -qO $F                           # wget iff doesn't exist
     # [[ -f $F ]] || curl "$URL" -s > $F                         # curl iff doesn't exist (wget failed w/ 503 while curl did not..)
     echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
+}
+
+# check available URLs for given TLD
+checkURLs() {
+    TLD="$@" # https://data.iana.org/TLD/tlds-alpha-by-domain.txt
+
+    testresponse="$( whois a.$TLD )"
+    if [[ "${testresponse,,}" =~ "no whois server" ]]; then
+        echo "$testresponse"
+        return # "it short-circuits" -scruff
+    fi
+
+    for word in $( grep ".\+${TLD}$" /usr/share/dict/words ); do # 1+ letters, ending in $TLD
+        wordasURL=${word/$TLD/.$TLD}
+        # [[ $( whois $wordasURL | head -n1 ) == "NOT FOUND" ]] && echo $wordasURL # unregistered # agggg not standardized at. all.
+                                                                                                  # e.g. see https://learnonlinephp.wordpress.com/2015/02/11/domain-availability-check
+        (( $( whois $wordasURL | grep -ic "^registr" ) )) || echo $wordasURL # unregistered
+    done
 }
 
 # get bounding box of img (e.g. for when pdflatex is being dumb)
@@ -320,7 +339,8 @@ virecent() {
 # get YYMMDD (default: today)
 day() {
     [[ $# == 0 ]] && dt="today" || dt="$@"     # no args -> today
-    dt=$( echo $dt | sed 's/weds/wed/g' )    # i am bad at wkday abbrevs
+    dt=$( echo $dt | sed 's/\bweds\b/wed/g' |  # i am bad at wkday abbrevs
+                     sed 's/\bwk\b/week/g' )
 
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
@@ -478,6 +498,7 @@ zoom() {
 
     callurl="https://zoom.us/wc/join/$callid"
     echo "$closest ►► $callurl"
+    echo $callurl | toclipboard
 
     if (( $linux )); then
         _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
@@ -587,6 +608,17 @@ else
 
         nmcli radio wifi $to
         echo "${from^^} ↪ ${to^^}"
+    }
+
+    cycle_wifi() {
+        echo 1 | sudo tee /sys/bus/pci/devices/0000\:02\:00.0/remove
+        sudo killall wpa_supplicant 
+        sleep 1
+        echo 1 | sudo tee /sys/bus/pci/rescan
+        sleep 2
+        sudo rmmod iwlmvm iwlwifi && sudo modprobe iwlmvm iwlwifi
+        sudo ip link set wlo1 up # sudo ifconfig wlan0 up
+        sudo service network-manager restart
     }
 fi
 

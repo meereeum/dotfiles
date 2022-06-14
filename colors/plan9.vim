@@ -38,9 +38,12 @@ highlight! link MoreMsg Comment
 highlight! link Question Comment
 
 highlight! Todo cterm=underline,bold,italic ctermbg=NONE
+" highlight! Search ctermfg=bg ctermbg=fg cterm=underline
 highlight! Search ctermbg=NONE cterm=underline
 highlight! IncSearch ctermfg=bg ctermbg=fg cterm=underline
+" highlight! MatchParen ctermbg=167 cterm=underline,bold
 highlight! MatchParen ctermbg=NONE cterm=underline,bold
+" highlight! MatchParen ctermbg=14 " <- orig: cyan
 highlight! Error ctermbg=167
 highlight! ErrorMsg ctermbg=167
 highlight! Warning ctermfg=167
