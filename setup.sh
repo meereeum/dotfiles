@@ -1,6 +1,9 @@
 #!/bin/bash
 set -u # don't delete my hd plz
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
 ./_setup.sh
 
 
@@ -28,11 +31,13 @@ done
 
 
 # vim-anywhere
-cd $HOME
-git clone https://github.com/meereeum/vim-anywhere.git
-cd vim-anywhere
-./install
-cd $DIR # back to dotfiles
+[ -d $HOME/vim-anywhere ] || {
+    cd $HOME
+    git clone https://github.com/meereeum/vim-anywhere.git
+    cd vim-anywhere
+    ./install
+    cd $DIR # back to dotfiles
+}
 
 
 # determine os
@@ -45,8 +50,10 @@ if [[ $SYS == "MacOSX" ]]; then
     sed -ri'.tmp' --follow-symlinks 's/helper ?= ?store/helper=osxkeychain/' ~/.gitconfig
 
     # homebrew
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
-        brew install wget
+    [ -x "$(command -v brew)" ] || {
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+        brew install wget;
+    }
 
     # command line tools
     xcode-select --install
@@ -56,55 +63,62 @@ if [[ $SYS == "MacOSX" ]]; then
     # wget $YUBICO
 
     # via https://www.macinstruct.com/tutorials/how-to-enable-git-tab-autocomplete-on-your-mac/
-    curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o ~/.git-completion.bash
+    # curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o ~/.git-completion.bash
+    wget -O ~/.git-completion.bash https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
     chmod +x ~/.git-completion.bash
-    wget https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash -o ~/.git-annex-completion.bash
+    # curl https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash -o ~/.git-annex-completion.bash
+    wget -O ~/.git-annex-completion.bash https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash
     chmod +x ~/.git-annex-completion.bash
     # TODO and add to .bash_profile ?
 fi
 
 
-instructions="""
-TODO:
-$ su
+# instructions="""
 
-(1) install sudo
-$ apt-get install -y sudo
-$ visudo
-add miriam to #User privilege specification
+read -r -d '' INSTRUCTIONS <<- EOM
+    TODO:
+    $ su
 
-(2) install b43-firmware for wifi
-$ vi /etc/apt/sources.list
-append 'non-free contrib' to every deb line
-( don't forget to remove l8r )
-$ apt-get update
+    (1) install sudo
+    $ apt-get install -y sudo
+    $ visudo
+    add miriam to #User privilege specification
 
-[ also: sudo apt-get install msttcorefonts -qq ]
+    (2) install b43-firmware for wifi
+    $ vi /etc/apt/sources.list
+    append 'non-free contrib' to every deb line
+    ( don't forget to remove l8r )
+    $ apt-get update
 
-(3) fix connectivity ?!
-(via http://brontosaurusrex.github.io/postbang/#!index.md)
-$ vi /etc/NetworkManager/NetworkManager.conf
-change 'managed = true'
-$ service network-manager restart
+    [ also: sudo apt-get install msttcorefonts -qq ]
 
-(4) edit /etc/anacrontab
-add line: "1    1   geolocate   bash $DIR/geolocate.sh"
+    (3) fix connectivity ?!
+    (via http://brontosaurusrex.github.io/postbang/#!index.md)
+    $ vi /etc/NetworkManager/NetworkManager.conf
+    change 'managed = true'
+    $ service network-manager restart
 
-$ exit
+    (4) edit /etc/anacrontab
+    add line: "1    1   geolocate   bash $DIR/geolocate.sh"
 
-$ bash finish_setup.sh
-"""
+    $ exit
 
-instructions_mac="""
-don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos`
-&
-`https://stackoverflow.com/a/4227294`
-"""
+    $ bash finish_setup.sh
+EOM
+
+
+# instructions_mac="""
+read -r -d '' INSTRUCTIONS_MAC <<- EOM
+    don't forget about "http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos"
+    &
+    "https://stackoverflow.com/a/4227294"
+EOM
+
 
 if (($linux)); then
     # sudo mkdir /Volumes
     # sudo mkdir /Volumes/Media
-    echo "$instructions"
+    echo "$INSTRUCTIONS"
 else
-    echo "$instructions_mac"
+    echo "$INSTRUCTIONS_MAC"
 fi

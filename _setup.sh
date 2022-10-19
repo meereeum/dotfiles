@@ -4,7 +4,7 @@ set -u # don't delete my hd plz
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # symlink
-DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
+DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp" -ve"DS_Store")
 
 for f in $DOTFILES; do
     [ ! -f ~/${f} ] || rm ~/${f} # clobber
@@ -38,12 +38,15 @@ cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
 
 # vim syntax highlighting fix
 # via https://github.com/vim/vim/issues/1008
-wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
-    {
-        gunzip sh.vim.gz
-        mkdir -p ~/.vim/syntax
-        mv sh.vim ~/.vim/syntax
-    }
+[ -f ~/.vim/syntax/sh.vim ] || {
+    wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
+        {
+            gunzip sh.vim.gz
+            mkdir -p ~/.vim/syntax
+            mv sh.vim ~/.vim/syntax
+            rm sh.vim.gz
+        }
+}
 
 # for mac, may need to replace colors in $VIMRUNTIME/syntax/syncolor.vim
 # e.g. SlateBlue -> #6a5acd
