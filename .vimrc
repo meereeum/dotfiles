@@ -172,3 +172,6 @@ autocmd BufReadPost *.jpg,*.jpeg silent %!jp2a --term-width "%"
 " For other image formats
 autocmd BufReadPre *.png,*.gif,*.bmp silent set ro
 autocmd BufReadPost *.png,*.gif,*.bmp silent %!convert "%" jpg:- | jp2a -i --term-width -
+
+" try cycle for days of the week
+source $HOME/dotfiles/cycle-days.vim
