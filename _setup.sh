@@ -4,7 +4,7 @@ set -u # don't delete my hd plz
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # symlink
-DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp")
+DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp" -ve"DS_Store")
 
 for f in $DOTFILES; do
     [ ! -f ~/${f} ] || rm ~/${f} # clobber
@@ -38,12 +38,15 @@ cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
 
 # vim syntax highlighting fix
 # via https://github.com/vim/vim/issues/1008
-wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
-    {
-        gunzip sh.vim.gz
-        mkdir -p ~/.vim/syntax
-        mv sh.vim ~/.vim/syntax
-    }
+[ -f ~/.vim/syntax/sh.vim ] || {
+    wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
+        {
+            gunzip sh.vim.gz
+            mkdir -p ~/.vim/syntax
+            mv sh.vim ~/.vim/syntax
+            rm sh.vim.gz
+        }
+}
 
 # for mac, may need to replace colors in $VIMRUNTIME/syntax/syncolor.vim
 # e.g. SlateBlue -> #6a5acd
@@ -61,21 +64,23 @@ CONDA="$( wget -O - https://www.anaconda.com/distribution/ 2>/dev/null |
 # CONDA="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 # silent install
-wget $CONDA -O ~/conda.sh && \
-    bash ~/conda.sh -b && \
-    {
-        # cleanup
-        rm ~/conda.sh
-        yes | conda clean --all
+command -v conda &> /dev/null || { # iff conda does not yet exist
+    wget $CONDA -O ~/conda.sh && \
+        bash ~/conda.sh -b && \
+        {
+            # cleanup
+            rm ~/conda.sh
+            yes | conda clean --all
 
-        # update
-        conda update -n base -c defaults conda
-        pip install --upgrade pip
+            # update
+            conda update -n base -c defaults conda
+            pip install --upgrade pip
 
-        # ensure bash commands working
-        conda init bash
-        source ~/anaconda3/etc/profile.d/conda.sh
-    }
+            # ensure bash commands working
+            conda init bash
+            source ~/anaconda3/etc/profile.d/conda.sh
+        }
+}
 
 
 echo "backend : agg" >> $HOME/.config/matplotlib/matplotlibrc
@@ -89,3 +94,5 @@ cat ${DIR}/00.py >> $HOME/.ipython/profile_default/startup/00.py
 [[ -f ${DIR}/arxivate.sh ]] || wget 'https://gist.github.com/meereeum/d14cfd9c17e8abda5d0a09eed477bd27/raw/00b7851cb2bfc80d34431c2ee2ca249586e5f920/arxivate.sh'
 # h5tree
 [[ -f ${DIR}/h5tree.sh ]] || wget 'https://gist.github.com/meereeum/87e267dc80421aea50cbb1ce63be5612/raw/afa2bb7c498927455622807fd59b7744330073e0/h5tree.sh'
+# nbmerge
+[[ -f ${DIR}/nbmerge.py ]] || wget 'https://gist.githubusercontent.com/fperez/e2bbc0a208e82e450f69/raw/8e4fe4536a3e9bd739036fc733020fa3ed8f61c9/nbmerge.py'
