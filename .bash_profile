@@ -670,8 +670,8 @@ export -f pkgs
 
 # pretty print git log (via Mary @RC)
 alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(white)"'
-
 alias gitcontrib='git shortlog -sn'
+alias gs='git --no-pager diff -w -G"^ *[^#]+$" --stat' # see e.g. https://stackoverflow.com/questions/16527215/how-to-make-git-diff-ignore-comments
 
 if [ -f ~/.git-completion.bash ]; then
       . ~/.git-completion.bash
