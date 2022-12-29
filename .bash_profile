@@ -177,6 +177,34 @@ checkURLs() {
     done
 }
 
+checkPhotos() {
+    BASEPATH_SIM="$1"
+
+    BASEPATH_LOCAL="$2"
+    [[ $BASEPATH_LOCAL ]] || BASEPATH_LOCAL=~/Pictures/Photos\ Library.photoslibrary/Masters
+
+    for f in ${BASEPATH_SIM}/*; do
+        checkPhoto "$f" "$BASEPATH_LOCAL"
+    done
+}
+
+checkPhoto() {
+    F="$1"
+    IMG=$( basename $F )
+
+    BASEPATH="$2"
+    [[ $BASEPATH ]] || BASEPATH=~/Pictures/Photos\ Library.photoslibrary/Masters
+
+    SHA=$( sha256sum "$F" | awk '{print $1}' )
+    OTHER_SHAS=$( find "$BASEPATH" -name "$IMG" |
+                  while read -d $'\n' f; do sha256sum "$f"; done |
+                  awk '{print $1}' )
+
+    # check for checksum match among all possible image matches;
+    # only print if no match
+    [[ $( echo $OTHER_SHAS | grep -c $SHA ) == 1 ]] || echo $F
+}
+
 # get bounding box of img (e.g. for when pdflatex is being dumb)
 getbbox() {
     gs -o /dev/null -sDEVICE=bbox "$@" 2>&1 | awk '/%%B/ {print $2,$3,$4,$5}' # redirect ghostscript STDERR to STDOUT, & parse
