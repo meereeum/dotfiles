@@ -1,17 +1,3 @@
-# just kingdom
-alias drive='cd /Volumes/GoogleDrive/My\ Drive'
-alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
-export JARDIR=~/tools/jars
-alias oath_justworks='oathtool -b --totp "$( cat SECRET_justworks )"'
-alias stripexif='exiftool -all= -overwrite_original_in_place'
-# alias oath_justworks_ffl='oathtool -b --totp ""'
-complete -C $( which aws_completer ) aws
-grasgrep() { pdfgrep -Pi "$@" $HOME/gras-lists/*; }
-# ARBHOME=/Users/miriam/tools/arb;export ARBHOME
-# export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
-# export PATH=${ARBHOME}/bin:${PATH}
-
 # detect os
 # [[ "$OSTYPE" = "linux-gnu" ]]
 	                           # echo "hey there, debian"
@@ -26,6 +12,23 @@ grasgrep() { pdfgrep -Pi "$@" $HOME/gras-lists/*; }
     #         '/^ID=/                                       # e.g. debian
     xargs # xargs removes "
 )            || export DISTRO=MacOS
+
+
+# just kingdom
+if ((!$linux)); then
+    alias drive='cd /Volumes/GoogleDrive/My\ Drive'
+    alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
+    export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
+    export JARDIR=~/tools/jars
+    alias oath_justworks='oathtool -b --totp "$( cat SECRET_justworks )"'
+    alias stripexif='exiftool -all= -overwrite_original_in_place'
+    # alias oath_justworks_ffl='oathtool -b --totp ""'
+    complete -C $( which aws_completer ) aws
+    grasgrep() { pdfgrep -Pi "$@" $HOME/gras-lists/*; }
+    # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
+    # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
+    # export PATH=${ARBHOME}/bin:${PATH}
+fi
 
 
 # editors
@@ -888,10 +891,12 @@ mvenv () { conda create --prefix ~/.conda/envs/${2} --copy --clone $1 ; conda re
 # alias venv='source .venv/bin/activate'
 
 # don't let conda vs override
-for PROG in pandoc youtube-dl; do
-    (( $linux )) && alias $PROG=/usr/bin/$PROG \
-                 || alias $PROG=/usr/local/Cellar/$PROG/*/bin/$PROG
-done
+if [[ -d /usr/local/Cellar ]]; then
+    for PROG in pandoc youtube-dl; do
+        (( $linux )) && alias $PROG=/usr/bin/$PROG \
+                     || alias $PROG=/usr/local/Cellar/$PROG/*/bin/$PROG
+    done
+fi
 
 # fix CURL certificates path
 # http://stackoverflow.com/questions/3160909/how-do-i-deal-with-certificates-using-curl-while-trying-to-access-an-https-url
@@ -1047,7 +1052,7 @@ if ! [[ ${DISTRO,,} =~ "red hat" ]]; then
         F="/tmp/dkl_$( day )"
         [[ -f "$F" ]] || {
             # wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |
-            cat source_dkl-quotes |
+            cat $HOME/dotfiles/source_dkl-quotes |
                 grep -A 1 display | grep -v -e "^--$" -e "^<div" | sed "s/&#39;/'/g" | shuf | head -n1 > $F
         }
         STUFF=$( cat $F | sed 's/\. /.\n/g' )
