@@ -114,6 +114,13 @@ read -r -d '' INSTRUCTIONS_MAC <<- EOM
     "https://stackoverflow.com/a/4227294"
 EOM
 
+instructions_mac="""
+don't forget about `http://osxdaily.com/2018/10/09/fix-operation-not-permitted-terminal-error-macos`
+&
+`https://stackoverflow.com/a/4227294`
+
+plus consider changing computer name @ System Preferences > Sharing
+"""
 
 if (($linux)); then
     # sudo mkdir /Volumes
