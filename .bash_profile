@@ -956,7 +956,8 @@ if ! [[ ${DISTRO,,} =~ "red hat" ]]; then
 
         F="/tmp/dkl_$( day )"
         [[ -f "$F" ]] || {
-            wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |
+            # wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |
+            cat source_dkl-quotes |
                 grep -A 1 display | grep -v -e "^--$" -e "^<div" | sed "s/&#39;/'/g" | shuf | head -n1 > $F
         }
         STUFF=$( cat $F | sed 's/\. /.\n/g' )
