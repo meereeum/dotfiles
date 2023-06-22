@@ -7,3 +7,8 @@ require([
   CodeMirror.Vim.map("jk", "<Esc>", "insert");
   CodeMirror.Vim.map("kj", "<Esc>", "insert");
 });
+
+
+var rto = 360; // default is 30s
+console.log('NB: increase require timeout to ' + rto + ' seconds');
+window.requirejs.config({waitSeconds:rto});
