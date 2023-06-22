@@ -1,3 +1,17 @@
+# just kingdom
+alias drive='cd /Volumes/GoogleDrive/My\ Drive'
+alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
+export JARDIR=~/tools/jars
+alias oath_justworks='oathtool -b --totp "$( cat SECRET_justworks )"'
+alias stripexif='exiftool -all= -overwrite_original_in_place'
+# alias oath_justworks_ffl='oathtool -b --totp ""'
+complete -C $( which aws_completer ) aws
+grasgrep() { pdfgrep -Pi "$@" $HOME/gras-lists/*; }
+# ARBHOME=/Users/miriam/tools/arb;export ARBHOME
+# export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
+# export PATH=${ARBHOME}/bin:${PATH}
+
 # detect os
 # [[ "$OSTYPE" = "linux-gnu" ]]
 	                           # echo "hey there, debian"
@@ -56,6 +70,7 @@ alias buffalo='whereis whereis whereis whereis whereis whereis whereis whereis'
 alias xvlc='xargs -I{} vlc "{}"'
 alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 alias fixscroll='tput rmcup' # via https://unix.stackexchange.com/a/259971
+alias pipoutdated='pip --disable-pip-version-check list --outdated'
 
 if [[ $DISPLAY ]]; then
     (( $linux )) && alias toclipboard='xsel -i --clipboard' \
@@ -159,6 +174,7 @@ pdfurl2txt() { # e.g. for menus
     echo; dashes 100; pdftotext -layout $F -; dashes 100; echo # TODO: && display if wget doesnt fail
 }
 
+
 # check available URLs for given TLD
 checkURLs() {
     TLD="$@" # https://data.iana.org/TLD/tlds-alpha-by-domain.txt
@@ -175,6 +191,38 @@ checkURLs() {
                                                                                                   # e.g. see https://learnonlinephp.wordpress.com/2015/02/11/domain-availability-check
         (( $( whois $wordasURL | grep -ic "^registr" ) )) || echo $wordasURL # unregistered
     done
+}
+
+checkPhotos() {
+    BASEPATH_SIM="$1"
+
+    BASEPATH_LOCAL="$2"
+    [[ $BASEPATH_LOCAL ]] || BASEPATH_LOCAL=~/Pictures/Photos\ Library.photoslibrary/Masters
+
+    for f in ${BASEPATH_SIM}/*; do
+        checkPhoto "$f" "$BASEPATH_LOCAL"
+    done
+}
+
+checkPhoto() {
+    F="$1"
+    IMG=$( basename $F )
+
+    BASEPATH="$2"
+    [[ $BASEPATH ]] || BASEPATH=~/Pictures/Photos\ Library.photoslibrary/Masters
+
+    SHA=$( sha256sum "$F" | awk '{print $1}' )
+    OTHER_SHAS=$( find "$BASEPATH" -name "$IMG" |
+                  while read -d $'\n' f; do sha256sum "$f"; done |
+                  awk '{print $1}' )
+
+    # check for checksum match among all possible image matches;
+    # only print if no match
+    [[ $( echo $OTHER_SHAS | grep -c $SHA ) == 1 ]] || echo $F
+}
+
+zopen() {
+    zathura "$@" &> /dev/null & disown
 }
 
 # get bounding box of img (e.g. for when pdflatex is being dumb)
@@ -203,6 +251,7 @@ vtt2txt() {
 srt2txt() {
     grep -i "[a-z]" "$@"
 }
+
 
 macaddress() {
     ifconfig en0 | awk '/ether/ {print $2}' | cpout
@@ -813,15 +862,22 @@ esac
 # Path thangs
 
 # echo locks in expansion
-CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
+# CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
+#
+# # if ! echo $CONDA | grep -q '*'; then # wildcard expanded to valid conda
+# # check for literal "*"; else:
+# if [[ ! "$CONDA" =~ .*\*.* ]]; then # wildcard expanded to valid conda
+#     export PATH="$CONDA/bin:$PATH"
+#     export PYTHONPATH="$CONDA/bin/python"
+# fi
+#
 
-# if ! echo $CONDA | grep -q '*'; then # wildcard expanded to valid conda
-# check for literal "*"; else:
-if [[ ! "$CONDA" =~ .*\*.* ]]; then # wildcard expanded to valid conda
-    export PATH="$CONDA/bin:$PATH"
-    export PYTHONPATH="$CONDA/bin/python"
-fi
-
+R_HOME=/usr/local/bin/R
+alias python='python3'
+alias pip='pip3'
+export PATH="/usr/local/opt/python@3.10/bin:$PATH"
+export PATH="/usr/local/bin:$PATH"
+export PYTHONPATH="/usr/local/bin/python3"
 export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 
 # via https://stackoverflow.com/a/61355987
@@ -844,7 +900,7 @@ done
 # osx stuff
 if ((!$linux)); then
 	# added for homebrew, coreutils
-    GNUPATH=$( echo "/usr/local/opt/"{grep,coreutils,gnu-{sed,tar,which,indent}}"/libexec/gnubin:" |
+    GNUPATH=$( echo "/usr/local/opt/"{grep,coreutils,gawk,gnu-{sed,tar,which,indent}}"/libexec/gnubin:" |
                sed 's/ //g' )
     GNUMANPATH=$( echo $GNUPATH | sed 's/gnubin/gnuman/g' )
 
@@ -859,6 +915,8 @@ if ((!$linux)); then
 
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
+
+    alias pdfjoin='/System/Library/Automator/Combine\ PDF\ Pages.action/Contents/Resources/join.py'
 
     # LD stuff
     export CPPFLAGS="-I/usr/local/include"
@@ -988,7 +1046,8 @@ if ! [[ ${DISTRO,,} =~ "red hat" ]]; then
 
         F="/tmp/dkl_$( day )"
         [[ -f "$F" ]] || {
-            wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |
+            # wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |
+            cat source_dkl-quotes |
                 grep -A 1 display | grep -v -e "^--$" -e "^<div" | sed "s/&#39;/'/g" | shuf | head -n1 > $F
         }
         STUFF=$( cat $F | sed 's/\. /.\n/g' )
@@ -1130,3 +1189,14 @@ else
         jupyter notebook list | awk '/^http/ {print $1}'
     }
 fi
+
+##
+# Your previous /Users/miriam/.bash_profile file was backed up as /Users/miriam/.bash_profile.macports-saved_2020-08-31_at_14:45:08
+##
+
+# MacPorts Installer addition on 2020-08-31_at_14:45:08: adding an appropriate PATH variable for use with MacPorts.
+export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+# Finished adapting your PATH environment variable for use with MacPorts.
+
+# recommended by `brew doctor`
+export PATH="/usr/local/sbin:$PATH"

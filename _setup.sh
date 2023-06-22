@@ -17,6 +17,9 @@ BASHRC=$( ls ~/.*bashrc )
 echo "source ~/.bash_profile" >> $BASHRC
 source ~/.bash_profile
 
+mkdir -p ~/.config/zathura
+ln -s ${DIR}/zathurarc ~/.config/zathura
+
 # infinite HIST
 (( $linux )) && sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' $BASHRC
 
