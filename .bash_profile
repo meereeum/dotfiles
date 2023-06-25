@@ -94,6 +94,8 @@ export DELTAS="${DELTA}s"
 
 export STRFDATE="+%y%m%d"
 
+export CSVPAT='([^,]*)|(\"([^\"]|(\"\"))*\")' # for awk
+
 lunch()  { python $MEDIA/wkspace/mit-lunch/get_menu.py   "$@"; }
 movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
 lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
