@@ -526,12 +526,17 @@ if [[ $DISPLAY ]]; then
 
     # alternately: safari
     openTabsSafari() {
-        urls=$( osascript -e 'tell app "Safari" to URL of tabs of windows' )
-        names=$( osascript -e 'tell app "Safari" to name of tabs of windows' )
-        N=$( echo $urls | awk -F, '{print NF}' )
+        DELIM=" <> "
+        getTabInfo() {
+            osascript -e "tell app \"Safari\" to set AppleScript's text item delimiters to \"$DELIM\"" \
+                      -e "tell app \"Safari\" to $1 of tabs of windows as string"
+        }
+        urls=$( getTabInfo URL )
+        names=$( getTabInfo name )
+        N=$( echo $urls | awk -F"$DELIM" '{print NF}' )
         for i in $( seq $N ); do
-            echo "#" $( echo $names | awk -F, -vi=$i '{print $i}' )
-            echo $( echo $urls | awk -F, -vi=$i '{print $i}' )
+            echo "#" $( echo $names | awk -F"$DELIM" -vi=$i '{print $i}' )
+            echo $( echo $urls | awk -F"$DELIM" -vi=$i '{print $i}' )
             echo
         done;
     }
