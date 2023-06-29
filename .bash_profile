@@ -205,7 +205,9 @@ checkPhotos() {
     [[ $BASEPATH_LOCAL ]] || BASEPATH_LOCAL=~/Pictures/Photos\ Library.photoslibrary/Masters
 
     for f in ${BASEPATH_SIM}/*; do
-        checkPhoto "$f" "$BASEPATH_LOCAL"
+        # N.B. *.THM files are thumbnails (first frame of video)
+        # -- not transferred; ignore
+        [[ ${f,,} == *.thm ]] || checkPhoto "$f" "$BASEPATH_LOCAL"
     done
 }
 
@@ -520,6 +522,21 @@ if [[ $DISPLAY ]]; then
         }
         export -f getAddons
     fi
+
+
+    # alternately: safari
+    openTabsSafari() {
+        urls=$( osascript -e 'tell app "Safari" to URL of tabs of windows' )
+        names=$( osascript -e 'tell app "Safari" to name of tabs of windows' )
+        N=$( echo $urls | awk -F, '{print NF}' )
+        for i in $( seq $N ); do
+            echo "#" $( echo $names | awk -F, -vi=$i '{print $i}' )
+            echo $( echo $urls | awk -F, -vi=$i '{print $i}' )
+            echo
+        done;
+    }
+    getOpenTabsSafari(){ openTabsSafari | cpout; }
+    saveOpenTabsSafari(){ f=./tabs_$( day ); openTabsSafari > "$f"; echo "     --> $f"; }
 
 
     zoom() {
