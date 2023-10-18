@@ -107,6 +107,9 @@ alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ 
 math() { bc -l <<< "$@"; }
 PI=$( bc -l <<< "scale=10; 4*a(1)" )
 
+awkcsv() { awk -vFPAT='([^,]*)|("[^"]+")' "$@"; } # via https://stackoverflow.com/a/29650812
+# awkcsv() { awk -vFPAT=$CSVPAT "$@"; } # via https://stackoverflow.com/a/29650812
+
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
@@ -267,10 +270,13 @@ macaddress() {
 # universalish / v possibly nonrobust way to query ip address
 # --> this is local (not public) ip
 # ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
+export MY_IP_DEVICE=$( ifconfig | awk '/192./ {print $2}' ) # device
 # instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
 # alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
-alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
+alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com' # public (e.g., the router)
 alias myip='echo $( MY_IP ) | cpout' # TODO clobbers ip
+
+alias server='echo -e "\nGO TO => https://${MY_IP_DEVICE}:8000\n"; python -m http.server'
 
 alias sourceopenstack='. ~/*openrc.sh'
 allowip() {
