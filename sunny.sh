@@ -1,11 +1,13 @@
 #!/bin/bash
 
-SUNTIMES=$( cat /tmp/darksky | jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
+# SUNTIMES=$( cat /tmp/darksky | jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
+SUNTIMES=$( cat /tmp/darksky | jq -c '.location.values[0] | [.sunrise,.sunset]' )
+
 
 ( [[ ! $SUNTIMES ]] || [[ $SUNTIMES == "[null,null]" ]] ) && exit 1
 
-SUNRISE=$( echo $SUNTIMES | jq '.[0]' )
-SUNSET=$(  echo $SUNTIMES | jq '.[1]' )
+SUNRISE=$( echo $SUNTIMES | jq '.[0]' | xargs date +%s -d )
+SUNSET=$(  echo $SUNTIMES | jq '.[1]' | xargs date +%s -d )
 
 NOW=$( date +%s )
 
@@ -43,7 +45,7 @@ converts() # s -> h(h):mm:ss
     # fi
     # if [[ $d = 0 && $h = 0 && $m = 0 ]]; then
     #         [[ $s = 1 ]] && echo -n "$s second" || echo -n "$s seconds"
-    # fi  
+    # fi
     # echo
 }
 
