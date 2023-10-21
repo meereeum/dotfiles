@@ -271,22 +271,24 @@ srt2txt() {
 }
 
 
-macaddress() {
-    ifconfig en0 | awk '/ether/ {print $2}' | cpout
+$( command -v ifconfig &> /dev/null ) && {
+    macaddress() {
+        ifconfig en0 | awk '/ether/ {print $2}' | cpout
+    }
+
+    # local ip (the device)
+    # ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
+    export MY_IP_DEVICE=$( ifconfig | awk '/192./ {print $2}' )
+
+    alias server='echo -e "\nGO TO => http://${MY_IP_DEVICE}:8000\n"; python -m http.server'
 }
-
-# universalish / v possibly nonrobust way to query ip address
-# --> this is local (not public) ip
-# ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
-export MY_IP_DEVICE=$( ifconfig | awk '/192./ {print $2}' ) # device
-# instead, via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
-# alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
-alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com' # public (e.g., the router)
-alias myip='echo $( MY_IP ) | cpout' # TODO clobbers ip
-
-alias server='echo -e "\nGO TO => https://${MY_IP_DEVICE}:8000\n"; python -m http.server'
+# public ip (e.g., the router)
+# via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
+alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
+alias myip='echo $( MY_IP ) | cpout'
 
 alias sourceopenstack='. ~/*openrc.sh'
+# alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
 allowip() {
     IP="$@"
     [[ $IP ]] || IP=$( MY_IP )
@@ -940,8 +942,13 @@ if ((!$linux)); then
                sed 's/ //g' )
     GNUMANPATH=$( echo $GNUPATH | sed 's/gnubin/gnuman/g' )
 
-    PATH="$GNUPATH$PATH"
-    MANPATH="$GNUMANPATH$MANPATH"
+    PATH="${GNUPATH}${PATH}"
+    # MANPATH="${GNUMANPATH}${MANPATH}"
+    MANPATH="${GNUMANPATH}$( manpath )"
+
+    # brew
+    # PATH="/usr/local/Cellar:$PATH"
+    PATH="/usr/local/sbin:$PATH"
 
     # either: symlink once OR explicitly alias
     # ln -s /usr/local/Cellar/vim/*/bin/vim /usr/local/bin/vim

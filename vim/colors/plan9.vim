@@ -8,6 +8,9 @@ endif
 
 set t_Co=256
 
+" original main color: 230
+" better for mac: 255
+
 " for cterm, 'black' might get overwritten by the terminal emulator, so we use
 " 232 (#080808), which is close enough.
 
