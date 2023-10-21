@@ -29,6 +29,13 @@ if ((!$linux)); then
     # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
     # export PATH=${ARBHOME}/bin:${PATH}
+
+    R_HOME=/usr/local/bin/R
+    alias python='python3'
+    alias pip='pip3'
+    export PATH="/usr/local/opt/python@3.10/bin:$PATH"
+    export PATH="/usr/local/bin:$PATH"
+    export PYTHONPATH="/usr/local/bin/python3"
 fi
 
 
@@ -641,10 +648,13 @@ t() {
 # alias p3='source activate py36'
 # alias d='source deactivate'
 
+# python stuff
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
 
 pyfind(){ python -c "import ${1}; print(${1}.__file__)"; }
+export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
+
 
 # osx only
 if ((!$linux)); then
@@ -896,23 +906,13 @@ esac
 # Path thangs
 
 # echo locks in expansion
-# CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
-#
-# # if ! echo $CONDA | grep -q '*'; then # wildcard expanded to valid conda
-# # check for literal "*"; else:
-# if [[ ! "$CONDA" =~ .*\*.* ]]; then # wildcard expanded to valid conda
-#     export PATH="$CONDA/bin:$PATH"
-#     export PYTHONPATH="$CONDA/bin/python"
-# fi
-#
-
-R_HOME=/usr/local/bin/R
-alias python='python3'
-alias pip='pip3'
-export PATH="/usr/local/opt/python@3.10/bin:$PATH"
-export PATH="/usr/local/bin:$PATH"
-export PYTHONPATH="/usr/local/bin/python3"
-export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
+CONDA="$( echo $HOME/*conda3 )" # {ana,mini}conda
+# if ! echo $CONDA | grep -q '*'; then # wildcard expanded to valid conda
+# check for literal "*"; else:
+if [[ ! "$CONDA" =~ .*\*.* ]]; then # wildcard expanded to valid conda
+    export PATH="$CONDA/bin:$PATH"
+    export PYTHONPATH="$CONDA/bin/python"
+fi
 
 # via https://stackoverflow.com/a/61355987
 # rename conda environment
