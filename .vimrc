@@ -39,6 +39,7 @@ syntax enable
 " set background=dark
 " colorscheme 256_noir_rosy
 " colorscheme paramount
+" colorscheme more-mine
 colorscheme neon-rollerblades
 
 " via https://vimtricks.com/p/highlight-syntax-inside-markdown

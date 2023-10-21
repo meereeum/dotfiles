@@ -2,13 +2,13 @@
 set -u # don't delete my hd plz
 
 
-./_setup.sh
-
-
 # minimal pkgs
 while read line
-        do sudo apt-get install -y ${line}
-done < packages/packages_server.txt
+    do sudo apt-get install -y ${line}
+done < pkgs/aptpkgs_server.txt
+
+
+./_setup.sh
 
 
 # comment out lines
@@ -22,6 +22,9 @@ sed -ri'.tmp' --follow-symlinks 's/^(.*safe_rm)/#\1/' ~/.bash_profile
 sed -ri'.tmp' --follow-symlinks 's/^(export PS1=).*$/\1"\\e[1m\\h:\\e[m \\W \\$ "/' ~/.bash_profile
 # for cluster (?):
 # sed -ri'.tmp' --follow-symlinks 's/^(export PS1=).*$/\\1"\\e[1m\\h:\\e[21m \\W \\$ "/' ~/.bash_profile
+
+
+sudo cp ./motd /etc
 
 
 # does not exist or remove

@@ -66,10 +66,6 @@ gnupg-agent
 gpgv
 graphviz
 grep
-grub-common
-grub-pc
-grub-pc-bin
-grub2-common
 gsl-bin
 gzip
 heroku

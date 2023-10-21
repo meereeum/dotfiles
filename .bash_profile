@@ -1,3 +1,4 @@
+DISPLAY=0
 # detect os
 # [[ "$OSTYPE" = "linux-gnu" ]]
 	                           # echo "hey there, debian"
@@ -631,10 +632,10 @@ t() {
 }
 
 
-# pandoc
-# eval "$(pandoc --bash-completion)"
+##### pandoc
+##### eval "$(pandoc --bash-completion)"
 # markdown -> man page
-# md() { pandoc -s -f markdown -t man "$*" | man -l -; }
+##### md() { pandoc -s -f markdown -t man "$*" | man -l -; }
 
 # conda envs
 # alias p3='source activate py36'
@@ -798,7 +799,7 @@ fi
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
 (($linux)) && export TRASHDIR="${HOME}/.local/share/Trash/files" \
            || export TRASHDIR="${HOME}/.Trash"
-alias rm='~/dotfiles/safe_rm.sh'
+####alias rm='~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
 untrash() { # unrm ?
@@ -1231,7 +1232,5 @@ fi
 
 # MacPorts Installer addition on 2020-08-31_at_14:45:08: adding an appropriate PATH variable for use with MacPorts.
 export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
-# Finished adapting your PATH environment variable for use with MacPorts.
-
 # recommended by `brew doctor`
 export PATH="/usr/local/sbin:$PATH"
