@@ -20,9 +20,11 @@ cat $FTODAY | jq -c '.hits[] |
     select(.post_type=="event") |
     select( (.event_format | index(74)) or
 	    (.event_format | index(79)) ) |
-    [.event_start_date,.event_start_time,.title,.event_format,.event_location]' |
+    [.event_start_date,.event_start_time,.title,.event_location]' |
+    # [.event_start_date,.event_start_time,.title,.event_format,.event_location]' |
     sed 's/:00"/"/' |
     sed -e's/\b74\b/35mm/g' -e's/\b79\b/70mm/g' |
-    sed -e's/\[102\]/LF3/' -e's/\[54\]/AERO/' |
+    sed -e's/\[102\]/LF3/' -e's/\[54\]/AERO/' -e's/\[55\]/EGYPTIAN/' |
+    sed -e's/"//1' -e's/"//1' -e's/"//1' -e's/"//1' |
     sort
 echo
