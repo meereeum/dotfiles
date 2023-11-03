@@ -890,7 +890,7 @@ Wshort() { # inspired by https://askubuntu.com/a/29580
 
 # homebase vs remote / server
 (( $DISPLAY )) && export PS1=" \$( Wshort ) \$ " \
-               || export PS1="\e[1m\h:\e[m \$( Wshort ) \$ "
+               || export PS1="\[\e[1m\]\h:\[\e[m\] \$( Wshort ) \$ "
 # (( $DISPLAY )) && export PS1=" \W \$ " \
 #                || export PS1="\e[1m\h:\e[m \W \$ "
 # extra space before Wshort for osx
