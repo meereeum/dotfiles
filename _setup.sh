@@ -3,13 +3,19 @@ set -u # don't delete my hd plz
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+symlink() {
+    FROM=$1
+    TO=$2
+
+    [ ! -f "$TO" ] || rm "$TO" # clobber preëxisting
+    ln -s "$FROM" "$TO"
+}
+
 # symlink
 DOTFILES=$( cd $DIR; ls -a | grep "^\." | egrep -ve "^\.{1,2}$" -e"^\.git(ignore)?$" -ve".*swp" -ve"DS_Store")
 
 for f in $DOTFILES; do
-    [ ! -f ~/${f} ] || rm ~/${f} # clobber
-
-    ln -s ${DIR}/${f} ~/${f} && \
+    symlink ${DIR}/${f} ~/${f} && \
         echo "~/${f} --> ${DIR}/${f}"
 done
 
@@ -18,7 +24,7 @@ echo "source ~/.bash_profile" >> $BASHRC
 source ~/.bash_profile
 
 mkdir -p ~/.config/zathura
-ln -s ${DIR}/zathurarc ~/.config/zathura
+symlink ${DIR}/zathurarc ~/.config/zathura/zathurarc
 
 # infinite HIST
 (( $linux )) && sed -ri'.tmp' --follow-symlinks 's/^(HIST.*SIZE)/# \1/' $BASHRC
@@ -29,7 +35,7 @@ VIMDIR="$HOME/.vim"
 find vim -mindepth 1 -type d | sed "s@^vim*@$VIMDIR@" | xargs mkdir -p
 for f in $( find vim -mindepth 1 -type f ); do
     LINK_TO=$( echo $f | sed -e "s@^[^/]*@$VIMDIR@" ) # -e 's@/[^/]*$@@')
-    ln -s "$DIR/$f" "$LINK_TO"
+    symlink "$DIR/$f" "$LINK_TO"
 done
 
 # vim postfx highlight
@@ -41,15 +47,16 @@ cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
 
 # vim syntax highlighting fix
 # via https://github.com/vim/vim/issues/1008
-[ -f ~/.vim/syntax/sh.vim ] || {
-    wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
-        {
-            gunzip sh.vim.gz
-            mkdir -p ~/.vim/syntax
-            mv sh.vim ~/.vim/syntax
-            rm sh.vim.gz
-        }
-}
+# [ -f ~/.vim/syntax/sh.vim ] || {
+#     wget http://www.drchip.org/astronaut/vim/syntax/sh.vim.gz && \
+#         {
+#             gunzip sh.vim.gz
+#             mkdir -p ~/.vim/syntax
+#             mv sh.vim ~/.vim/syntax
+#             rm sh.vim.gz
+#         }
+# }
+# hopefully this is incorporated into vim now, b/c the file no longer exists..
 
 # for mac, may need to replace colors in $VIMRUNTIME/syntax/syncolor.vim
 # e.g. SlateBlue -> #6a5acd
@@ -61,35 +68,37 @@ cat /usr/share/vim/vim*/doc/syntax.txt | # grab script from docs
 # anaconda
 
 # via https://stackoverflow.com/a/54839819
-CONDA="$( wget -O - https://www.anaconda.com/distribution/ 2>/dev/null |
-          grep "64-Bit (x86) Installer" | sed -nE 's/.*href="([^"]*)".*/\1/p' )"
+# CONDA="$( wget -O - https://www.anaconda.com/distribution/ 2>/dev/null |
+#           grep "64-Bit (x86) Installer" | sed -nE 's/.*href="([^"]*)".*/\1/p' )"
 # CONDA="https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh"
 # CONDA="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 
 # silent install
-command -v conda &> /dev/null || { # iff conda does not yet exist
-    wget $CONDA -O ~/conda.sh && \
-        bash ~/conda.sh -b && \
-        {
-            # cleanup
-            rm ~/conda.sh
-            yes | conda clean --all
+# command -v conda &> /dev/null || { # iff conda does not yet exist
+#     wget $CONDA -O ~/conda.sh && \
+#         bash ~/conda.sh -b && \
+#         {
+#             # cleanup
+#             rm ~/conda.sh
+#             yes | conda clean --all
+#
+#             # update
+#             conda update -n base -c defaults conda
+#             pip install --upgrade pip
+#
+#             # ensure bash commands working
+#             conda init bash
+#             source ~/anaconda3/etc/profile.d/conda.sh
+#         }
+# }
 
-            # update
-            conda update -n base -c defaults conda
-            pip install --upgrade pip
 
-            # ensure bash commands working
-            conda init bash
-            source ~/anaconda3/etc/profile.d/conda.sh
-        }
-}
-
-
+mkdir -p $HOME/.config/matplotlib
 echo "backend : agg" >> $HOME/.config/matplotlib/matplotlibrc
 
 # jupyter defaults
-cat ${DIR}/00.py >> $HOME/.ipython/profile_default/startup/00.py
+mkdir -p $HOME/.ipython/profile_default/startup
+symlink ${DIR}/00.py ~/.ipython/profile_default/startup/00.py
 
 
 # gists
