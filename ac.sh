@@ -1,11 +1,11 @@
 #!/bin/sh
 
-FPREFIX=~/movls
+FPREFIX=/tmp/movls
 TODAY=$( date +%y%m%d )
 FTODAY=${FPREFIX}_${TODAY}
 
-[[ -f $FTODAY ]] || {
-    rm ${FPREFIX}_* &> /dev/null
+[ -f $FTODAY ] || {
+    rm ${FPREFIX}_* 2> /dev/null
 
     NOW=$( date +%s )
     FARAWAY=9999999999
