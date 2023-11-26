@@ -286,7 +286,7 @@ $( command -v $( echo $_checkip | awk '{print $1}' )  &> /dev/null ) && {
     # macaddress() {
     #     ifconfig en0 | awk '/ether/ {print $2}' | cpout
     # }
-    export MACADDRESS=$( $_checkip | grep ether | grep -Eo '([a-z0-9]{2}:)+[a-z0-9]+' | head -1 )
+    export MACADDRESS=$( $_checkip | grep eth | grep -Eio '\b([a-z0-9]{2}:)+[a-z0-9]{2}\b' | head -1 )
 
     # local ip (the device)
     # ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
