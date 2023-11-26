@@ -191,6 +191,12 @@ pdfurl2txt() { # e.g. for menus
 }
 
 
+alias mod='stat -c"%a"' # get mod (as in chmod) of file
+cpmod() {               # cp mod (of file A, to file B)
+    chmod $( mod "$1" ) "$2"
+}
+
+
 # check available URLs for given TLD
 checkURLs() {
     TLD="$@" # https://data.iana.org/TLD/tlds-alpha-by-domain.txt
