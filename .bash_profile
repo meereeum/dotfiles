@@ -278,21 +278,30 @@ srt2txt() {
 }
 
 
-$( command -v ifconfig &> /dev/null ) && {
-    macaddress() {
-        ifconfig en0 | awk '/ether/ {print $2}' | cpout
-    }
+# TODO fix b/c mac only has ifconfig
+# $( command -v ifconfig &> /dev/null ) && {
+# $( command -v  &> /dev/null ) && {
+(( $linux )) && export _checkip='ip addr' || export _checkip=ifconfig
+$( command -v $( echo $_checkip | awk '{print $1}' )  &> /dev/null ) && {
+    # macaddress() {
+    #     ifconfig en0 | awk '/ether/ {print $2}' | cpout
+    # }
+    export MACADDRESS=$( $_checkip | grep ether | grep -Eo '([a-z0-9]{2}:)+[a-z0-9]+' | head -1 )
 
     # local ip (the device)
     # ip() { ifconfig | awk '/cast/ {print $2}' | sed 's/addr://'; }
-    export MY_IP_DEVICE=$( ifconfig | awk '/192./ {print $2}' )
+    # export MY_IP_DEVICE=$( ifconfig | awk '/192./ {print $2}' )
+    # export MY_IP_DEVICE=$( ip addr | awk '/inet 192/ {print $2}' | sed 's/\/.*//' )
+    export MY_IP_DEVICE=$( $_checkip | awk '/192./ {print $2}' | sed 's/\/.*//' )
 
     alias server='echo -e "\nGO TO => http://${MY_IP_DEVICE}:8000\n"; python -m http.server'
 }
 # public ip (e.g., the router)
 # via https://www.cyberciti.biz/faq/how-to-find-my-public-ip-address-from-command-line-on-a-linux/
+# alias rather than export b/c don't run unless you need it (e.g., may not be connected to internet)
 alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias myip='echo $( MY_IP ) | cpout'
+
 
 alias sourceopenstack='. ~/*openrc.sh'
 # alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
@@ -818,10 +827,12 @@ fi
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
 (($linux)) && export TRASHDIR="${HOME}/.local/share/Trash/files" \
            || export TRASHDIR="${HOME}/.Trash"
-####alias rm='~/dotfiles/safe_rm.sh'
+alias rm='~/dotfiles/safe_rm.sh'
 alias cp='cp -i'
 alias mv='mv -i'
-untrash() { # unrm ?
+# untrash() { # unrm ?
+unrm() {
+    # F="$@" || F="$( ls -t $TRASHDIR | head -n1 )"
     F="$( ls -t $TRASHDIR | head -n1 )"
     mv "$TRASHDIR/$F" .
     echo "recovered: $F"

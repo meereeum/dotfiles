@@ -1,12 +1,14 @@
 # Zathura configuration file
 # See man `man zathurarc'
 
-# Open document in fit-width mode by default
-set adjust-open "best-fit"
-set window-height 3000
-# set window-width 800
+# open document in fit-width mode by default
+# set adjust-open "best-fit"
+# set window-height 3000
+set adjust-open "width"
+set window-height 1060
+set window-width 960
 
-# One page per row by default
+# one page per row by default
 set pages-per-row 1
 
 # stop at page boundries
@@ -18,6 +20,7 @@ set render-loading "false"
 
 # zoom settings
 set zoom-min 10
+set zoom-center true
 set guioptions ""
 
 # clipboard
@@ -34,6 +37,11 @@ map R rotate
 # map i recolor
 # map J zoom out
 # map K zoom in
+
+# window
+set window-title-home-tilde true
+# set statusbar-home-tilde true
+# set statusbar-page-percent true
 
 
 # zathurarc-dark

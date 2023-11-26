@@ -1,5 +1,6 @@
 #!/bin/bash
 set -u # don't delete my hd plz
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -16,8 +17,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 mkdir -p $(jupyter --data-dir)/nbextensions
 cd $(jupyter --data-dir)/nbextensions
 [ -d vim_binding ] || git clone https://github.com/lambdalisue/jupyter-vim-binding vim_binding
-jupyter nbextension enable vim_binding/vim_binding
 cd $DIR # back to dotfiles
+# have to downgrade for nbextensions to work
+pip install --upgrade notebook==6.4.12
+pip install jupyter_contrib_nbextensions
+jupyter nbextension enable vim_binding/vim_binding
+# via https://github.com/Jupyter-contrib/jupyter_nbextensions_configurator/issues/127#issuecomment-1434753327
+# jupyter nbextension install --sys-prefix --py jupyter_nbextensions_configurator --overwrite
+# jupyter nbextension enable --sys-prefix --py jupyter_nbextensions_configurator
+# jupyter serverextension enable --sys-prefix --py jupyter_nbextensions_configurator
+jupyter nbextension enable collapsible_headings/main
 
 CUSTOM="${HOME}/.jupyter/custom"
 mkdir -p $CUSTOM

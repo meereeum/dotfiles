@@ -1,5 +1,6 @@
 #!/bin/bash
 set -u # don't delete my hd plz
+# set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

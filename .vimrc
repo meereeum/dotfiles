@@ -90,7 +90,8 @@ nmap Y y$
 " yank into system clipboard
 "set clipboard+=autoselect,unnamed,unnamedplus
 "set clipboard=autoselect,unnamed,unnamedplus
-set clipboard=unnamed,unnamedplus " autoselect copies text you're pasting over before you can clobber it !
+" ^ autoselect copies text you're pasting over before you can clobber it !
+set clipboard=unnamed,unnamedplus
 
 " OR via tmp file (if no vim-gui-common)
 let mapleader=","
