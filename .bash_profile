@@ -1,4 +1,3 @@
-DISPLAY=0
 # detect os
 # [[ "$OSTYPE" = "linux-gnu" ]]
 	                           # echo "hey there, debian"
@@ -13,6 +12,9 @@ DISPLAY=0
     #         '/^ID=/                                       # e.g. debian
     xargs # xargs removes "
 )            || export DISTRO=MacOS
+
+HAS_DISPLAY=$( [ -z $DISPLAY ] && echo 0 || echo 1 )
+((!$linux)) && HAS_DISPLAY=1 # fix for mac
 
 
 # just kingdom
@@ -65,9 +67,8 @@ fi
 
 # aliasing
 
-((!$linux)) && DISPLAY=1 # fix for mac
-(( $DISPLAY )) && (( $linux )) && MEDIA="$HOME/shiff" \
-                               || MEDIA="$HOME" # aqua ^^ v. rest
+(( $HAS_DISPLAY )) && (( $linux )) && MEDIA="$HOME/shiff" \
+                                   || MEDIA="$HOME" # aqua ^^ v. rest
 
 alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
 alias http='python -m SimpleHTTPServer'
@@ -83,10 +84,10 @@ alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 alias fixscroll='tput rmcup' # via https://unix.stackexchange.com/a/259971
 alias pipoutdated='pip --disable-pip-version-check list --outdated'
 
-if (( $DISPLAY )); then
-    (( $linux )) && alias toclipboard='xsel -i --clipboard' \
-                 || alias toclipboard='pbcopy'
-    alias cpout='tee /dev/tty | toclipboard' # clipboard + STDOUT
+if (( $HAS_DISPLAY )); then
+    (( $linux )) && alias clipboard='xsel -i --clipboard' \
+                 || alias clipboard='pbcopy'
+    alias cpout='tee /dev/tty | clipboard' # clipboard + STDOUT
 else
     alias cpout='xargs echo'   # w/o X11 forwarding
 fi
@@ -145,7 +146,7 @@ coinflip() {
 
 
 # aqua only
-(( $DISPLAY )) && (( $linux )) && (
+(( $HAS_DISPLAY )) && (( $linux )) && (
     addmusic() { F="$MEDIA/txt/music";   echo -e "$@" >> $F; tail -n4 $F; }
     addmovie() { F="$MEDIA/txt/movies4"; echo -e "$@" >> $F; tail -n4 $F; }
 )
@@ -486,7 +487,7 @@ zulipjson2msgs(){
 # N.B. missing txt inside <span class="k">, which seems to be a latex math block
 
 
-if (( $DISPLAY )); then
+if (( $HAS_DISPLAY )); then
     # ffox stuff
     (( $linux )) && PREFIX="$HOME/.mozilla/firefox" \
                  || PREFIX="$HOME/Library/Application Support/Firefox"
@@ -598,7 +599,7 @@ if (( $DISPLAY )); then
 
         callurl="https://zoom.us/wc/join/$callid"
         echo "$closest ►► $callurl"
-        echo $callurl | toclipboard # just in case
+        echo $callurl | clipboard # just in case
 
         if (( $linux )); then
             _chrome=$( echo $( which chromium ) $( which chrome ) | awk '{print $1}' )
@@ -660,7 +661,7 @@ t() {
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
 
-pyfind(){ python -c "import ${1}; print(${1}.__file__)"; }
+pyfind(){ python -c "import ${1}; print(${1}.__file__)"; } # find a pkg
 export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 
 
@@ -895,10 +896,10 @@ Wshort() { # inspired by https://askubuntu.com/a/29580
 }
 
 # homebase vs remote / server
-(( $DISPLAY )) && export PS1=" \$( Wshort ) \$ " \
-               || export PS1="\e[1m\h:\e[m \$( Wshort ) \$ "
-# (( $DISPLAY )) && export PS1=" \W \$ " \
-#                || export PS1="\e[1m\h:\e[m \W \$ "
+(( $HAS_DISPLAY )) && export PS1=" \$( Wshort ) \$ " \
+                   || export PS1="\[\e[1m\]\h:\[\e[m\] \$( Wshort ) \$ "
+# (( $HAS_DISPLAY )) && export PS1=" \W \$ " \
+#                    || export PS1="\e[1m\h:\e[m \W \$ "
 # extra space before Wshort for osx
 (( !$linux )) && export PS1=" $PS1"
 
@@ -1053,7 +1054,7 @@ downvpn() {
 # autocomplete screen
 complete -C "perl -e '@w=split(/ /,\$ENV{COMP_LINE},-1);\$w=pop(@w);for(qx(screen -ls)){print qq/\$1\n/ if (/^\s*\$w/&&/(\d+\.\w+)/||/\d+\.(\$w\w*)/)}'" screen
 
-(( ! $DISPLAY )) && export QT_QPA_PLATFORM=offscreen # make tensorflow / matplotlib work if server
+(( $HAS_DISPLAY )) || export QT_QPA_PLATFORM=offscreen # make tensorflow / matplotlib work if server
 
 export MKL_THREADING_LAYER=GNU # make theanify work
 
@@ -1073,8 +1074,8 @@ if ! [[ ${DISTRO,,} =~ "red hat" ]]; then
 
     # prepend moon
     MOON=$( bash ~/dotfiles/moony.sh )
-    (( $DISPLAY )) && export PS1="$MOON$PS1" \
-                   || export PS1="$MOON $PS1"
+    (( $HAS_DISPLAY )) && export PS1="$MOON$PS1" \
+                       || export PS1="$MOON $PS1"
 
     # echo sun
     SUN=$( bash ~/dotfiles/sunny.sh )
@@ -1082,12 +1083,12 @@ if ! [[ ${DISTRO,,} =~ "red hat" ]]; then
 
     # check metrograph !
     # csail server only
-    # (( ! $DISPLAY )) && [[ ${DISTRO,,} =~ "debian" ]] && \
+    # (( ! $HAS_DISPLAY )) && [[ ${DISTRO,,} =~ "debian" ]] && \
     #     bash ~/dotfiles/metrographer.sh
 
     # david lynch horoscope, etc
     # brodecomp only
-    (( ! $DISPLAY )) && [[ ${DISTRO,,} =~ "ubuntu" ]] && {
+    (( ! $HAS_DISPLAY )) && [[ ${DISTRO,,} =~ "ubuntu" ]] && {
         # STUFF=$( wget -q https://www.astrology.com/horoscope/daily/gemini.html -O - |
         #             grep -A10 '"content-date"' | grep font | sed -E 's/^.*">([^<]*)<.*$/\1/' )
         # STUFF=$( wget -q -O - https://www.brainyquote.com/authors/david-lynch-quotes https://www.brainyquote.com/authors/david-lynch-quotes_2 |

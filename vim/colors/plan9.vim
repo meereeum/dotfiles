@@ -1,6 +1,6 @@
 " via https://github.com/plan9-for-vimspace/acme-colors
 
-highlight clear 
+highlight clear
 
 if exists("syntax_on")
   syntax reset
@@ -14,7 +14,7 @@ set t_Co=256
 " for cterm, 'black' might get overwritten by the terminal emulator, so we use
 " 232 (#080808), which is close enough.
 
-highlight! Normal guibg=#ffffea guifg=#000000 ctermbg=230 ctermfg=232 
+highlight! Normal guibg=#ffffea guifg=#000000 ctermbg=230 ctermfg=232
 highlight! NonText guibg=bg guifg=#ffffea ctermbg=bg ctermfg=230
 highlight! StatusLine guibg=#aeeeee guifg=#000000 gui=NONE ctermbg=159 ctermfg=232 cterm=NONE
 highlight! StatusLineNC guibg=#eaffff guifg=#000000 gui=NONE ctermbg=194 ctermfg=232 cterm=NONE
