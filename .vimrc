@@ -20,6 +20,9 @@ set hlsearch
 " don't wrap lines by default
 set nowrap
 
+" put file in terminal titlebar
+set title
+
 " set limits for register
 " via https://stackoverflow.com/a/3676914
 " * marks for last $X edited files,

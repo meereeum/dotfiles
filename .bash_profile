@@ -893,8 +893,11 @@ history() {                  #5
   _bash_history_sync
   builtin history "$@"
 }
+_term_title() { # current directory as term title
+    echo -ne "\033]0; $HOSTNAME:  $(basename $PWD)\007"
+}
 
-export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync"
+export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync;_term_title"
 # PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND} ;}history -a"
 
 # extended regex - e.g. $ ls !(*except_this)
