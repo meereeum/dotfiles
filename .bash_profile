@@ -293,7 +293,10 @@ $( command -v $( echo $_checkip | awk '{print $1}' )  &> /dev/null ) && {
     # export MY_IP_DEVICE=$( ifconfig | awk '/192./ {print $2}' )
     # export MY_IP_DEVICE=$( ip addr | awk '/inet 192/ {print $2}' | sed 's/\/.*//' )
     # export MY_IP_DEVICE=$( $_checkip | awk '/192./ {print $2}' | sed 's/\/.*//' )
-    export MY_IP_DEVICE=$( $_checkip | grep -A2 eth | grep inet | grep -Eio '\b([0-9]*\.?)+\b' | head -1 )
+    export MY_IP_DEVICE=$( $_checkip | grep -A2 eth | grep inet | grep -Eo '\b([0-9]+\.?)+\b' | head -1 )
+
+    # IPv6
+    export MY_IP_DEVICE_6=$( $_checkip | grep -A4 eth | grep inet6 | grep -Eio '\b([0-9a-z]*:)+[0-9a-z]+\b' | head -1 )
 
     alias server='echo -e "\nGO TO => http://${MY_IP_DEVICE}:8000\n"; python -m http.server'
 }
