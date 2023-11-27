@@ -894,7 +894,11 @@ history() {                  #5
   builtin history "$@"
 }
 _term_title() { # current directory as term title
-    echo -ne "\033]0; $HOSTNAME:  $(basename $PWD)\007"
+    DIR=$( basename "${PWD/$HOME/"~"}" )
+    (( $HAS_DISPLAY )) && TITLE="$DIR" \
+                       || TITLE="$HOSTNAME:  $DIR"
+
+    echo -ne "\033]0; ${TITLE}\007"
 }
 
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}_bash_history_sync;_term_title"
