@@ -39,14 +39,25 @@ for f in jupyter/*; do
 done
 
 
+# tools
+TOOLS="$HOME/tools"
+mkdir -p $TOOLS
+
 # vim-anywhere
-[ -d $HOME/vim-anywhere ] || {
-    cd $HOME
-    git clone https://github.com/meereeum/vim-anywhere.git
-    cd vim-anywhere
-    ./install
-    cd $DIR # back to dotfiles
+[ -d $TOOLS/vim-anywhere ] || {
+    git clone https://github.com/meereeum/vim-anywhere.git $TOOLS
+    $TOOLS/vim-anywhere/install
 }
+
+git clone https://github.com/thisisparker/xword-dl $TOOLS
+
+
+# workspace
+WKSPACE="$HOME/wkspace"
+mkdir -p $WKSPACE
+for repo in CLIppy cinematic jaw-dicom shiffplot vixw; do
+    git clone https://github.com/meereeum/${REPO}.git $WKSPACE
+done
 
 
 # determine os
