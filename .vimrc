@@ -22,6 +22,7 @@ set nowrap
 
 " put file in terminal titlebar
 set title
+let &titlestring = "%t" . "  [VIM " . hostname() . "]"
 
 " set limits for register
 " via https://stackoverflow.com/a/3676914

@@ -39,6 +39,7 @@ map R rotate
 # map K zoom in
 
 # window
+set window-title-basename true
 set window-title-home-tilde true
 # set statusbar-home-tilde true
 # set statusbar-page-percent true
