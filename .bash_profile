@@ -194,7 +194,11 @@ pdfurl2txt() { # e.g. for menus
 
 alias mod='stat -c"%a"' # get mod (as in chmod) of file
 cpmod() {               # cp mod (of file A, to file B)
-    chmod $( mod "$1" ) "$2"
+    like="$1"
+    shift
+    for f in $@; do
+        chmod $( mod "$like" ) "$f"
+    done
 }
 
 

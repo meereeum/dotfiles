@@ -22,6 +22,7 @@ set nowrap
 
 " put file in terminal titlebar
 set title
+" via https://stackoverflow.com/questions/45170150/vim-how-to-use-variables-in-titlestring
 let &titlestring = "%t" . "  [VIM " . hostname() . "]"
 
 " set limits for register
