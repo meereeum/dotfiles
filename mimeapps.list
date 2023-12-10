@@ -1,0 +1,15 @@
+[Default Applications]
+x-scheme-handler/http=chromium.desktop
+x-scheme-handler/https=chromium.desktop
+text/html=chromium.desktop
+text/calendar=org.gnome.Calendar.desktop
+image/png=shotwell-viewer.desktop
+application/pdf=org.pwmt.zathura-pdf-poppler.desktop
+
+[Added Associations]
+x-scheme-handler/http=chromium.desktop;
+x-scheme-handler/https=chromium.desktop;
+text/html=chromium.desktop;
+text/calendar=org.gnome.Calendar.desktop;
+image/png=shotwell-viewer.desktop;inkscape.desktop;gimp.desktop;
+application/pdf=org.pwmt.zathura-pdf-poppler.desktop;

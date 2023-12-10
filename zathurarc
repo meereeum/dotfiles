@@ -49,7 +49,8 @@ set window-title-home-tilde true
 
 # set font "inconsolata 15"
 set default-bg "#000000" #00
-set default-fg "#F7F7F6" #01
+# set default-fg "#F7F7F6" #01 # needs to be dark enough to read title on light grey bg
+set default-fg "#614b58"
 
 set statusbar-fg "#B0B0B0" #04
 set statusbar-bg "#202020" #01
