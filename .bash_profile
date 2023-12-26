@@ -860,6 +860,16 @@ if [ -f ~/.git-annex-completion.bash ]; then
       . ~/.git-annex-completion.bash
 fi
 
+# via https://stackoverflow.com/a/50158675
+gitrmline() {
+    filename=$1
+    from=$2
+    to=$3
+    # git stash
+    git filter-branch --tree-filter "test -f \"$filename\" && sed -i \"s/$from/$to/g\" \"$filename\" || echo \"skipping $filename\"" -- --all
+    # git stash pop
+}
+
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
 (($linux)) && export TRASHDIR="${HOME}/.local/share/Trash/files" \
