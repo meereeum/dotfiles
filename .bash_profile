@@ -1,3 +1,5 @@
+DIR=$( dirname "${BASH_SOURCE[0]}" )
+
 # detect os
 # [[ "$OSTYPE" = "linux-gnu" ]]
 	                           # echo "hey there, debian"
@@ -23,7 +25,7 @@ if ((!$linux)); then
     alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
     export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
     export JARDIR=~/tools/jars
-    alias oath_justworks='oathtool -b --totp "$( cat SECRET_justworks )"'
+    alias oath_justworks="oathtool -b --totp "$( cat $DIR/SECRET_justworks )""
     alias stripexif='exiftool -all= -overwrite_original_in_place'
     # alias oath_justworks_ffl='oathtool -b --totp ""'
     complete -C $( which aws_completer ) aws
@@ -683,6 +685,9 @@ t() {
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
 
+# alias python=python3
+export PATH="$HOME/.local/venv/bin:$PATH"
+
 pyfind(){ python -c "import ${1}; print(${1}.__file__)"; } # find a pkg
 export PYTHONBREAKPOINT="IPython.embed" # via builtin breakpoint()
 
@@ -1095,7 +1100,7 @@ else
         VPNURL=69.173.127.10
 
         sudo openconnect -u shiffman --authgroup $GRP $VPNURL "$@" \
-            --servercert pin-sha256:SECRET_broad
+            --servercert pin-sha256:$( cat $DIR/SECRET_broad )
             # --token-mode yubioath
             # --background
     }
