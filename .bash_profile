@@ -861,12 +861,19 @@ if [ -f ~/.git-annex-completion.bash ]; then
 fi
 
 # via https://stackoverflow.com/a/50158675
-gitrmline() {
+gitrmpattern() {
     filename=$1
     from=$2
     to=$3
     # git stash
     git filter-branch --tree-filter "test -f \"$filename\" && sed -i \"s/$from/$to/g\" \"$filename\" || echo \"skipping $filename\"" -- --all
+    # git stash pop
+}
+gitrmline() {
+    filename=$1
+    pattern=$2
+    # git stash
+    git filter-branch --tree-filter "test -f \"$filename\" && sed -i \"s/$pattern/d\" \"$filename\" || echo \"skipping $filename\"" -- --all
     # git stash pop
 }
 
