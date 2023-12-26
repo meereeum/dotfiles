@@ -875,7 +875,7 @@ gitrmline() {
     pattern=$2
     args=$3
     # git stash
-    git filter-branch $args --tree-filter "test -f \"$filename\" && sed -i \"s/$pattern/d\" \"$filename\" || echo \"skipping $filename\"" -- --all
+    git filter-branch $args --tree-filter "test -f \"$filename\" && sed -i \"/$pattern/d\" \"$filename\" || echo \"skipping $filename\"" -- --all
     # git stash pop
 }
 
