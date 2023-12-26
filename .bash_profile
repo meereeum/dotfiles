@@ -144,6 +144,11 @@ coinflip() {
     #echo "${choices[$i]}"
 }
 
+echobold()          { echo -e "\e[1m$@\e[0m"; }
+echoitalic()        { echo -e "\e[3m$@\e[0m"; }
+echounderline()     { echo -e "\e[4m$@\e[0m"; }
+echostrikethrough() { echo -e "\e[9m$@\e[0m"; }
+
 
 # aqua only
 (( $HAS_DISPLAY )) && (( $linux )) && (
@@ -859,8 +864,7 @@ alias cp='cp -i'
 alias mv='mv -i'
 # untrash() { # unrm ?
 unrm() {
-    # F="$@" || F="$( ls -t $TRASHDIR | head -n1 )"
-    F="$( ls -t $TRASHDIR | head -n1 )"
+    [[ "$@" ]] && F="$@" || F="$( ls -t $TRASHDIR | head -n1 )"
     mv "$TRASHDIR/$F" .
     echo "recovered: $F"
 }
@@ -939,12 +943,22 @@ Wshort() { # inspired by https://askubuntu.com/a/29580
     (( ${#W} > 30 )) && W="${W::10}…${W:(-19)}" # 1st 10 … last 19
     echo $W
 }
+devicePrefix() {
+    PATH_DEVICE="/media/$USER/"
+    DEVICE=$( echo "${PWD/$PATH_DEVICE}" | awk -F'/' '{print $1}' )
+    # add prefix iff on external device
+    [[ "$PWD" =~ "/media/$USER/" ]] && echo " $DEVICE: " \
+                                    || echo " "
+}
 
 # homebase vs remote / server
-(( $HAS_DISPLAY )) && export PS1=" \$( Wshort ) \$ " \
+# *italicize* device & *bold* remote
+# (( $HAS_DISPLAY )) && export PS1=" \$( Wshort ) \$ " \
+(( $HAS_DISPLAY )) && export PS1="\[\e[3m\]\$( devicePrefix )\[\e[0m\]\$( Wshort ) \$ " \
                    || export PS1="\[\e[1m\]\h:\[\e[m\] \$( Wshort ) \$ "
 # (( $HAS_DISPLAY )) && export PS1=" \W \$ " \
 #                    || export PS1="\e[1m\h:\e[m \W \$ "
+
 # extra space before Wshort for osx
 (( !$linux )) && export PS1=" $PS1"
 

@@ -81,15 +81,11 @@ if [[ $SYS == "MacOSX" ]]; then
     # yubikey manager
     # YUBICO="https://developers.yubico.com/yubikey-manager-qt/Releases/yubikey-manager-qt-latest-mac.pkg"
     # wget $YUBICO
+else
+    f=mimeapps.list
+    ln -s ${DIR}/${f} $HOME/.config
+    echo "$HOME/.config/${f} --> ${DIR}/${f}"
 
-    # via https://www.macinstruct.com/tutorials/how-to-enable-git-tab-autocomplete-on-your-mac/
-    # curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o ~/.git-completion.bash
-    wget -O ~/.git-completion.bash https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
-    chmod +x ~/.git-completion.bash
-    # curl https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash -o ~/.git-annex-completion.bash
-    wget -O ~/.git-annex-completion.bash https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash
-    chmod +x ~/.git-annex-completion.bash
-    # TODO and add to .bash_profile ?
 fi
 
 

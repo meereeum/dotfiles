@@ -112,3 +112,10 @@ chmod +x h5tree.sh
 # nbmerge
 [[ -f ${DIR}/nbmerge.py ]] || wget 'https://gist.githubusercontent.com/fperez/e2bbc0a208e82e450f69/raw/8e4fe4536a3e9bd739036fc733020fa3ed8f61c9/nbmerge.py'
 chmod +x nbmerge.py
+
+
+# git completion
+wget -O ~/.git-completion.bash https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
+chmod +x ~/.git-completion.bash
+# wget -O ~/.git-annex-completion.bash https://raw.githubusercontent.com/RichiH/git-annex/master/bash-completion.bash
+# chmod +x ~/.git-annex-completion.bash
