@@ -8,6 +8,7 @@ DIR=$( dirname "${BASH_SOURCE[0]}" )
 
 # LATLON=42.3566978,-71.1072584 # @ 589
 # LATLON=40.6695668,-73.936074  # @ 961
+# LATLON=34.0587,-118.2781 # @ 112
 [[ -f /tmp/latlon && $( cat /tmp/latlon ) ]] || bash $DIR/geolocate.sh
 LATLON=$( cat /tmp/latlon )
 

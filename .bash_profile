@@ -138,6 +138,7 @@ shiffsymphony() { for _ in {1..1000}; do (sleep $(($RANDOM % 47)); echo -e '\a';
 # via https://unix.stackexchange.com/a/28045
 chicagowind() { cat /dev/urandom | padsp tee /dev/audio > /dev/null; }
 introduceyoselves() { for person in {,fe}male{1,2,3} child_{fe,}male; do spd-say "i am a $person" -t $person -w; done; }
+echoooo() { echo "$@" | sed -E 's/([aeiouy])/\1\1\1\1/g'; }
 
 coinflip() {
     [[ "$@" ]] && choices=( "$@" ) || choices=( heads tails )
