@@ -25,7 +25,6 @@ if ((!$linux)); then
     alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
     export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
     export JARDIR=~/tools/jars
-    alias oath_justworks="oathtool -b --totp "$( cat $DIR/SECRET_justworks )""
     alias stripexif='exiftool -all= -overwrite_original_in_place'
     # alias oath_justworks_ffl='oathtool -b --totp ""'
     complete -C $( which aws_completer ) aws
@@ -115,6 +114,9 @@ vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
 
 alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t "(" -k2,2'
 
+oath() { oathtool -b --totp "$@" | cpout; }
+oathfromsecret() { oath "$( cat "$@" )"; }
+# oathfromsecret() { oath "$( cat $DIR/"$@" )"; }
 math() { bc -l <<< "$@"; }
 PI=$( bc -l <<< "scale=10; 4*a(1)" )
 
