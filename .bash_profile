@@ -123,6 +123,9 @@ PI=$( bc -l <<< "scale=10; 4*a(1)" )
 awkcsv() { awk -vFPAT='([^,]*)|("[^"]+")' "$@"; } # via https://stackoverflow.com/a/29650812
 # awkcsv() { awk -vFPAT=$CSVPAT "$@"; } # via https://stackoverflow.com/a/29650812
 
+addup() {
+    bc <<< $( cat "$@" | grep -E '^[0-9.]+' | sed 's/#.*$//' | sed 's/$/+/' | tr -d '\n' | sed 's/+$//' );
+}
 # tom_owes=$(echo '${MEDIA}/Documents/txt/tom_owes')
 # tom() { cat '${MEDIA}/Documents/txt/tom_phones'; }
 tb() { tensorboard --logdir $PWD/"$@" & google-chrome --app="http://127.0.1.1:6006" && fg; }
@@ -145,9 +148,12 @@ echoooo() { echo "$@" | sed -E 's/([aeiouy])/\1\1\1\1/g'; }
 coinflip() {
     [[ "$@" ]] && choices=( "$@" ) || choices=( heads tails )
     echo "${choices[$(( $RANDOM % ${#choices[@]} ))]}"
-    #i=$(( $RANDOM % ${#choices[@]} ))
-    #echo "${choices[$i]}"
+    # or:
+    # via https://stackoverflow.com/a/39050850
+    # shuf -en1 "$choices";
 }
+# test bias via:
+# $ for _ in $( seq 100000 ); do coinflip; done | sort | uniq -c
 
 echobold()          { echo -e "\e[1m$@\e[0m"; }
 echoitalic()        { echo -e "\e[3m$@\e[0m"; }
@@ -881,6 +887,8 @@ gitrmline() {
     git filter-branch $args --tree-filter "test -f \"$filename\" && sed -i -E \"/$pattern/d\" \"$filename\" || echo \"skipping $filename\"" -- --all
     # git stash pop
 }
+# or try
+# $ git-filter-repo --force --replace-text path/to/expressions.txt # FROM==>TO
 
 
 # http://desk.stinkpot.org:8080/tricks/index.php/2006/12/give-rm-a-new-undo/
