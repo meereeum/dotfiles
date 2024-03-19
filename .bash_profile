@@ -116,7 +116,7 @@ alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ 
 
 oath() { oathtool -b --totp "$@" | cpout; }
 oathfromsecret() { oath "$( cat "$@" )"; }
-# oathfromsecret() { oath "$( cat $DIR/"$@" )"; }
+
 math() { bc -l <<< "$@"; }
 PI=$( bc -l <<< "scale=10; 4*a(1)" )
 

@@ -22,6 +22,7 @@ set render-loading "false"
 set zoom-min 10
 set zoom-center true
 set guioptions ""
+# set guioptions "s" # statusbar
 
 # clipboard
 set selection-clipboard clipboard

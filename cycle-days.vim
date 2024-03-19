@@ -3,6 +3,7 @@
 
 
 let g:days = ['M', 'T', 'W', 'R', 'F', 'Sat', 'Sun'] " globally scoped
+" TODO: add ['pm', 'am']
 
 
 function! s:Cycle(direction)
