@@ -70,11 +70,13 @@ fi
 
 (( $HAS_DISPLAY )) && (( $linux )) && MEDIA="$HOME/shiff" \
                                    || MEDIA="$HOME" # aqua ^^ v. rest
+# WKSPACE="$MEDIA/wkspace"
+WKSPACE="$HOME/wkspace"
 
 alias editbash='vi $HOME/dotfiles/.bash_profile && source $HOME/dotfiles/.bash_profile'
 alias http='python -m SimpleHTTPServer'
 # alias rc='cd $MEDIA/wkspace/rc'
-alias wk='cd $MEDIA/wkspace'
+alias wk="cd $WKSPACE"
 alias mit='cd $MEDIA/mit'
 alias quotes='vi $MEDIA/txt/quotes.txt'
 alias ffl='ssh miriam@toymaker.ops.fastforwardlabs.com'
@@ -106,13 +108,13 @@ export STRFDATE="+%y%m%d"
 
 export CSVPAT='([^,]*)|(\"([^\"]|(\"\"))*\")' # for awk
 
-lunch()  { python $MEDIA/wkspace/mit-lunch/get_menu.py   "$@"; }
-movies() { python $MEDIA/wkspace/cinematic/get_movies.py "$@"; }
-lsbeer() { python $MEDIA/wkspace/lsbeer/get_beer.py      "$@"; }
-vixw()   { python $MEDIA/wkspace/vixw/vixw/vixw.py       "$@"; }
-8tracks-dl() { $MEDIA/wkspace/8tracks-dl/dl.sh           "$@"; }
+lunch()  { python $WKSPACE/mit-lunch/get_menu.py   "$@"; }
+movies() { python $WKSPACE/cinematic/get_movies.py "$@"; }
+lsbeer() { python $WKSPACE/lsbeer/get_beer.py      "$@"; }
+vixw()   { python $WKSPACE/vixw/vixw/vixw.py       "$@"; }
+8tracks-dl() {    $WKSPACE/8tracks-dl/dl.sh        "$@"; }
 
-alias ls🏜️='curl -su $( cat SECRET_amindfv )/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t "(" -k2,2'
+alias ls🏜️="curl -su $( cat $HOME/dotfiles/SECRET_amindfv )/cinemenace.txt | grep 🏜️ | sort | uniq | sort -t'(' -k2,2"
 
 oath() { oathtool -b --totp "$@" | cpout; }
 oathfromsecret() { oath "$( cat "$@" )"; }
@@ -876,7 +878,7 @@ gitrmpattern() {
     to=$3
     args=$4
     # git stash
-    git filter-branch --tree-filter "test -f \"$filename\" && sed -i -E \"s/$from/$to/g\" \"$filename\" || echo \"skipping $filename\"" -- --all
+    git filter-branch $args --tree-filter "test -f \"$filename\" && sed -i -E \"s/$from/$to/g\" \"$filename\" || echo \"skipping $filename\"" -- --all
     # git stash pop
 }
 gitrmline() {
