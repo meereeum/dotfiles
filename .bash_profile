@@ -25,20 +25,19 @@ if ((!$linux)); then
     alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
     export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
     export JARDIR=~/tools/jars
+
     alias stripexif='exiftool -all= -overwrite_original_in_place'
-    # alias oath_justworks_ffl='oathtool -b --totp ""'
     complete -C $( which aws_completer ) aws
-    grasgrep() { pdfgrep -Pi "$@" $HOME/gras-lists/*; }
+
+    grasgrep() {
+        pdfgrep -HPi "$@" $HOME/gras-lists/*pdf && \
+           # grep -Hi  "$@" $HOME/gras-lists/*sv;
+           grep -Hi  "$@" $HOME/gras-lists/*{sv,txt};
+    }
     # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
     # export PATH=${ARBHOME}/bin:${PATH}
 
-    R_HOME=/usr/local/bin/R
-    alias python='python3'
-    alias pip='pip3'
-    export PATH="/usr/local/opt/python@3.10/bin:$PATH"
-    export PATH="/usr/local/bin:$PATH"
-    export PYTHONPATH="/usr/local/bin/python3"
 fi
 
 
@@ -474,6 +473,21 @@ day() {
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
+}
+
+# prepend file with date
+predate() {
+    F="$@"
+    # TODO: or use `stat`
+    # TODO: or match date already in name
+    DATE=$( echo $F | grep -Eo '[0-9]{6}' )
+    (( $DATE )) || DATE=$( day "$( ls -alh "$F" | awk '{print $6,$7}' )" )
+
+    # Fundated=$( echo $F | sed "s/$DATE//" | sed -e's/_+/_/g' -e's/^_//' -e 's/_$//' )
+    Fundated=$( echo $F | sed "s/$DATE//" | sed -e's/^_//' -e 's/_$//' )
+
+    # echo "${DATE}_${F%_${DATE}}" | sed -e's/_+/_/g' -e's/^_//' -e 's/_$//'
+    echo "${DATE}_${Fundated}"
 }
 
 
