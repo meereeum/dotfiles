@@ -6,3 +6,4 @@ import re
 
 import numpy as np
 import pandas as pd
+from scipy.special import comb as nCr

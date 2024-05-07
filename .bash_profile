@@ -26,7 +26,6 @@ if ((!$linux)); then
     export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
     export JARDIR=~/tools/jars
 
-    alias stripexif='exiftool -all= -overwrite_original_in_place'
     complete -C $( which aws_completer ) aws
 
     grasgrep() {
@@ -286,6 +285,8 @@ convertvid4mac() {
     # ^ via https://stackoverflow.com/a/20848224
 }
 
+alias stripexif='exiftool -all= -overwrite_original_in_place'
+
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
 vtt2txt() {
@@ -478,15 +479,16 @@ day() {
 # prepend file with date
 predate() {
     F="$@"
-    # TODO: or use `stat`
-    # TODO: or match date already in name
+
+    # match date if already in name
     DATE=$( echo $F | grep -Eo '[0-9]{6}' )
+    # else, get best guess file touch date
+    # TODO: `ls` vs. `stat`
     (( $DATE )) || DATE=$( day "$( ls -alh "$F" | awk '{print $6,$7}' )" )
 
     # Fundated=$( echo $F | sed "s/$DATE//" | sed -e's/_+/_/g' -e's/^_//' -e 's/_$//' )
     Fundated=$( echo $F | sed "s/$DATE//" | sed -e's/^_//' -e 's/_$//' )
 
-    # echo "${DATE}_${F%_${DATE}}" | sed -e's/_+/_/g' -e's/^_//' -e 's/_$//'
     echo "${DATE}_${Fundated}"
 }
 
