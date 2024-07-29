@@ -19,10 +19,29 @@ HAS_DISPLAY=$( [ -z $DISPLAY ] && echo 0 || echo 1 )
 ((!$linux)) && HAS_DISPLAY=1 # fix for mac
 
 
+alias grep='grep --color'
+alias jq='jq -C'
+(( $linux )) && alias ls='ls --color=auto' \
+             || { eval $( gdircolors ); alias ls='gls --color=auto'; }
+export LESS=-r # allow colorcodes & symbols in less
+
+
 # just kingdom
 if ((!$linux)); then
-    alias drive='cd /Volumes/GoogleDrive/My\ Drive'
-    alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
+
+    source ~/.secret
+
+    # alias drive='cd /Volumes/GoogleDrive/My\ Drive'
+    # alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
+    alias gd='cd ~/Google\ Drive/Shared\ drives/Science'
+    mtg() { vi ~/kingdom-supercultures/mtgs/"$@"; }
+
+    R_HOME=/usr/local/bin/R
+    alias python='python3.10'
+    alias pip='pip3.10'
+    export PATH="/usr/local/opt/python@3.10/bin:$PATH"
+    export PATH="/usr/local/bin:$PATH"
+
     export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
     export JARDIR=~/tools/jars
 
@@ -30,12 +49,87 @@ if ((!$linux)); then
 
     grasgrep() {
         pdfgrep -HPi "$@" $HOME/gras-lists/*pdf && \
-           # grep -Hi  "$@" $HOME/gras-lists/*sv;
            grep -Hi  "$@" $HOME/gras-lists/*{sv,txt};
     }
     # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
     # export PATH=${ARBHOME}/bin:${PATH}
+    #
+    alias bfg='java -jar ~/tools/bfg*.jar' # $ bfg --delete-files $FILE
+
+    backup() {
+        OUTDIR="$@"
+        pip freeze > ~/py_pkgs.txt
+        brew list > ~/brew_pkgs.txt
+        ls -alh /usr/local/bin | grep ~/tools | awk '{print $9,$10,$11}' > ~/tools/links
+        OGD=$PWD
+        cd $HOME
+        echo rsync -az --progress --exclude="'*.DS_Store'" --exclude="'*.com.google*'" $( cat ~/bkp | grep -v '^#' ) "$OUTDIR" | cpout
+        cd $OGD
+    }
+
+    # strainid2well() { awk -vCSVPAT="$CSVPAT" '{FPAT=CSVPAT} $17{print $1,$17}' ~/Downloads/df_meta.csv; }
+
+    whoisstrain() {
+        NAME="${@^^}"
+        curl -s -H  "X-API-Key: $API_KEY" ${API_URL}/dereplication/strains/${NAME}/card |
+            jq -C | less -R
+            # filtering out some unnecessary stuff:
+            # jq -C 'del( .strain_tube, .accessible_strain_tubes, .strain_phylogeny, .strain_gtdbtk.assembled_genome )'
+    }
+    askstaging() {
+        Q="$@"
+        curl -s -H  "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/${Q} # |
+            # jq -C | less -R
+    }
+
+    export APISTUFF_STAGING="-sH \"X-API-Key: ${API_KEY_STAGING}\" ${API_URL_STAGING}"
+    export APISTUFF="-sH \"X-API-Key: ${API_KEY}\" ${API_URL}"
+
+    kcurl() {
+        if [[ "$1" == "-X" ]]; then
+            XFLAG="$1 $2"
+            shift; shift
+        fi
+
+        if [[ "$env" = "staging" ]]; then
+            curl $XFLAG -s -H "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/api/${@}
+        elif [[ "$env" = "prod" ]]; then
+            curl $XFLAG -s -H "X-API-Key: $API_KEY" ${API_URL}/api/${@}
+        else # local
+            curl $XFLAG -s http://localhost:8000/api/${@}
+        fi
+    }
+
+    upbastion() {
+        ssh bastion -NfL 5432:${POSTGRES_CLUSTER}:5432
+    }
+    upbastion_staging() {
+        ssh bastion_staging -NfL 5432:${POSTGRES_CLUSTER_STAGING}:5432
+    }
+    downbastion() {
+        pid=$( ps aux | grep bastion | grep -v "grep" | awk '{print $2}' )
+        kill $pid
+    }
+
+    export SAM_CLI_TELEMETRY=0
+
+    alias  tfinit='AWS_PROFILE=staging terraform init -reconfigure -backend-config="backend/staging.conf"'
+    alias  tfplan='AWS_PROFILE=staging terraform plan  -var-file="tfvars/staging.tfvars" -var git_sha=47'
+    alias tfapply='AWS_PROFILE=staging terraform apply -var-file="tfvars/staging.tfvars"'
+
+    export KTOOLS="$HOME/tools-kingdom"
+    export TS="${KTOOLS}/kingdom_task_schemas/kingdom_task_schemas/task_schemas"
+    # grepkingdom() { # grep kingdom codebase
+    kgrep() { # grep kingdom codebase
+        cd "$KTOOLS"
+        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py
+        cd - 2>&1 > /dev/null # silently return
+        # grep --color -RI "$@" ~/tools-kingdom --exclude-dir api_docs --exclude-dir archive
+    }
+
+    # docker
+    # docker attach $( docker ps | awk '$2=="kingdom-django-api" {print $1}' )
 
 fi
 
@@ -727,6 +821,8 @@ if ((!$linux)); then
     alias preview='open -a /Applications/Preview.app'
     alias zotero='open -a /Applications/Zotero.app'
 
+    alias tmpchrome="open -na /Applications/Google\ Chrome.app --args --new-window --user-data-dir=$( mktemp -d )"
+
     #for g in gcc g++; do
        #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${g}* | grep ${g}-[0-9] | tail -n1)
        #alias $g=$GPATH
@@ -879,6 +975,18 @@ export -f pkgs
 alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(white)"'
 alias gitcontrib='git shortlog -sn'
 alias gs='git --no-pager diff -w -G"^ *[^#]+$" --stat' # see e.g. https://stackoverflow.com/questions/16527215/how-to-make-git-diff-ignore-comments
+gb() {
+    BRANCH="$@" # name of new branch
+    BASE=$( git branch | sed 's/^\*//' | grep -e"^ *ma"{ster,in} | head -1 ) # ma{ster,in} branch
+    git checkout $BASE && git pull origin $BASE && \
+        git branch $BRANCH && git checkout $BRANCH && \
+        git branch
+}
+# show recent branches
+#  - top n
+alias gbrecent='git -c color.ui=always branch --sort=-committerdate | head'
+#  - up to ma{in,ster}
+# alias gbrecent='git -c color.ui=always branch --sort=-committerdate | sed "/ma[(in)|(ster)]/q"'
 
 if [ -f ~/.git-completion.bash ]; then
       . ~/.git-completion.bash
@@ -922,12 +1030,7 @@ unrm() {
     echo "recovered: $F"
 }
 
-alias grep='grep --color'
 alias psychogrep='grep -RIi'
-(( $linux )) && alias ls='ls --color=auto' \
-             || { eval $( gdircolors ); alias ls='gls --color=auto'; }
-export LESS=-r # allow colorcodes & symbols in less
-
 alias vinilla='vi -u NONE'
 
 
@@ -1095,72 +1198,75 @@ if ((!$linux)); then
 fi
 
 
-# ace servers
 
-# for faster X11 connection
-alias fastfrazer='ssh -Y -C -o CompressionLevel=9 -c arcfour,blowfish-cbc uqmschif@10.168.48.13'
+if (($linux)); then # non-kingdom
+    # ace servers
 
-alias uprudd='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.12:/srv/whitlam/home/users/uqmschif ~/srv/rudd'
-alias upkeating='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.11:/srv/whitlam/home/users/uqmschif ~/srv/keating'
-alias uphawke='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.10:/srv/whitlam/home/users/uqmschif ~/srv/hawke'
-alias upbrown='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.9:/srv/whitlam/home/users/uqmschif ~/srv/brown'
-alias upmenzies='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.16:/srv/whitlam/home/users/uqmschif ~/srv/menzies'
-alias upgillard='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.17:/srv/whitlam/home/users/uqmschif ~/srv/gillard'
-alias upfrazer='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/whitlam/home/users/uqmschif ~/srv/frazer'
-alias marsupial='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/projects/marsupial ~/srv/marsupial'
+    # for faster X11 connection
+    alias fastfrazer='ssh -Y -C -o CompressionLevel=9 -c arcfour,blowfish-cbc uqmschif@10.168.48.13'
 
-alias downrudd='sudo umount ~/srv/rudd'
-alias downkeating='sudo umount ~/srv/keating'
-alias downhawke='sudo umount ~/srv/hawke'
-alias downbrown='sudo umount ~/srv/brown'
-alias downgillard='sudo umount ~/srv/gillard'
-alias downmenzies='sudo umount ~/srv/menzies'
-alias downfrazer='sudo umount ~/srv/frazer'
+    alias uprudd='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.12:/srv/whitlam/home/users/uqmschif ~/srv/rudd'
+    alias upkeating='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.11:/srv/whitlam/home/users/uqmschif ~/srv/keating'
+    alias uphawke='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.10:/srv/whitlam/home/users/uqmschif ~/srv/hawke'
+    alias upbrown='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.9:/srv/whitlam/home/users/uqmschif ~/srv/brown'
+    alias upmenzies='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.16:/srv/whitlam/home/users/uqmschif ~/srv/menzies'
+    alias upgillard='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.17:/srv/whitlam/home/users/uqmschif ~/srv/gillard'
+    alias upfrazer='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/whitlam/home/users/uqmschif ~/srv/frazer'
+    alias marsupial='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/projects/marsupial ~/srv/marsupial'
 
-# UQ VPN up/down
-# http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
-# alias vuq='sudo vpnc uq'
-# alias vdc='sudo vpnc-disconnect'
+    alias downrudd='sudo umount ~/srv/rudd'
+    alias downkeating='sudo umount ~/srv/keating'
+    alias downhawke='sudo umount ~/srv/hawke'
+    alias downbrown='sudo umount ~/srv/brown'
+    alias downgillard='sudo umount ~/srv/gillard'
+    alias downmenzies='sudo umount ~/srv/menzies'
+    alias downfrazer='sudo umount ~/srv/frazer'
+
+    # UQ VPN up/down
+    # http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
+    # alias vuq='sudo vpnc uq'
+    # alias vdc='sudo vpnc-disconnect'
 
 
-# broad VPN up/down
-# help via https://gist.github.com/moklett/3170636
-VPNPID="$HOME/.openconnect.pid"
-if (( $linux )); then
-    upvpn() {
-        # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
-        #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
-        # GRP="Duo-Broad-NonSplit-VPN"
-        GRP="Duo-Split-Tunnel-VPN"
-        VPNURL="https://vpn.broadinstitute.org"
+    # broad VPN up/down
+    # help via https://gist.github.com/moklett/3170636
+    VPNPID="$HOME/.openconnect.pid"
+    if (( $linux )); then
+        upvpn() {
+            # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
+            #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
+            # GRP="Duo-Broad-NonSplit-VPN"
+            GRP="Duo-Split-Tunnel-VPN"
+            VPNURL="https://vpn.broadinstitute.org"
 
-        # echo -e "$@" |
-        # sudo openconnect --pid-file $VPNID --user=shiffman \
-            # --authgroup=$GRP $VPNURL
-            # --token-mode yubioath
-            # --background
-        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL "$@"
-    }
-else
-    upvpn() {
-        # GRP="Duo-Broad-NonSplit-VPN"
-        GRP="Duo-Split-Tunnel-VPN"
-        VPNURL=69.173.127.10
+            # echo -e "$@" |
+            # sudo openconnect --pid-file $VPNID --user=shiffman \
+                # --authgroup=$GRP $VPNURL
+                # --token-mode yubioath
+                # --background
+            sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL "$@"
+        }
+    else
+        upvpn() {
+            # GRP="Duo-Broad-NonSplit-VPN"
+            GRP="Duo-Split-Tunnel-VPN"
+            VPNURL=69.173.127.10
 
-        sudo openconnect -u shiffman --authgroup $GRP $VPNURL "$@" \
-            --servercert pin-sha256:$( cat $DIR/SECRET_broad )
-            # --token-mode yubioath
-            # --background
+            sudo openconnect -u shiffman --authgroup $GRP $VPNURL "$@" \
+                --servercert pin-sha256:$( cat $DIR/SECRET_broad )
+                # --token-mode yubioath
+                # --background
+        }
+    fi
+    downvpn() {
+        if [[ -f $VPNPID ]]; then
+            sudo kill "$( cat $VPNPID )" && rm $VPNPID
+            pgrep openconnect
+        else
+            echo "vpn not running."
+        fi
     }
 fi
-downvpn() {
-    if [[ -f $VPNPID ]]; then
-        sudo kill "$( cat $VPNPID )" && rm $VPNPID
-        pgrep openconnect
-    else
-        echo "vpn not running."
-    fi
-}
 
 
 # autocomplete screen
