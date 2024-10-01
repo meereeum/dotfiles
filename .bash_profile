@@ -42,8 +42,10 @@ if ((!$linux)); then
     export PATH="/usr/local/opt/python@3.10/bin:$PATH"
     export PATH="/usr/local/bin:$PATH"
 
-    export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
+    export JAVA_HOME=$( ls -d /Library/Java/JavaVirtualMachines/adoptopenjdk-*.jdk/Contents/Home )
     export JARDIR=~/tools/jars
+
+    alias rdp_classifier='java -Xmx1g -jar ~/tools/jars/rdp_classifier-2.14.jar'
 
     complete -C $( which aws_completer ) aws
 
@@ -51,10 +53,21 @@ if ((!$linux)); then
         pdfgrep -HPi "$@" $HOME/gras-lists/*pdf && \
            grep -Hi  "$@" $HOME/gras-lists/*{sv,txt};
     }
+
+    CIHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/CIHP/Notebook'
+    alias cihp='cd "$CIHP"' # have to quote bc spaces
+    COHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/COHP/Notebook'
+    alias cohp='cd "$COHP"'
+
+    fasta2seq() {
+        # fasta file to contiguous seq
+        cat "$1" | grep -v \> | tr -d '\n'
+    }
+    alias rc='tr ACGTacgt TGCAtgca | rev' # reverse complement
+
     # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
     # export PATH=${ARBHOME}/bin:${PATH}
-    #
     alias bfg='java -jar ~/tools/bfg*.jar' # $ bfg --delete-files $FILE
 
     backup() {
@@ -72,16 +85,17 @@ if ((!$linux)); then
 
     whoisstrain() {
         NAME="${@^^}"
-        curl -s -H  "X-API-Key: $API_KEY" ${API_URL}/dereplication/strains/${NAME}/card |
+        # curl -s -H  "X-API-Key: $API_KEY" ${API_URL}/api/dereplication/strains/${NAME}/card |
+        env=prod kcurl dereplication/strains/${NAME}/card |
             jq -C | less -R
             # filtering out some unnecessary stuff:
             # jq -C 'del( .strain_tube, .accessible_strain_tubes, .strain_phylogeny, .strain_gtdbtk.assembled_genome )'
     }
-    askstaging() {
-        Q="$@"
-        curl -s -H  "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/${Q} # |
-            # jq -C | less -R
-    }
+    # askstaging() {
+    #     Q="$@"
+    #     curl -s -H  "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/api/${Q} # |
+    #         # jq -C | less -R
+    # }
 
     export APISTUFF_STAGING="-sH \"X-API-Key: ${API_KEY_STAGING}\" ${API_URL_STAGING}"
     export APISTUFF="-sH \"X-API-Key: ${API_KEY}\" ${API_URL}"
@@ -90,6 +104,8 @@ if ((!$linux)); then
         if [[ "$1" == "-X" ]]; then
             XFLAG="$1 $2"
             shift; shift
+        else
+            XFLAG=""
         fi
 
         if [[ "$env" = "staging" ]]; then
@@ -123,7 +139,7 @@ if ((!$linux)); then
     # grepkingdom() { # grep kingdom codebase
     kgrep() { # grep kingdom codebase
         cd "$KTOOLS"
-        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py
+        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py --exclude-dir lab-data-analysis
         cd - 2>&1 > /dev/null # silently return
         # grep --color -RI "$@" ~/tools-kingdom --exclude-dir api_docs --exclude-dir archive
     }
@@ -976,17 +992,27 @@ alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(whi
 alias gitcontrib='git shortlog -sn'
 alias gs='git --no-pager diff -w -G"^ *[^#]+$" --stat' # see e.g. https://stackoverflow.com/questions/16527215/how-to-make-git-diff-ignore-comments
 gb() {
-    BRANCH="$@" # name of new branch
-    BASE=$( git branch | sed 's/^\*//' | grep -e"^ *ma"{ster,in} | head -1 ) # ma{ster,in} branch
-    git checkout $BASE && git pull origin $BASE && \
-        git branch $BRANCH && git checkout $BRANCH && \
-        git branch
+    if [[ "$@" ]]; then
+        BRANCH="$@" # name of new branch
+        BASE=$( git branch | sed 's/^\*//' | grep -e"^ *ma"{ster,in} | head -1 ) # ma{ster,in} branch
+        git checkout $BASE && git pull origin $BASE && \
+            git branch $BRANCH && git checkout $BRANCH && \
+            git branch
+    else
+        # if no argument, just list most recent
+        git -c color.ui=always branch --sort=-committerdate | head
+    fi
 }
 # show recent branches
 #  - top n
-alias gbrecent='git -c color.ui=always branch --sort=-committerdate | head'
+# alias gbrecent='git -c color.ui=always branch --sort=-committerdate | head'
 #  - up to ma{in,ster}
 # alias gbrecent='git -c color.ui=always branch --sort=-committerdate | sed "/ma[(in)|(ster)]/q"'
+
+# via https://stackoverflow.com/a/2929502
+gg() { # git grep (of all LoC in git history)
+    git rev-list --all | xargs git grep ''$@''
+}
 
 if [ -f ~/.git-completion.bash ]; then
       . ~/.git-completion.bash
