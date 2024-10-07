@@ -147,6 +147,19 @@ if ((!$linux)); then
     # docker
     # docker attach $( docker ps | awk '$2=="kingdom-django-api" {print $1}' )
 
+    # aws
+    s3ls() {
+        path="$@"
+        # dir=$( dirname "$path" )
+        # dir=$( echo $path | awk -F/ '{print $1}' )
+        # rest=$( basename "$path" )
+        # rest="${path#${dir}/}"
+        rest=$( echo $path | sed -E 's%^([^\*]*/)%%' ) # any segment w/ wildcard thru end
+        dir=${path%"$rest"} # all segments of path until one with a wildcard
+        # aws s3 sync s3://${dir} /tmp/akdjf --exclude \'*\' --include \'${rest}\' --dryrun # | awk '{print $3}'
+        aws s3 sync s3://"${dir}" /tmp/akdjf --exclude '*' --include "${rest}" --dryrun | awk '{print $3}'
+    }
+
 fi
 
 
