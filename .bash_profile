@@ -55,9 +55,27 @@ if ((!$linux)); then
     }
 
     CIHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/CIHP/Notebook'
-    alias cihp='cd "$CIHP"' # have to quote bc spaces
+    cihp() {
+        if [[ $# == 0 ]]; then
+            cd "$CIHP"
+        else
+            cd "$CIHP"
+            EXPT="$1"
+            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cihp.*0'$EXPT'' | head -1 ) # first match
+            cd "$EXPTDIR"
+        fi
+    }
     COHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/COHP/Notebook'
-    alias cohp='cd "$COHP"'
+    cohp() {
+        if [[ $# == 0 ]]; then
+            cd "$COHP"
+        else
+            cd "$COHP"
+            EXPT="$1"
+            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cohp.*0'$EXPT'' | head -1 ) # first match
+            cd "$EXPTDIR"
+        fi
+    }
 
     fasta2seq() {
         # fasta file to contiguous seq
@@ -151,10 +169,56 @@ if ((!$linux)); then
     # via https://stackoverflow.com/a/60398039
     s3ls() {
         path="$@"
-        rest=$( echo $path | sed -E 's%^([^\*]*/)%%' ) # any segment w/ wildcard thru end
-        dir=${path%"$rest"} # all segments of path until one with a wildcard
-        aws s3 sync s3://"${dir}" /tmp/akdjf --exclude '*' --include "${rest}" --dryrun | awk '{print $3}'
+        if [[ $path = *"*"* ]]; then
+            rest=$( echo $path | sed -E 's%^([^\*]*/)%%' ) # any segment w/ wildcard thru end
+            dir=${path%"$rest"} # all segments of path until one with a wildcard
+            aws s3 sync s3://"${dir}" /tmp/akdjf --exclude '*' --include "${rest}" --dryrun | awk '{print $3}'
+
+        else # no wildcard; this will list everything recursively
+            aws s3 sync s3://"$path" /tmp/akdjf --dryrun | awk '{print $3}'
+
+        fi
     }
+
+    s3lsrecent() {
+        aws s3 ls "$@" --recursive | sort -k1,1 | awk '{print $1"\t"$2"\t"$4}'
+    }
+
+    auditwgs() {
+        RUN=$1
+        F_LOG=/tmp/wgsprog_${RUN}
+        # strain name | size of read file | size of assembly file (if it exists)
+        join -a1 <( aws s3 ls s3://kingdom-raw-downloads/novogene/read/well_tars/${RUN}/ | sed 's/.tar//' | awk '{print $4,$3}' | sort ) \
+                 <( aws s3 ls s3://kingdom-data/assemblies/${RUN}/1/ | sed 's/.assembly.fasta//' | awk '{print $4,$3}' | sort ) |
+            grep -vi -e ^ctrl -e ^undetermined | tr ' ' '\t' > $F_LOG
+        cat $F_LOG
+        echo
+        echo "~~~summary~~~"
+        echo "$( awk '$3>0'  $F_LOG | wc -l | xargs printf '%3s' )" ASSEMBLED
+        echo "$( awk '$3==0' $F_LOG | wc -l | xargs printf '%3s' )" EMPTY
+        echo "$( awk 'NF==2' $F_LOG | wc -l | xargs printf '%3s' )" STILL ASSEMBLING
+    }
+    wgsstats() {
+        RUN=$1
+        D_RUN=/tmp/contigs_${RUN}
+        mkdir -p $D_RUN
+        for GENOME in $( aws s3 ls s3://kingdom-data/assemblies/${RUN}/1/ | awk '{print $4}' ); do
+            F_GENOME="${D_RUN}/$( echo $GENOME | awk -F. '{print $1}' )"
+            # if file doesn't already exist
+            [[ -f $F_GENOME ]] || aws s3 cp s3://kingdom-data/assemblies/${RUN}/1/$GENOME - |
+                tr -d '\n' | sed -E 's/(>[^ACGT]*)/\n\1\n/g' | grep -v '^>' |
+                    awk 'NF{print length}' > $F_GENOME
+        done
+        echo -e "genome\tlen\tn50"
+        for GENOME in $( ls $D_RUN ); do
+            # strain name | length | n50
+            echo $( echo $GENOME; cat ${D_RUN}/${GENOME} | sort -n | awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}' )
+        done | tr ' ' '\t'
+    }
+
+    source ~/dotfiles/zoomsched.sh
+    ZOOMROOM="https://us06web.zoom.us/j/${MI_CUARTO}"
+    alias zoomroom="echo $ZOOMROOM | cpout"
 
 fi
 
@@ -591,6 +655,7 @@ day() {
 
     [[ "${dt,,}" == "tomorr" ]] && dt+="ow"    # tomorr -> tomorrow
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
+    [[ "${dt,,}" == "tmr" ]] && dt="tomorrow"  # tmr -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
 }
