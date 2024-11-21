@@ -157,7 +157,7 @@ if ((!$linux)); then
     # grepkingdom() { # grep kingdom codebase
     kgrep() { # grep kingdom codebase
         cd "$KTOOLS"
-        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py --exclude-dir lab-data-analysis
+        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py --exclude-dir lab-data-analysis --exclude-dir standalone-dereplication
         cd - 2>&1 > /dev/null # silently return
         # grep --color -RI "$@" ~/tools-kingdom --exclude-dir api_docs --exclude-dir archive
     }
@@ -186,10 +186,11 @@ if ((!$linux)); then
 
     auditwgs() {
         RUN=$1
+        RUN_ID=1
         F_LOG=/tmp/wgsprog_${RUN}
         # strain name | size of read file | size of assembly file (if it exists)
         join -a1 <( aws s3 ls s3://kingdom-raw-downloads/novogene/read/well_tars/${RUN}/ | sed 's/.tar//' | awk '{print $4,$3}' | sort ) \
-                 <( aws s3 ls s3://kingdom-data/assemblies/${RUN}/1/ | sed 's/.assembly.fasta//' | awk '{print $4,$3}' | sort ) |
+                 <( aws s3 ls s3://kingdom-data/assemblies/${RUN}/${RUN_ID}/ | sed 's/.assembly.fasta//' | awk '{print $4,$3}' | sort ) |
             grep -vi -e ^ctrl -e ^undetermined | tr ' ' '\t' > $F_LOG
         cat $F_LOG
         echo
@@ -200,20 +201,29 @@ if ((!$linux)); then
     }
     wgsstats() {
         RUN=$1
+        RUN_ID=1
         D_RUN=/tmp/contigs_${RUN}
         mkdir -p $D_RUN
-        for GENOME in $( aws s3 ls s3://kingdom-data/assemblies/${RUN}/1/ | awk '{print $4}' ); do
+        for GENOME in $( aws s3 ls s3://kingdom-data/assemblies/${RUN}/${RUN_ID}/ | awk '{print $4}' ); do
             F_GENOME="${D_RUN}/$( echo $GENOME | awk -F. '{print $1}' )"
             # if file doesn't already exist
-            [[ -f $F_GENOME ]] || aws s3 cp s3://kingdom-data/assemblies/${RUN}/1/$GENOME - |
+            [[ -f $F_GENOME ]] || aws s3 cp s3://kingdom-data/assemblies/${RUN}/${RUN_ID}/$GENOME - |
                 tr -d '\n' | sed -E 's/(>[^ACGT]*)/\n\1\n/g' | grep -v '^>' |
                     awk 'NF{print length}' > $F_GENOME
         done
         echo -e "genome\tlen\tn50"
         for GENOME in $( ls $D_RUN ); do
             # strain name | length | n50
-            echo $( echo $GENOME; cat ${D_RUN}/${GENOME} | sort -n | awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}' )
+            # echo $( echo $GENOME; cat ${D_RUN}/${GENOME} | sort -n | awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}' )
+            echo $( echo $GENOME; fastastats ${D_RUN}/${GENOME} )
         done | tr ' ' '\t'
+    }
+    fastastats() {
+        FASTA=$1
+        cat $FASTA | tr -d '\n' | sed -E 's/(>[^ACGT]*)/\n\1\n/g' | grep -v '^>' |
+            awk 'NF{print length}' | sort -n |
+            awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}'
+        # size | N50
     }
 
     source ~/dotfiles/zoomsched.sh
