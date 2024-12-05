@@ -83,6 +83,12 @@ if ((!$linux)); then
     }
     alias rc='tr ACGTacgt TGCAtgca | rev' # reverse complement
 
+    contiggrep() {
+        REGEX="$1"
+        awk -v RS=">" -v ORS="\n" -v FS="\n" -v OFS="\t" -v REGEX="$REGEX" '$1~REGEX{$1=$1; print ">"$1"\n"$2}'
+        # adapted from https://bioinfoaps.github.io/20-text_process/index.html
+    }
+
     # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
     # export PATH=${ARBHOME}/bin:${PATH}
@@ -229,6 +235,8 @@ if ((!$linux)); then
     source ~/dotfiles/zoomsched.sh
     ZOOMROOM="https://us06web.zoom.us/j/${MI_CUARTO}"
     alias zoomroom="echo $ZOOMROOM | cpout"
+
+    alias bkpnb='cd ~/nb && git add *ipynb; git commit -m ∆∆∆ && git push origin master; cd -'
 
 fi
 
