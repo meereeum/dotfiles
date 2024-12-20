@@ -85,7 +85,8 @@ if ((!$linux)); then
 
     contiggrep() {
         REGEX="$1"
-        awk -v RS=">" -v ORS="\n" -v FS="\n" -v OFS="\t" -v REGEX="$REGEX" '$1~REGEX{$1=$1; print ">"$1"\n"$2}'
+        MAYBE_FILE="$2"
+        awk -v RS=">" -v ORS="\n" -v FS="\n" -v OFS="\t" -v REGEX="$REGEX" '$1~REGEX{$1=$1; print ">"$1"\n"$2}' $MAYBE_FILE
         # adapted from https://bioinfoaps.github.io/20-text_process/index.html
     }
 
@@ -163,7 +164,8 @@ if ((!$linux)); then
     # grepkingdom() { # grep kingdom codebase
     kgrep() { # grep kingdom codebase
         cd "$KTOOLS"
-        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py --exclude-dir lab-data-analysis --exclude-dir standalone-dereplication
+        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py --exclude-dir lab-data-analysis --exclude-dir standalone-dereplication \
+            --exclude-dir 230524_assigns --exclude-dir 230519_data_dump --exclude package-lock.json --exclude-dir migrations
         cd - 2>&1 > /dev/null # silently return
         # grep --color -RI "$@" ~/tools-kingdom --exclude-dir api_docs --exclude-dir archive
     }
@@ -192,7 +194,7 @@ if ((!$linux)); then
 
     auditwgs() {
         RUN=$1
-        RUN_ID=1
+        [[ "$2" ]] && RUN_ID=$2 || RUN_ID=1 # default: 1
         F_LOG=/tmp/wgsprog_${RUN}
         # strain name | size of read file | size of assembly file (if it exists)
         join -a1 <( aws s3 ls s3://kingdom-raw-downloads/novogene/read/well_tars/${RUN}/ | sed 's/.tar//' | awk '{print $4,$3}' | sort ) \
@@ -323,6 +325,12 @@ PI=$( bc -l <<< "scale=10; 4*a(1)" )
 
 awkcsv() { awk -vFPAT='([^,]*)|("[^"]+")' "$@"; } # via https://stackoverflow.com/a/29650812
 # awkcsv() { awk -vFPAT=$CSVPAT "$@"; } # via https://stackoverflow.com/a/29650812
+
+charcount() {
+    # delete all chars except those matching the argument, then count remaining chars
+    # via https://stackoverflow.com/a/41119233
+    tr -cd "$1" | wc -c
+}
 
 addup() {
     bc <<< $( cat "$@" | grep -E '^[0-9.]+' | sed 's/#.*$//' | sed 's/$/+/' | tr -d '\n' | sed 's/+$//' );
