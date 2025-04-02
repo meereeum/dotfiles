@@ -76,6 +76,17 @@ if ((!$linux)); then
             cd "$EXPTDIR"
         fi
     }
+    NOBO='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/NOBO/Notebook'
+    nobo() {
+        if [[ $# == 0 ]]; then
+            cd "$NOBO"
+        else
+            cd "$NOBO"
+            EXPT="$1"
+            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/nobo.*0'$EXPT'' | head -1 ) # first match
+            cd "$EXPTDIR"
+        fi
+    }
 
     fasta2seq() {
         # fasta file to contiguous seq
@@ -111,7 +122,8 @@ if ((!$linux)); then
     whoisstrain() {
         NAME="${@^^}"
         # curl -s -H  "X-API-Key: $API_KEY" ${API_URL}/api/dereplication/strains/${NAME}/card |
-        env=prod kcurl dereplication/strains/${NAME}/card |
+        [[ "$env" ]] || env=prod
+        kcurl dereplication/strains/${NAME}/card |
             jq -C | less -R
             # filtering out some unnecessary stuff:
             # jq -C 'del( .strain_tube, .accessible_strain_tubes, .strain_phylogeny, .strain_gtdbtk.assembled_genome )'
@@ -165,7 +177,7 @@ if ((!$linux)); then
     kgrep() { # grep kingdom codebase
         cd "$KTOOLS"
         grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py --exclude-dir lab-data-analysis --exclude-dir standalone-dereplication \
-            --exclude-dir 230524_assigns --exclude-dir 230519_data_dump --exclude package-lock.json --exclude-dir migrations
+            --exclude-dir 230524_assigns --exclude-dir 230519_data_dump --exclude package-lock.json --exclude-dir migrations --exclude-dir kingdom-resources
         cd - 2>&1 > /dev/null # silently return
         # grep --color -RI "$@" ~/tools-kingdom --exclude-dir api_docs --exclude-dir archive
     }
@@ -173,23 +185,61 @@ if ((!$linux)); then
     # docker
     # docker attach $( docker ps | awk '$2=="kingdom-django-api" {print $1}' )
 
+    # via https://stackoverflow.com/questions/42443006/interactive-shell-in-django
+    # + https://stackoverflow.com/questions/44487590/django-shell-mode-in-docker
+    # (may also want to read: https://rednafi.com/python/django_and_jupyter_notebook)
+    # TODO:
+    # alias debugapi="docker-compose exec api ${KTOOLS}/kingdom-django/manage.py shell_plus --ipython"
+    alias debugapi='docker-compose exec api ./manage.py shell_plus --ipython'
+
     # aws
     # via https://stackoverflow.com/a/60398039
     s3ls() {
         path="$@"
+        path="s3://${path##s3://}" # ensure s3 is added (once)
         if [[ $path = *"*"* ]]; then
             rest=$( echo $path | sed -E 's%^([^\*]*/)%%' ) # any segment w/ wildcard thru end
             dir=${path%"$rest"} # all segments of path until one with a wildcard
-            aws s3 sync s3://"${dir}" /tmp/akdjf --exclude '*' --include "${rest}" --dryrun | awk '{print $3}'
+            aws s3 sync "$dir" /tmp/akdjf --exclude '*' --include "${rest}" --dryrun | awk '{print $3}'
 
         else # no wildcard; this will list everything recursively
-            aws s3 sync s3://"$path" /tmp/akdjf --dryrun | awk '{print $3}'
+            aws s3 sync "$path" /tmp/akdjf --dryrun | awk '{print $3}'
 
         fi
     }
 
     s3lsrecent() {
-        aws s3 ls "$@" --recursive | sort -k1,1 | awk '{print $1"\t"$2"\t"$4}'
+        aws s3 ls "$@" --recursive | sort -k1,1 --reverse | awk '{print $1"\t"$2"\t"$4}'
+    }
+
+    s3autouploadstatus() {
+        # get most recent upload from lab backups
+        # n.b. nothing under gc-mass-spec
+        for S3PATH in Baldr/s3_upload_logs Ninkasi/s3_upload_logs Vulcan/s3_upload_logs mass-spec/MassLynx-Data microscope/INCell6000; do
+            S3PATH=s3://kingdom-auto-uploads/${S3PATH}/last_upload_start_date.txt
+            LAST_UPLOAD_DATE=$( aws s3 ls $S3PATH | awk '{print $1}' )
+            echo $LAST_UPLOAD_DATE $S3PATH
+        done
+        for S3PATH in Operetta-Raw/2022 Microscopy-Analysis/2022; do
+            S3PATH=s3://kingdom-microscopy/${S3PATH}/last_upload_start_date.txt
+            LAST_UPLOAD_DATE=$( AWS_PROFILE=admin aws s3 ls $S3PATH | awk '{print $1}' )
+            echo $LAST_UPLOAD_DATE $S3PATH
+        done
+    }
+
+    s3lsrecenttoplevel() {
+        BUCKET="$@"
+        top_level_objs=$( aws s3api list-objects-v2 --bucket $BUCKET --delimiter "/" | awk '$2!="None" {print $2}' )
+        for obj in $top_level_objs; do
+            # via https://repost.aws/questions/QUFpzxAPCEQa6HqYceZ6bRIA/how-to-list-s3-directories-not-objects-by-date-added
+            # this doens't look right; i spot-checked
+            # aws s3api list-objects-v2 --bucket $BUCKET --prefix $obj \
+            #     --query 'sort_by(Contents, &LastModified)' 2>/dev/null |
+            #     head -n1 | awk -v OFS='\t' '{print $2,$3}'
+
+            # this is what i used to spot check, so try that:
+            s3lsrecent $BUCKET/$obj | head -1
+        done
     }
 
     auditwgs() {
@@ -206,10 +256,11 @@ if ((!$linux)); then
         echo "$( awk '$3>0'  $F_LOG | wc -l | xargs printf '%3s' )" ASSEMBLED
         echo "$( awk '$3==0' $F_LOG | wc -l | xargs printf '%3s' )" EMPTY
         echo "$( awk 'NF==2' $F_LOG | wc -l | xargs printf '%3s' )" STILL ASSEMBLING
+        echo "$( awk 'NF==2' $F_LOG | grep -v control | wc -l | xargs printf '%3s' )" [ ^^ STRAINS ]
     }
     wgsstats() {
         RUN=$1
-        RUN_ID=1
+        [[ "$2" ]] && RUN_ID=$2 || RUN_ID=1 # default: 1
         D_RUN=/tmp/contigs_${RUN}
         mkdir -p $D_RUN
         for GENOME in $( aws s3 ls s3://kingdom-data/assemblies/${RUN}/${RUN_ID}/ | awk '{print $4}' ); do
@@ -232,6 +283,16 @@ if ((!$linux)); then
             awk 'NF{print length}' | sort -n |
             awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}'
         # size | N50
+    }
+
+    quickani() {
+        FILES="$@"
+        fastANI --matrix --ql <( echo $FILES | tr ' ' '\n' ) --rl <( echo $FILES | tr ' ' '\n' ) -o /tmp/ani.txt && \
+            cat /tmp/ani.txt | awk '$1 != $2'
+    }
+
+    docs() {
+        zathura $KTOOLS/api_docs/docs/build/latex/kingdomdocs.pdf &
     }
 
     source ~/dotfiles/zoomsched.sh
@@ -1095,9 +1156,11 @@ gb() {
     if [[ "$@" ]]; then
         BRANCH="$@" # name of new branch
         BASE=$( git branch | sed 's/^\*//' | grep -e"^ *ma"{ster,in} | head -1 ) # ma{ster,in} branch
-        git checkout $BASE && git pull origin $BASE && \
-            git branch $BRANCH && git checkout $BRANCH && \
-            git branch
+        git stash && \
+            git checkout $BASE && git pull origin $BASE && \
+                git branch $BRANCH && git checkout $BRANCH && \
+                    git stash pop && \
+        git -c color.ui=always branch --sort=-committerdate | head
     else
         # if no argument, just list most recent
         git -c color.ui=always branch --sort=-committerdate | head
@@ -1573,9 +1636,12 @@ else
         SESH=$( screen -ls | grep "\.$NAME\b" | awk '{print $1}' )
         # via https://askubuntu.com/a/597289
         screen -S $SESH -X stuff 'utilize Anaconda3 && source activate ddt && \
-            jupyter notebook --no-browser --port=4747'
+            jupyter notebook --no-browser --port=4747
+'
 
-        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nbfg'
+        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nb
+fg
+'
         # cat ~/.nb | awk "/^http/ {print $1}"
 
         wait
