@@ -18,11 +18,11 @@ LATLON=$( cat /tmp/latlon )
                 # jq -c '.daily.data[0] | [.sunriseTime, .sunsetTime]' )
                 jq -c '.location.values[0] | [.sunrise,.sunset]' )
 
-    SUNRISE=$( echo $SUNTIMES | jq '.[0]' | xargs date +%s -d )
-    SUNSET=$(  echo $SUNTIMES | jq '.[1]' | xargs date +%s -d )
+    SUNRISE=$( echo "$SUNTIMES" | jq '.[0]' | xargs date +%s -d )
+    SUNSET=$(  echo "$SUNTIMES" | jq '.[1]' | xargs date +%s -d )
     NOW=$( date +%s )
 
-    if [[ ! $SUNTIMES ]] || [[ $SUNTIMES == "[null,null]" ]]; then
+    if [[ ! "$SUNTIMES" ]] || [[ "$SUNTIMES" == "[null,null]" ]]; then
         RERUN=1
     elif (( $NOW < $SUNRISE)) || (( $NOW < $SUNSET )); then
         RERUN=0 # don't rerun *only* if sun{rise,set} still in future
