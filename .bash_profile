@@ -36,11 +36,14 @@ if ((!$linux)); then
     alias gd='cd ~/Google\ Drive/Shared\ drives/Science'
     mtg() { vi ~/kingdom-supercultures/mtgs/"$@"; }
 
-    R_HOME=/usr/local/bin/R
-    alias python='python3.10'
-    alias pip='pip3.10'
-    export PATH="/usr/local/opt/python@3.10/bin:$PATH"
+    VPY=3.10
+    # VPY=3.13 # TODO
+    alias python="python${VPY}"
+    alias pip="pip${VPY}"
+    export PATH="/usr/local/opt/python@${VPY}/bin:$PATH"
     export PATH="/usr/local/bin:$PATH"
+
+    export R_HOME=/usr/local/bin/R
 
     export JAVA_HOME=$( ls -d /Library/Java/JavaVirtualMachines/adoptopenjdk-*.jdk/Contents/Home )
     export JARDIR=~/tools/jars
@@ -50,11 +53,13 @@ if ((!$linux)); then
     complete -C $( which aws_completer ) aws
 
     grasgrep() {
-        pdfgrep -HPi "$@" $HOME/gras-lists/*pdf && \
+        pdfgrep -HPi "$@" $HOME/gras-lists/*pdf;
            grep -Hi  "$@" $HOME/gras-lists/*{sv,txt};
     }
 
-    CIHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/CIHP/Notebook'
+    # CIHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/CIHP/Notebook'
+    # somebody changed this for unknown reasons..
+    CIHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/CIHP/Notebook'
     cihp() {
         if [[ $# == 0 ]]; then
             cd "$CIHP"
@@ -65,7 +70,7 @@ if ((!$linux)); then
             cd "$EXPTDIR"
         fi
     }
-    COHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/COHP/Notebook'
+    COHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/COHP/Notebook'
     cohp() {
         if [[ $# == 0 ]]; then
             cd "$COHP"
@@ -76,14 +81,14 @@ if ((!$linux)); then
             cd "$EXPTDIR"
         fi
     }
-    NOBO='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/NOBO/Notebook'
+    NOBO='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/NOBO/Notebook'
     nobo() {
         if [[ $# == 0 ]]; then
             cd "$NOBO"
         else
             cd "$NOBO"
             EXPT="$1"
-            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/nobo.*0'$EXPT'' | head -1 ) # first match
+            EXPTDIR=$( find . -type d -maxdepth 3 -iregex '.*/nobo.*0'$EXPT'' | head -1 ) # first match
             cd "$EXPTDIR"
         fi
     }
@@ -105,6 +110,8 @@ if ((!$linux)); then
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
     # export PATH=${ARBHOME}/bin:${PATH}
     alias bfg='java -jar ~/tools/bfg*.jar' # $ bfg --delete-files $FILE
+
+    alias xlsx2csv='python /usr/local/lib/python3.10/site-packages/xlsx2csv.py'
 
     backup() {
         OUTDIR="$@"
@@ -145,13 +152,36 @@ if ((!$linux)); then
             XFLAG=""
         fi
 
+        API_PATH="$1"
+        shift
+
+        # https://unix.stackexchange.com/a/472593
+        # ARGS=( "$@" )
+        # ARGS=$( printf '%s ' "${ARGS[@]}" | sed -e"s/{/'{/" -e"s/}/}'/" ) # quote data just in case
+        ARGS=$( echo "$@" | sed -e"s/{/'{/" -e"s/}/}'/" )  # quote data just in case
+        # ARGS=$( echo "$@" | sed -e"s/{/'{/" -e"s/}/}'/" -e 's/&/\&/g' )  # quote data just in case
+        # ARGS=$( echo $1\'; shift; echo "$@" | sed -e"s/{/'{/" -e"s/}/}'/" )  # quote url (possible &) ~and~ data just in case
+        # this works now
+        # .. but note: https://mywiki.wooledge.org/BashFAQ/050
+
         if [[ "$env" = "staging" ]]; then
-            curl $XFLAG -s -H "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/api/${@}
+            # curl $XFLAG -s -H "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/api/${@}
+            # eval curl $XFLAG -s -H \"X-API-Key: $API_KEY_STAGING\" ${API_URL_STAGING}/api/${ARGS}
+            eval curl $XFLAG -s -H \"X-API-Key: $API_KEY_STAGING\" \"${API_URL_STAGING}/api/${API_PATH}\" $ARGS
         elif [[ "$env" = "prod" ]]; then
-            curl $XFLAG -s -H "X-API-Key: $API_KEY" ${API_URL}/api/${@}
+            # curl $XFLAG -s -H "X-API-Key: $API_KEY" ${API_URL}/api/${@}
+            # eval curl $XFLAG -s -H \"X-API-Key: $API_KEY\" ${API_URL}/api/${ARGS}
+            eval curl $XFLAG -s -H \"X-API-Key: $API_KEY\" \"${API_URL}/api/${API_PATH}\" $ARGS
         else # local
-            curl $XFLAG -s http://localhost:8000/api/${@}
+            # curl $XFLAG -s http://localhost:8000/api/${@}
+            # eval curl $XFLAG -s http://localhost:8000/api/${ARGS}
+            eval curl $XFLAG -s \"http://localhost:8000/api/${API_PATH}\" $ARGS
         fi
+    }
+
+    strainsafety() {
+        strain=$1
+        aws s3 cp $( env=prod kcurl dereplication/strains/${strain}/safety | sed 's/"//g' ) - | jq | less
     }
 
     upbastion() {
@@ -190,7 +220,7 @@ if ((!$linux)); then
     # (may also want to read: https://rednafi.com/python/django_and_jupyter_notebook)
     # TODO:
     # alias debugapi="docker-compose exec api ${KTOOLS}/kingdom-django/manage.py shell_plus --ipython"
-    alias debugapi='docker-compose exec api ./manage.py shell_plus --ipython'
+    alias debugapi="cd $KTOOLS/kingdom-django && docker-compose exec api ./manage.py shell_plus --ipython"
 
     # aws
     # via https://stackoverflow.com/a/60398039
@@ -216,12 +246,15 @@ if ((!$linux)); then
         # get most recent upload from lab backups
         # n.b. nothing under gc-mass-spec
         for S3PATH in Baldr/s3_upload_logs Ninkasi/s3_upload_logs Vulcan/s3_upload_logs mass-spec/MassLynx-Data microscope/INCell6000; do
-            S3PATH=s3://kingdom-auto-uploads/${S3PATH}/last_upload_start_date.txt
+            # also: mass-spec/MZMineProjects/s3_logs mass-spec/ConvertedMSData/s3_logs
+            # S3PATH=s3://kingdom-auto-uploads/${S3PATH}/last_upload_start_date.txt
+            S3PATH=s3://kingdom-auto-uploads/${S3PATH}/last_upload_end_date.txt
             LAST_UPLOAD_DATE=$( aws s3 ls $S3PATH | awk '{print $1}' )
             echo $LAST_UPLOAD_DATE $S3PATH
         done
-        for S3PATH in Operetta-Raw/2022 Microscopy-Analysis/2022; do
-            S3PATH=s3://kingdom-microscopy/${S3PATH}/last_upload_start_date.txt
+        for S3PATH in EpsonScan-Raw IXPico-Raw/2023 Microscopy-Analysis/2022 Operetta-Raw/2022 Revolution-Raw/2022; do
+            # S3PATH=s3://kingdom-microscopy/${S3PATH}/last_upload_start_date.txt
+            S3PATH=s3://kingdom-microscopy/${S3PATH}/last_upload_end_date.txt
             LAST_UPLOAD_DATE=$( AWS_PROFILE=admin aws s3 ls $S3PATH | awk '{print $1}' )
             echo $LAST_UPLOAD_DATE $S3PATH
         done
@@ -240,6 +273,11 @@ if ((!$linux)); then
             # this is what i used to spot check, so try that:
             s3lsrecent $BUCKET/$obj | head -1
         done
+    }
+
+    aws_ssm() {
+        name=$1
+        AWS_PROFILE=admin aws ssm get-parameter --name "$name" --with-decryption
     }
 
     auditwgs() {
@@ -290,6 +328,15 @@ if ((!$linux)); then
         fastANI --matrix --ql <( echo $FILES | tr ' ' '\n' ) --rl <( echo $FILES | tr ' ' '\n' ) -o /tmp/ani.txt && \
             cat /tmp/ani.txt | awk '$1 != $2'
     }
+
+    parse_gtdbtk() {
+        F="$@"
+        cat $F | awk -F$'\t' '{OFS="\t"; print $1,$6,$8,$10}' |
+            sed 's/d__.*;s__//' |
+            sed 's@GCF@https://gtdb.ecogenomic.org/genome?gid=GCF@'
+    }
+
+    alias parse_safety="grep BAD | sed 's/.*violation[^:]*: //' | sort -k3,3 | sed 's/ gene feature: /\t/g'"
 
     docs() {
         zathura $KTOOLS/api_docs/docs/build/latex/kingdomdocs.pdf &
@@ -429,6 +476,39 @@ echobold()          { echo -e "\e[1m$@\e[0m"; }
 echoitalic()        { echo -e "\e[3m$@\e[0m"; }
 echounderline()     { echo -e "\e[4m$@\e[0m"; }
 echostrikethrough() { echo -e "\e[9m$@\e[0m"; }
+
+alias stripcolor="sed -e $'s/\x1b\[[0-9;]*m//g'"
+
+
+# abbreviated tree output
+# via https://superuser.com/a/1878465
+treeabbrev() {
+    tree -L 3 | awk '
+    BEGIN {
+      last_prefix = ""
+      count = 1
+    }
+    {
+      # Extract indentation
+      prefix = $0
+      sub(/[^│├└─]+$/, "", prefix)
+
+      if (count < 5) {
+        print
+      }
+
+      if (prefix == last_prefix) {
+        count++
+      } else {
+        if (count > 5) {
+          print prefix " " count " more files..."
+        }
+        count = 1
+      }
+
+      last_prefix = prefix
+    }'
+}
 
 
 # aqua only
@@ -1636,12 +1716,10 @@ else
         SESH=$( screen -ls | grep "\.$NAME\b" | awk '{print $1}' )
         # via https://askubuntu.com/a/597289
         screen -S $SESH -X stuff 'utilize Anaconda3 && source activate ddt && \
-            jupyter notebook --no-browser --port=4747
-'
+            jupyter notebook --no-browser --port=4747'
 
-        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nb
-fg
-'
+        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nb
+        fg
         # cat ~/.nb | awk "/^http/ {print $1}"
 
         wait
@@ -1650,11 +1728,7 @@ fg
     }
 fi
 
-##
-# Your previous /Users/miriam/.bash_profile file was backed up as /Users/miriam/.bash_profile.macports-saved_2020-08-31_at_14:45:08
-##
-
-# MacPorts Installer addition on 2020-08-31_at_14:45:08: adding an appropriate PATH variable for use with MacPorts.
-export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+# macports:
+# export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 # recommended by `brew doctor`
 export PATH="/usr/local/sbin:$PATH"
