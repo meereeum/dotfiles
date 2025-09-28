@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# via https://unix.stackexchange.com/a/724963
+
 # get the gdbus output
 output=$( gdbus call --session --dest org.gnome.Shell.Screenshot --object-path /org/gnome/Shell/Screenshot --method org.gnome.Shell.Screenshot.PickColor )
 colors=( $(echo $output | command grep -o "[0-9\.]*") )

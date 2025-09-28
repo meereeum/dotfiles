@@ -469,6 +469,7 @@ coinflip() {
     # via https://stackoverflow.com/a/39050850
     # shuf -en1 "$choices";
 }
+alias c=coinflip
 # test bias via:
 # $ for _ in $( seq 100000 ); do coinflip; done | sort | uniq -c
 
@@ -946,6 +947,7 @@ if (( $HAS_DISPLAY )); then
                 tr -d '"'
         }
         export -f getAddons
+
     fi
 
 
@@ -968,6 +970,11 @@ if (( $HAS_DISPLAY )); then
     getOpenTabsSafari(){ openTabsSafari | cpout; }
     saveOpenTabsSafari(){ f=./tabs_$( day ); openTabsSafari > "$f"; echo "     --> $f"; }
 
+
+    # i.e., opened in vim
+    openFiles(){ ps aux | grep 'vi ' | awk -F' vi ' '{print $2}' | grep '^[^ ]'; }
+    getOpenFiles(){ openFiles | cpout; }
+    saveOpenFiles(){ f=./files_$( day ); openFiles > "$f"; echo "     --> $f"; }
 
     zoom() {
         source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
@@ -1171,7 +1178,6 @@ else
         done
 
         echo    "RGB: ${colors[0]} ${colors[1]} ${colors[2]}"
-        # printf "HEX: #%02x%02x%02x\n" "${colors[0]}" "${colors[1]}" "${colors[2]}"
         HEX=$( printf "#%02x%02x%02x" "${colors[0]}" "${colors[1]}" "${colors[2]}" )
         echo -n "HEX: " && echo -n $HEX | cpout # hex -> clipboard
         echo
