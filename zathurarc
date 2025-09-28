@@ -65,7 +65,8 @@ set notification-error-fg "#151515" #00
 set notification-warning-bg "#AC4142" #08
 set notification-warning-fg "#151515" #00
 
-set highlight-color "#F4BF75" #0A
+# set highlight-color "#F4BF75" #0A
+set highlight-color "rgba(244, 191, 117, 0.5)" # as above, but w/ transparency
 set highlight-active-color "#6A9FB5" #0D
 
 set completion-highlight-fg "#151515" #02
@@ -82,3 +83,5 @@ set notification-fg "#151515" #00
 # set recolor-darkcolor "#E0E0E0" #06
 # set recolor-reverse-video "true"
 # set recolor-keephue "true"
+
+set database sqlite

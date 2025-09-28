@@ -4,10 +4,10 @@
 SUNTIMES=$( cat /tmp/darksky | jq -c '.location.values[0] | [.sunrise,.sunset]' )
 
 
-( [[ ! $SUNTIMES ]] || [[ $SUNTIMES == "[null,null]" ]] ) && exit 1
+( [[ ! "$SUNTIMES" ]] || [[ "$SUNTIMES" == "[null,null]" ]] ) && exit 1
 
-SUNRISE=$( echo $SUNTIMES | jq '.[0]' | xargs date +%s -d )
-SUNSET=$(  echo $SUNTIMES | jq '.[1]' | xargs date +%s -d )
+SUNRISE=$( echo "$SUNTIMES" | jq '.[0]' | xargs date +%s -d )
+SUNSET=$(  echo "$SUNTIMES" | jq '.[1]' | xargs date +%s -d )
 
 NOW=$( date +%s )
 

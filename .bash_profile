@@ -19,26 +19,335 @@ HAS_DISPLAY=$( [ -z $DISPLAY ] && echo 0 || echo 1 )
 ((!$linux)) && HAS_DISPLAY=1 # fix for mac
 
 
+alias grep='grep --color'
+alias jq='jq -C'
+(( $linux )) && alias ls='ls --color=auto' \
+             || { eval $( gdircolors ); alias ls='gls --color=auto'; }
+export LESS=-r # allow colorcodes & symbols in less
+
+
 # just kingdom
 if ((!$linux)); then
-    alias drive='cd /Volumes/GoogleDrive/My\ Drive'
-    alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
-    export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-15.jdk/Contents/Home
+
+    source ~/.secret
+
+    # alias drive='cd /Volumes/GoogleDrive/My\ Drive'
+    # alias driveKingdom='cd /Volumes/GoogleDrive/My\ Drive/KingdomScience/Analysis_files'
+    alias gd='cd ~/Google\ Drive/Shared\ drives/Science'
+    mtg() { vi ~/kingdom-supercultures/mtgs/"$@"; }
+
+    VPY=3.10
+    # VPY=3.13 # TODO
+    alias python="python${VPY}"
+    alias pip="pip${VPY}"
+    export PATH="/usr/local/opt/python@${VPY}/bin:$PATH"
+    export PATH="/usr/local/bin:$PATH"
+
+    export R_HOME=/usr/local/bin/R
+
+    export JAVA_HOME=$( ls -d /Library/Java/JavaVirtualMachines/adoptopenjdk-*.jdk/Contents/Home )
     export JARDIR=~/tools/jars
-    alias stripexif='exiftool -all= -overwrite_original_in_place'
-    # alias oath_justworks_ffl='oathtool -b --totp ""'
+
+    alias rdp_classifier='java -Xmx1g -jar ~/tools/jars/rdp_classifier-2.14.jar'
+
     complete -C $( which aws_completer ) aws
-    grasgrep() { pdfgrep -Pi "$@" $HOME/gras-lists/*; }
+
+    grasgrep() {
+        pdfgrep -HPi "$@" $HOME/gras-lists/*pdf;
+           grep -Hi  "$@" $HOME/gras-lists/*{sv,txt};
+    }
+
+    # CIHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/CIHP/Notebook'
+    # somebody changed this for unknown reasons..
+    CIHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/CIHP/Notebook'
+    cihp() {
+        if [[ $# == 0 ]]; then
+            cd "$CIHP"
+        else
+            cd "$CIHP"
+            EXPT="$1"
+            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cihp.*0'$EXPT'' | head -1 ) # first match
+            cd "$EXPTDIR"
+        fi
+    }
+    COHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/COHP/Notebook'
+    cohp() {
+        if [[ $# == 0 ]]; then
+            cd "$COHP"
+        else
+            cd "$COHP"
+            EXPT="$1"
+            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cohp.*0'$EXPT'' | head -1 ) # first match
+            cd "$EXPTDIR"
+        fi
+    }
+    NOBO='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/NOBO/Notebook'
+    nobo() {
+        if [[ $# == 0 ]]; then
+            cd "$NOBO"
+        else
+            cd "$NOBO"
+            EXPT="$1"
+            EXPTDIR=$( find . -type d -maxdepth 3 -iregex '.*/nobo.*0'$EXPT'' | head -1 ) # first match
+            cd "$EXPTDIR"
+        fi
+    }
+
+    fasta2seq() {
+        # fasta file to contiguous seq
+        cat "$1" | grep -v \> | tr -d '\n'
+    }
+    alias rc='tr ACGTacgt TGCAtgca | rev' # reverse complement
+
+    contiggrep() {
+        REGEX="$1"
+        MAYBE_FILE="$2"
+        awk -v RS=">" -v ORS="\n" -v FS="\n" -v OFS="\t" -v REGEX="$REGEX" '$1~REGEX{$1=$1; print ">"$1"\n"$2}' $MAYBE_FILE
+        # adapted from https://bioinfoaps.github.io/20-text_process/index.html
+    }
+
     # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
     # export PATH=${ARBHOME}/bin:${PATH}
+    alias bfg='java -jar ~/tools/bfg*.jar' # $ bfg --delete-files $FILE
 
-    R_HOME=/usr/local/bin/R
-    alias python='python3'
-    alias pip='pip3'
-    export PATH="/usr/local/opt/python@3.10/bin:$PATH"
-    export PATH="/usr/local/bin:$PATH"
-    export PYTHONPATH="/usr/local/bin/python3"
+    alias xlsx2csv='python /usr/local/lib/python3.10/site-packages/xlsx2csv.py'
+
+    backup() {
+        OUTDIR="$@"
+        pip freeze > ~/py_pkgs.txt
+        brew list > ~/brew_pkgs.txt
+        ls -alh /usr/local/bin | grep ~/tools | awk '{print $9,$10,$11}' > ~/tools/links
+        OGD=$PWD
+        cd $HOME
+        echo rsync -az --progress --exclude="'*.DS_Store'" --exclude="'*.com.google*'" $( cat ~/bkp | grep -v '^#' ) "$OUTDIR" | cpout
+        cd $OGD
+    }
+
+    # strainid2well() { awk -vCSVPAT="$CSVPAT" '{FPAT=CSVPAT} $17{print $1,$17}' ~/Downloads/df_meta.csv; }
+
+    whoisstrain() {
+        NAME="${@^^}"
+        # curl -s -H  "X-API-Key: $API_KEY" ${API_URL}/api/dereplication/strains/${NAME}/card |
+        [[ "$env" ]] || env=prod
+        kcurl dereplication/strains/${NAME}/card |
+            jq -C | less -R
+            # filtering out some unnecessary stuff:
+            # jq -C 'del( .strain_tube, .accessible_strain_tubes, .strain_phylogeny, .strain_gtdbtk.assembled_genome )'
+    }
+    # askstaging() {
+    #     Q="$@"
+    #     curl -s -H  "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/api/${Q} # |
+    #         # jq -C | less -R
+    # }
+
+    export APISTUFF_STAGING="-sH \"X-API-Key: ${API_KEY_STAGING}\" ${API_URL_STAGING}"
+    export APISTUFF="-sH \"X-API-Key: ${API_KEY}\" ${API_URL}"
+
+    kcurl() {
+        if [[ "$1" == "-X" ]]; then
+            XFLAG="$1 $2"
+            shift; shift
+        else
+            XFLAG=""
+        fi
+
+        API_PATH="$1"
+        shift
+
+        # https://unix.stackexchange.com/a/472593
+        # ARGS=( "$@" )
+        # ARGS=$( printf '%s ' "${ARGS[@]}" | sed -e"s/{/'{/" -e"s/}/}'/" ) # quote data just in case
+        ARGS=$( echo "$@" | sed -e"s/{/'{/" -e"s/}/}'/" )  # quote data just in case
+        # ARGS=$( echo "$@" | sed -e"s/{/'{/" -e"s/}/}'/" -e 's/&/\&/g' )  # quote data just in case
+        # ARGS=$( echo $1\'; shift; echo "$@" | sed -e"s/{/'{/" -e"s/}/}'/" )  # quote url (possible &) ~and~ data just in case
+        # this works now
+        # .. but note: https://mywiki.wooledge.org/BashFAQ/050
+
+        if [[ "$env" = "staging" ]]; then
+            # curl $XFLAG -s -H "X-API-Key: $API_KEY_STAGING" ${API_URL_STAGING}/api/${@}
+            # eval curl $XFLAG -s -H \"X-API-Key: $API_KEY_STAGING\" ${API_URL_STAGING}/api/${ARGS}
+            eval curl $XFLAG -s -H \"X-API-Key: $API_KEY_STAGING\" \"${API_URL_STAGING}/api/${API_PATH}\" $ARGS
+        elif [[ "$env" = "prod" ]]; then
+            # curl $XFLAG -s -H "X-API-Key: $API_KEY" ${API_URL}/api/${@}
+            # eval curl $XFLAG -s -H \"X-API-Key: $API_KEY\" ${API_URL}/api/${ARGS}
+            eval curl $XFLAG -s -H \"X-API-Key: $API_KEY\" \"${API_URL}/api/${API_PATH}\" $ARGS
+        else # local
+            # curl $XFLAG -s http://localhost:8000/api/${@}
+            # eval curl $XFLAG -s http://localhost:8000/api/${ARGS}
+            eval curl $XFLAG -s \"http://localhost:8000/api/${API_PATH}\" $ARGS
+        fi
+    }
+
+    strainsafety() {
+        strain=$1
+        aws s3 cp $( env=prod kcurl dereplication/strains/${strain}/safety | sed 's/"//g' ) - | jq | less
+    }
+
+    upbastion() {
+        ssh bastion -NfL 5432:${POSTGRES_CLUSTER}:5432
+    }
+    upbastion_staging() {
+        ssh bastion_staging -NfL 5432:${POSTGRES_CLUSTER_STAGING}:5432
+    }
+    downbastion() {
+        pid=$( ps aux | grep bastion | grep -v "grep" | awk '{print $2}' )
+        kill $pid
+    }
+
+    export SAM_CLI_TELEMETRY=0
+
+    alias  tfinit='AWS_PROFILE=staging terraform init -reconfigure -backend-config="backend/staging.conf"'
+    alias  tfplan='AWS_PROFILE=staging terraform plan  -var-file="tfvars/staging.tfvars" -var git_sha=47'
+    alias tfapply='AWS_PROFILE=staging terraform apply -var-file="tfvars/staging.tfvars"'
+
+    export KTOOLS="$HOME/tools-kingdom"
+    export TS="${KTOOLS}/kingdom_task_schemas/kingdom_task_schemas/task_schemas"
+    # grepkingdom() { # grep kingdom codebase
+    kgrep() { # grep kingdom codebase
+        cd "$KTOOLS"
+        grep --color -RI "$@" --exclude-dir api_docs --exclude-dir archive --exclude-dir graphs --exclude old_* --exclude-dir test_data --exclude-dir data --exclude-dir safety_resources --exclude-dir .git --exclude-dir .terraform --exclude-dir kingdom-django-main --exclude-dir .pytest_cache --exclude safety_considerations.py --exclude-dir lab-data-analysis --exclude-dir standalone-dereplication \
+            --exclude-dir 230524_assigns --exclude-dir 230519_data_dump --exclude package-lock.json --exclude-dir migrations --exclude-dir kingdom-resources
+        cd - 2>&1 > /dev/null # silently return
+        # grep --color -RI "$@" ~/tools-kingdom --exclude-dir api_docs --exclude-dir archive
+    }
+
+    # docker
+    # docker attach $( docker ps | awk '$2=="kingdom-django-api" {print $1}' )
+
+    # via https://stackoverflow.com/questions/42443006/interactive-shell-in-django
+    # + https://stackoverflow.com/questions/44487590/django-shell-mode-in-docker
+    # (may also want to read: https://rednafi.com/python/django_and_jupyter_notebook)
+    # TODO:
+    # alias debugapi="docker-compose exec api ${KTOOLS}/kingdom-django/manage.py shell_plus --ipython"
+    alias debugapi="cd $KTOOLS/kingdom-django && docker-compose exec api ./manage.py shell_plus --ipython"
+
+    # aws
+    # via https://stackoverflow.com/a/60398039
+    s3ls() {
+        path="$@"
+        path="s3://${path##s3://}" # ensure s3 is added (once)
+        if [[ $path = *"*"* ]]; then
+            rest=$( echo $path | sed -E 's%^([^\*]*/)%%' ) # any segment w/ wildcard thru end
+            dir=${path%"$rest"} # all segments of path until one with a wildcard
+            aws s3 sync "$dir" /tmp/akdjf --exclude '*' --include "${rest}" --dryrun | awk '{print $3}'
+
+        else # no wildcard; this will list everything recursively
+            aws s3 sync "$path" /tmp/akdjf --dryrun | awk '{print $3}'
+
+        fi
+    }
+
+    s3lsrecent() {
+        aws s3 ls "$@" --recursive | sort -k1,1 --reverse | awk '{print $1"\t"$2"\t"$4}'
+    }
+
+    s3autouploadstatus() {
+        # get most recent upload from lab backups
+        # n.b. nothing under gc-mass-spec
+        for S3PATH in Baldr/s3_upload_logs Ninkasi/s3_upload_logs Vulcan/s3_upload_logs mass-spec/MassLynx-Data microscope/INCell6000; do
+            # also: mass-spec/MZMineProjects/s3_logs mass-spec/ConvertedMSData/s3_logs
+            # S3PATH=s3://kingdom-auto-uploads/${S3PATH}/last_upload_start_date.txt
+            S3PATH=s3://kingdom-auto-uploads/${S3PATH}/last_upload_end_date.txt
+            LAST_UPLOAD_DATE=$( aws s3 ls $S3PATH | awk '{print $1}' )
+            echo $LAST_UPLOAD_DATE $S3PATH
+        done
+        for S3PATH in EpsonScan-Raw IXPico-Raw/2023 Microscopy-Analysis/2022 Operetta-Raw/2022 Revolution-Raw/2022; do
+            # S3PATH=s3://kingdom-microscopy/${S3PATH}/last_upload_start_date.txt
+            S3PATH=s3://kingdom-microscopy/${S3PATH}/last_upload_end_date.txt
+            LAST_UPLOAD_DATE=$( AWS_PROFILE=admin aws s3 ls $S3PATH | awk '{print $1}' )
+            echo $LAST_UPLOAD_DATE $S3PATH
+        done
+    }
+
+    s3lsrecenttoplevel() {
+        BUCKET="$@"
+        top_level_objs=$( aws s3api list-objects-v2 --bucket $BUCKET --delimiter "/" | awk '$2!="None" {print $2}' )
+        for obj in $top_level_objs; do
+            # via https://repost.aws/questions/QUFpzxAPCEQa6HqYceZ6bRIA/how-to-list-s3-directories-not-objects-by-date-added
+            # this doens't look right; i spot-checked
+            # aws s3api list-objects-v2 --bucket $BUCKET --prefix $obj \
+            #     --query 'sort_by(Contents, &LastModified)' 2>/dev/null |
+            #     head -n1 | awk -v OFS='\t' '{print $2,$3}'
+
+            # this is what i used to spot check, so try that:
+            s3lsrecent $BUCKET/$obj | head -1
+        done
+    }
+
+    aws_ssm() {
+        name=$1
+        AWS_PROFILE=admin aws ssm get-parameter --name "$name" --with-decryption
+    }
+
+    auditwgs() {
+        RUN=$1
+        [[ "$2" ]] && RUN_ID=$2 || RUN_ID=1 # default: 1
+        F_LOG=/tmp/wgsprog_${RUN}
+        # strain name | size of read file | size of assembly file (if it exists)
+        join -a1 <( aws s3 ls s3://kingdom-raw-downloads/novogene/read/well_tars/${RUN}/ | sed 's/.tar//' | awk '{print $4,$3}' | sort ) \
+                 <( aws s3 ls s3://kingdom-data/assemblies/${RUN}/${RUN_ID}/ | sed 's/.assembly.fasta//' | awk '{print $4,$3}' | sort ) |
+            grep -vi -e ^ctrl -e ^undetermined | tr ' ' '\t' > $F_LOG
+        cat $F_LOG
+        echo
+        echo "~~~summary~~~"
+        echo "$( awk '$3>0'  $F_LOG | wc -l | xargs printf '%3s' )" ASSEMBLED
+        echo "$( awk '$3==0' $F_LOG | wc -l | xargs printf '%3s' )" EMPTY
+        echo "$( awk 'NF==2' $F_LOG | wc -l | xargs printf '%3s' )" STILL ASSEMBLING
+        echo "$( awk 'NF==2' $F_LOG | grep -v control | wc -l | xargs printf '%3s' )" [ ^^ STRAINS ]
+    }
+    wgsstats() {
+        RUN=$1
+        [[ "$2" ]] && RUN_ID=$2 || RUN_ID=1 # default: 1
+        D_RUN=/tmp/contigs_${RUN}
+        mkdir -p $D_RUN
+        for GENOME in $( aws s3 ls s3://kingdom-data/assemblies/${RUN}/${RUN_ID}/ | awk '{print $4}' ); do
+            F_GENOME="${D_RUN}/$( echo $GENOME | awk -F. '{print $1}' )"
+            # if file doesn't already exist
+            [[ -f $F_GENOME ]] || aws s3 cp s3://kingdom-data/assemblies/${RUN}/${RUN_ID}/$GENOME - |
+                tr -d '\n' | sed -E 's/(>[^ACGT]*)/\n\1\n/g' | grep -v '^>' |
+                    awk 'NF{print length}' > $F_GENOME
+        done
+        echo -e "genome\tlen\tn50"
+        for GENOME in $( ls $D_RUN ); do
+            # strain name | length | n50
+            # echo $( echo $GENOME; cat ${D_RUN}/${GENOME} | sort -n | awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}' )
+            echo $( echo $GENOME; fastastats ${D_RUN}/${GENOME} )
+        done | tr ' ' '\t'
+    }
+    fastastats() {
+        FASTA=$1
+        cat $FASTA | tr -d '\n' | sed -E 's/(>[^ACGT]*)/\n\1\n/g' | grep -v '^>' |
+            awk 'NF{print length}' | sort -n |
+            awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}'
+        # size | N50
+    }
+
+    quickani() {
+        FILES="$@"
+        fastANI --matrix --ql <( echo $FILES | tr ' ' '\n' ) --rl <( echo $FILES | tr ' ' '\n' ) -o /tmp/ani.txt && \
+            cat /tmp/ani.txt | awk '$1 != $2'
+    }
+
+    parse_gtdbtk() {
+        F="$@"
+        cat $F | awk -F$'\t' '{OFS="\t"; print $1,$6,$8,$10}' |
+            sed 's/d__.*;s__//' |
+            sed 's@GCF@https://gtdb.ecogenomic.org/genome?gid=GCF@'
+    }
+
+    alias parse_safety="grep BAD | sed 's/.*violation[^:]*: //' | sort -k3,3 | sed 's/ gene feature: /\t/g'"
+
+    docs() {
+        zathura $KTOOLS/api_docs/docs/build/latex/kingdomdocs.pdf &
+    }
+
+    source ~/dotfiles/zoomsched.sh
+    ZOOMROOM="https://us06web.zoom.us/j/${MI_CUARTO}"
+    alias zoomroom="echo $ZOOMROOM | cpout"
+
+    alias bkpnb='cd ~/nb && git add *ipynb; git commit -m ∆∆∆ && git push origin master; cd -'
+
 fi
 
 
@@ -125,6 +434,12 @@ PI=$( bc -l <<< "scale=10; 4*a(1)" )
 awkcsv() { awk -vFPAT='([^,]*)|("[^"]+")' "$@"; } # via https://stackoverflow.com/a/29650812
 # awkcsv() { awk -vFPAT=$CSVPAT "$@"; } # via https://stackoverflow.com/a/29650812
 
+charcount() {
+    # delete all chars except those matching the argument, then count remaining chars
+    # via https://stackoverflow.com/a/41119233
+    tr -cd "$1" | wc -c
+}
+
 addup() {
     bc <<< $( cat "$@" | grep -E '^[0-9.]+' | sed 's/#.*$//' | sed 's/$/+/' | tr -d '\n' | sed 's/+$//' );
 }
@@ -161,6 +476,39 @@ echobold()          { echo -e "\e[1m$@\e[0m"; }
 echoitalic()        { echo -e "\e[3m$@\e[0m"; }
 echounderline()     { echo -e "\e[4m$@\e[0m"; }
 echostrikethrough() { echo -e "\e[9m$@\e[0m"; }
+
+alias stripcolor="sed -e $'s/\x1b\[[0-9;]*m//g'"
+
+
+# abbreviated tree output
+# via https://superuser.com/a/1878465
+treeabbrev() {
+    tree -L 3 | awk '
+    BEGIN {
+      last_prefix = ""
+      count = 1
+    }
+    {
+      # Extract indentation
+      prefix = $0
+      sub(/[^│├└─]+$/, "", prefix)
+
+      if (count < 5) {
+        print
+      }
+
+      if (prefix == last_prefix) {
+        count++
+      } else {
+        if (count > 5) {
+          print prefix " " count " more files..."
+        }
+        count = 1
+      }
+
+      last_prefix = prefix
+    }'
+}
 
 
 # aqua only
@@ -286,6 +634,8 @@ convertvid4mac() {
     # -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2"
     # ^ via https://stackoverflow.com/a/20848224
 }
+
+alias stripexif='exiftool -all= -overwrite_original_in_place'
 
 # e.g. from youtube-dled subtitles
 # $ youtube-dl --write-auto-sub --sub-lang en --sub-format ttml --skip-download $MYVIDOFCHOICE
@@ -472,8 +822,25 @@ day() {
 
     [[ "${dt,,}" == "tomorr" ]] && dt+="ow"    # tomorr -> tomorrow
     [[ "${dt,,}" == "tom" ]] && dt+="orrow"    # tom -> tomorrow
+    [[ "${dt,,}" == "tmr" ]] && dt="tomorrow"  # tmr -> tomorrow
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
+}
+
+# prepend file with date
+predate() {
+    F="$@"
+
+    # match date if already in name
+    DATE=$( echo $F | grep -Eo '[0-9]{6}' )
+    # else, get best guess file touch date
+    # TODO: `ls` vs. `stat`
+    (( $DATE )) || DATE=$( day "$( ls -alh "$F" | awk '{print $6,$7}' )" )
+
+    # Fundated=$( echo $F | sed "s/$DATE//" | sed -e's/_+/_/g' -e's/^_//' -e 's/_$//' )
+    Fundated=$( echo $F | sed "s/$DATE//" | sed -e's/^_//' -e 's/_$//' )
+
+    echo "${DATE}_${Fundated}"
 }
 
 
@@ -711,6 +1078,8 @@ if ((!$linux)); then
     alias preview='open -a /Applications/Preview.app'
     alias zotero='open -a /Applications/Zotero.app'
 
+    alias tmpchrome="open -na /Applications/Google\ Chrome.app --args --new-window --user-data-dir=$( mktemp -d )"
+
     #for g in gcc g++; do
        #GPATH=$( ls /usr/local/Cellar/gcc/*/bin/${g}* | grep ${g}-[0-9] | tail -n1)
        #alias $g=$GPATH
@@ -863,6 +1232,30 @@ export -f pkgs
 alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(white)"'
 alias gitcontrib='git shortlog -sn'
 alias gs='git --no-pager diff -w -G"^ *[^#]+$" --stat' # see e.g. https://stackoverflow.com/questions/16527215/how-to-make-git-diff-ignore-comments
+gb() {
+    if [[ "$@" ]]; then
+        BRANCH="$@" # name of new branch
+        BASE=$( git branch | sed 's/^\*//' | grep -e"^ *ma"{ster,in} | head -1 ) # ma{ster,in} branch
+        git stash && \
+            git checkout $BASE && git pull origin $BASE && \
+                git branch $BRANCH && git checkout $BRANCH && \
+                    git stash pop && \
+        git -c color.ui=always branch --sort=-committerdate | head
+    else
+        # if no argument, just list most recent
+        git -c color.ui=always branch --sort=-committerdate | head
+    fi
+}
+# show recent branches
+#  - top n
+# alias gbrecent='git -c color.ui=always branch --sort=-committerdate | head'
+#  - up to ma{in,ster}
+# alias gbrecent='git -c color.ui=always branch --sort=-committerdate | sed "/ma[(in)|(ster)]/q"'
+
+# via https://stackoverflow.com/a/2929502
+gg() { # git grep (of all LoC in git history)
+    git rev-list --all | xargs git grep ''$@''
+}
 
 if [ -f ~/.git-completion.bash ]; then
       . ~/.git-completion.bash
@@ -906,12 +1299,7 @@ unrm() {
     echo "recovered: $F"
 }
 
-alias grep='grep --color'
 alias psychogrep='grep -RIi'
-(( $linux )) && alias ls='ls --color=auto' \
-             || { eval $( gdircolors ); alias ls='gls --color=auto'; }
-export LESS=-r # allow colorcodes & symbols in less
-
 alias vinilla='vi -u NONE'
 
 
@@ -1079,72 +1467,75 @@ if ((!$linux)); then
 fi
 
 
-# ace servers
 
-# for faster X11 connection
-alias fastfrazer='ssh -Y -C -o CompressionLevel=9 -c arcfour,blowfish-cbc uqmschif@10.168.48.13'
+if (($linux)); then # non-kingdom
+    # ace servers
 
-alias uprudd='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.12:/srv/whitlam/home/users/uqmschif ~/srv/rudd'
-alias upkeating='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.11:/srv/whitlam/home/users/uqmschif ~/srv/keating'
-alias uphawke='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.10:/srv/whitlam/home/users/uqmschif ~/srv/hawke'
-alias upbrown='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.9:/srv/whitlam/home/users/uqmschif ~/srv/brown'
-alias upmenzies='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.16:/srv/whitlam/home/users/uqmschif ~/srv/menzies'
-alias upgillard='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.17:/srv/whitlam/home/users/uqmschif ~/srv/gillard'
-alias upfrazer='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/whitlam/home/users/uqmschif ~/srv/frazer'
-alias marsupial='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/projects/marsupial ~/srv/marsupial'
+    # for faster X11 connection
+    alias fastfrazer='ssh -Y -C -o CompressionLevel=9 -c arcfour,blowfish-cbc uqmschif@10.168.48.13'
 
-alias downrudd='sudo umount ~/srv/rudd'
-alias downkeating='sudo umount ~/srv/keating'
-alias downhawke='sudo umount ~/srv/hawke'
-alias downbrown='sudo umount ~/srv/brown'
-alias downgillard='sudo umount ~/srv/gillard'
-alias downmenzies='sudo umount ~/srv/menzies'
-alias downfrazer='sudo umount ~/srv/frazer'
+    alias uprudd='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.12:/srv/whitlam/home/users/uqmschif ~/srv/rudd'
+    alias upkeating='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.11:/srv/whitlam/home/users/uqmschif ~/srv/keating'
+    alias uphawke='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.10:/srv/whitlam/home/users/uqmschif ~/srv/hawke'
+    alias upbrown='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.9:/srv/whitlam/home/users/uqmschif ~/srv/brown'
+    alias upmenzies='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.16:/srv/whitlam/home/users/uqmschif ~/srv/menzies'
+    alias upgillard='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.17:/srv/whitlam/home/users/uqmschif ~/srv/gillard'
+    alias upfrazer='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/whitlam/home/users/uqmschif ~/srv/frazer'
+    alias marsupial='sshfs -o follow_symlinks -o transform_symlinks uqmschif@10.168.48.13:/srv/projects/marsupial ~/srv/marsupial'
 
-# UQ VPN up/down
-# http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
-# alias vuq='sudo vpnc uq'
-# alias vdc='sudo vpnc-disconnect'
+    alias downrudd='sudo umount ~/srv/rudd'
+    alias downkeating='sudo umount ~/srv/keating'
+    alias downhawke='sudo umount ~/srv/hawke'
+    alias downbrown='sudo umount ~/srv/brown'
+    alias downgillard='sudo umount ~/srv/gillard'
+    alias downmenzies='sudo umount ~/srv/menzies'
+    alias downfrazer='sudo umount ~/srv/frazer'
+
+    # UQ VPN up/down
+    # http://wiki.ecogenomic.org/doku.php?id=vpn_and_vpnc
+    # alias vuq='sudo vpnc uq'
+    # alias vdc='sudo vpnc-disconnect'
 
 
-# broad VPN up/down
-# help via https://gist.github.com/moklett/3170636
-VPNPID="$HOME/.openconnect.pid"
-if (( $linux )); then
-    upvpn() {
-        # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
-        #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
-        # GRP="Duo-Broad-NonSplit-VPN"
-        GRP="Duo-Split-Tunnel-VPN"
-        VPNURL="https://vpn.broadinstitute.org"
+    # broad VPN up/down
+    # help via https://gist.github.com/moklett/3170636
+    VPNPID="$HOME/.openconnect.pid"
+    if (( $linux )); then
+        upvpn() {
+            # [[ "${@,,}" == "nonsplit" ]] && GRP="Duo-Broad-NonSplit-VPN" \
+            #                              || GRP="Duo-Split-Tunnel-VPN" # default: split
+            # GRP="Duo-Broad-NonSplit-VPN"
+            GRP="Duo-Split-Tunnel-VPN"
+            VPNURL="https://vpn.broadinstitute.org"
 
-        # echo -e "$@" |
-        # sudo openconnect --pid-file $VPNID --user=shiffman \
-            # --authgroup=$GRP $VPNURL
-            # --token-mode yubioath
-            # --background
-        sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL "$@"
-    }
-else
-    upvpn() {
-        # GRP="Duo-Broad-NonSplit-VPN"
-        GRP="Duo-Split-Tunnel-VPN"
-        VPNURL=69.173.127.10
+            # echo -e "$@" |
+            # sudo openconnect --pid-file $VPNID --user=shiffman \
+                # --authgroup=$GRP $VPNURL
+                # --token-mode yubioath
+                # --background
+            sudo openconnect --user=shiffman --authgroup=$GRP $VPNURL "$@"
+        }
+    else
+        upvpn() {
+            # GRP="Duo-Broad-NonSplit-VPN"
+            GRP="Duo-Split-Tunnel-VPN"
+            VPNURL=69.173.127.10
 
-        sudo openconnect -u shiffman --authgroup $GRP $VPNURL "$@" \
-            --servercert pin-sha256:$( cat $DIR/SECRET_broad )
-            # --token-mode yubioath
-            # --background
+            sudo openconnect -u shiffman --authgroup $GRP $VPNURL "$@" \
+                --servercert pin-sha256:$( cat $DIR/SECRET_broad )
+                # --token-mode yubioath
+                # --background
+        }
+    fi
+    downvpn() {
+        if [[ -f $VPNPID ]]; then
+            sudo kill "$( cat $VPNPID )" && rm $VPNPID
+            pgrep openconnect
+        else
+            echo "vpn not running."
+        fi
     }
 fi
-downvpn() {
-    if [[ -f $VPNPID ]]; then
-        sudo kill "$( cat $VPNPID )" && rm $VPNPID
-        pgrep openconnect
-    else
-        echo "vpn not running."
-    fi
-}
 
 
 # autocomplete screen
@@ -1325,9 +1716,10 @@ else
         SESH=$( screen -ls | grep "\.$NAME\b" | awk '{print $1}' )
         # via https://askubuntu.com/a/597289
         screen -S $SESH -X stuff 'utilize Anaconda3 && source activate ddt && \
-            jupyter notebook --no-browser --port=4747'
+            jupyter notebook --no-browser --port=4747'
 
-        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nbfg'
+        # screen -S $SESH -X stuff 'jupyter notebook list > ~/.nb
+        fg
         # cat ~/.nb | awk "/^http/ {print $1}"
 
         wait
@@ -1336,11 +1728,7 @@ else
     }
 fi
 
-##
-# Your previous /Users/miriam/.bash_profile file was backed up as /Users/miriam/.bash_profile.macports-saved_2020-08-31_at_14:45:08
-##
-
-# MacPorts Installer addition on 2020-08-31_at_14:45:08: adding an appropriate PATH variable for use with MacPorts.
-export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+# macports:
+# export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 # recommended by `brew doctor`
 export PATH="/usr/local/sbin:$PATH"
