@@ -71,11 +71,22 @@ hi link pythonDocString Comment
 au BufNewFile,BufRead * if &syntax == '' | set syntax=markdown | endif
 " http://vim.wikia.com/wiki/Forcing_Syntax_Coloring_for_files_with_odd_extensions
 autocmd BufNewFile,BufRead *.txt set syntax=markdown   " txt files -> md
+autocmd BufNewFile,BufRead TODO* set syntax=markdown   " TODO files -> md
 autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
 " autocmd BufNewFile,BufRead *rc set syntax=sh         " rc files -> sh
 
-"Uncomment the following to have Vim jump to the last position when
-" reopening a file
+" comment out when sub/tasks are checked off in TODO files
+" via https://stackoverflow.com/a/14017580
+au! BufEnter TODO*
+    \ syn match TODOne /\[x*\] .*/ |
+    \ syn match subTODOne / x .*/
+" task: [ ] -> [x] or [xx]
+" subtask: - -> x
+hi link TODOne Comment
+hi link subTODOne Comment
+
+" Uncomment the following to have Vim jump to the last position
+" when reopening a file
 if has("autocmd")
   au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif

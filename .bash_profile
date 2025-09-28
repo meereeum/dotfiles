@@ -889,7 +889,7 @@ gitrmline() {
     git filter-branch $args --tree-filter "test -f \"$filename\" && sed -i -E \"°$pattern°d\" \"$filename\" || echo \"skipping $filename\"" -- --all
     # git stash pop
 }
-# or try
+# better yet: try
 # $ git-filter-repo --force --replace-text path/to/expressions.txt # FROM==>TO
 
 
