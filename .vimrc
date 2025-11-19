@@ -78,8 +78,8 @@ autocmd BufNewFile,BufRead bash-fc* set syntax=sh " bash tmp files -> sh
 " comment out when sub/tasks are checked off in TODO files
 " via https://stackoverflow.com/a/14017580
 au! BufEnter TODO*
-    \ syn match TODOne /\[x*\] .*/ |
-    \ syn match subTODOne / x .*/
+    \ syn match TODOne /^ *\[x*\] .*/ |
+    \ syn match subTODOne /^ *x .*/
 " task: [ ] -> [x] or [xx]
 " subtask: - -> x
 hi link TODOne Comment
