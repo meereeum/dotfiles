@@ -1165,6 +1165,18 @@ else
         sudo service network-manager restart
     }
 
+    set_dns() {
+        # nmcli connection show
+        network=$( nmcli device | awk '$2=="wifi" {print $4}' )
+        nmcli connection modify $network ipv4.dns '1.1.1.1' ipv6.dns '2606:4700:4700::1111' # cloudflare
+        # cycle off/on to apply
+        nmcli connection down $network
+        nmcli connection up $network
+        # check outcome
+        # cat /etc/resolv.conf
+        # nmcli connection show $network | grep "dns"
+    }
+
     # via https://unix.stackexchange.com/a/724963
     # gpick --pick does not work b/c of xwayland (only w/ older x11)
     colorpicker() {
