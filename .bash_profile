@@ -567,6 +567,7 @@ coinflip() {
     # via https://stackoverflow.com/a/39050850
     # shuf -en1 "$choices";
 }
+alias c=coinflip
 # test bias via:
 # $ for _ in $( seq 100000 ); do coinflip; done | sort | uniq -c
 
@@ -1045,6 +1046,7 @@ if (( $HAS_DISPLAY )); then
                 tr -d '"'
         }
         export -f getAddons
+
     fi
 
 
@@ -1067,6 +1069,11 @@ if (( $HAS_DISPLAY )); then
     getOpenTabsSafari(){ openTabsSafari | cpout; }
     saveOpenTabsSafari(){ f=./tabs_$( day ); openTabsSafari > "$f"; echo "     --> $f"; }
 
+
+    # i.e., opened in vim
+    openFiles(){ ps aux | grep 'vi ' | awk -F' vi ' '{print $2}' | grep '^[^ ]'; }
+    getOpenFiles(){ openFiles | cpout; }
+    saveOpenFiles(){ f=./files_$( day ); openFiles > "$f"; echo "     --> $f"; }
 
     zoom() {
         source ~/dotfiles/zoomsched.sh # for DATETIME2ID + MI_CUARTO
@@ -1264,6 +1271,18 @@ else
         sudo service network-manager restart
     }
 
+    set_dns() {
+        # nmcli connection show
+        network=$( nmcli device | awk '$2=="wifi" {print $4}' )
+        nmcli connection modify $network ipv4.dns '1.1.1.1' ipv6.dns '2606:4700:4700::1111' # cloudflare
+        # cycle off/on to apply
+        nmcli connection down $network
+        nmcli connection up $network
+        # check outcome
+        # cat /etc/resolv.conf
+        # nmcli connection show $network | grep "dns"
+    }
+
     # via https://unix.stackexchange.com/a/724963
     # gpick --pick does not work b/c of xwayland (only w/ older x11)
     colorpicker() {
@@ -1277,7 +1296,6 @@ else
         done
 
         echo    "RGB: ${colors[0]} ${colors[1]} ${colors[2]}"
-        # printf "HEX: #%02x%02x%02x\n" "${colors[0]}" "${colors[1]}" "${colors[2]}"
         HEX=$( printf "#%02x%02x%02x" "${colors[0]}" "${colors[1]}" "${colors[2]}" )
         echo -n "HEX: " && echo -n $HEX | cpout # hex -> clipboard
         echo
@@ -1388,7 +1406,7 @@ gitrmline() {
     git filter-branch $args --tree-filter "test -f \"$filename\" && sed -i -E \"°$pattern°d\" \"$filename\" || echo \"skipping $filename\"" -- --all
     # git stash pop
 }
-# or try
+# better yet: try
 # $ git-filter-repo --force --replace-text path/to/expressions.txt # FROM==>TO
 
 

@@ -8,6 +8,9 @@ FTODAY=${FPREFIX}_${TODAY}
     rm ${FPREFIX}_* 2> /dev/null
 
     NOW=$( date +%s )
+    NOW=$( echo "$NOW-24*60*60" | bc)
+    # NOW=$( echo "$NOW-7*60*60" | bc) # LA time but like it's UTC ?¿?
+
     FARAWAY=9999999999
 
     URL="https://www.americancinematheque.com/wp-json/wp/v2/algolia_get_events?environment=production&startDate=${NOW}&endDate=${FARAWAY}"
@@ -25,7 +28,7 @@ cat $FTODAY | jq -c '.hits[] |
     # [.event_start_date,.event_start_time,.title,.event_format,.event_location]' |
     sed 's/:00"/"/' |
     sed -e's/\b74\b/35mm/g' -e's/\b79\b/70mm/g' -e's/\b80\b/nitrate/g' |
-    sed -e's/\[102\]/LF3/' -e's/\[54\]/AERO/' -e's/\[55\]/EGYPTIAN/' |
+    sed -e's/\[102\]/LF3/' -e's/\[54\]/AERO/' -e's/\[55\]/EGYPTIAN/' -e's/\[68\]/VISTA/' |
     sed -e's/"//1' -e's/"//1' -e's/"//1' -e's/"//1' |
     sort
 echo
