@@ -16,6 +16,8 @@ set scroll-page-aware "true"
 set scroll-full-overlap 0.01
 
 set scroll-step 50
+# ^ note: this makes trackpad scroll too fast, but is good for keyboard scroll;
+# see https://github.com/homebrew-zathura/homebrew-zathura/issues/79
 set render-loading "false"
 
 # zoom settings
