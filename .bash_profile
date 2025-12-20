@@ -50,6 +50,10 @@ if ((!$linux)); then
 
     alias rdp_classifier='java -Xmx1g -jar ~/tools/jars/rdp_classifier-2.14.jar'
 
+    alias zathura='open -a Zathura.app'
+    # this supersedes /usr/local/bin/zathura
+    # (yielding the correct icon)
+
     complete -C $( which aws_completer ) aws
 
     grasgrep() {
@@ -99,12 +103,66 @@ if ((!$linux)); then
     }
     alias rc='tr ACGTacgt TGCAtgca | rev' # reverse complement
 
+    seqgrep() {
+        # -n $number_of_surrounding_chars
+        # N=$( echo $@ | grep -Eoe '-n ?[0-9]+ *' | sed 's/-n//' )
+        # [[ $N ]] && @=$( echo "$@" | sed 's/-n ?[0-9]+ *//' )
+        if [[ "$1" == "-n" ]]; then
+            N="$2"
+            shift; shift
+        else
+            N=0
+        fi
+
+        SEQ="$1"
+        REVSEQ="$( echo $SEQ | rc )"
+
+        [[ $2 ]] && MAYBE_FILE="$2" || MAYBE_FILE=-
+
+        # grep with surrounding chars (based on -n) but only highlight match
+        cat $MAYBE_FILE | tr -d "\n" | tr -d " " |
+            # this is slow:
+            # grep -Eo -e ".{0,$N}$SEQ.{0,$N}" -e ".{0,$N}$REVSEQ.{0,$N}" |
+            grep -Eo -e ".{$N}$SEQ.{$N}" -e ".{$N}$REVSEQ.{$N}" |
+            grep -E -e "$SEQ" -e "$REVSEQ"
+    }
+
     contiggrep() {
         REGEX="$1"
-        MAYBE_FILE="$2"
-        awk -v RS=">" -v ORS="\n" -v FS="\n" -v OFS="\t" -v REGEX="$REGEX" '$1~REGEX{$1=$1; print ">"$1"\n"$2}' $MAYBE_FILE
+        [[ $2 ]] && MAYBE_FILE="$2" || MAYBE_FILE=-
+        # MAYBE_FILE="$2"
+        # awk -v RS=">" -v ORS="\n" -v FS="\n" -v OFS="\t" -v REGEX="$REGEX" '$1~REGEX{$1=$1; print ">"$1"\n"$2}' $MAYBE_FILE
         # adapted from https://bioinfoaps.github.io/20-text_process/index.html
+        # hmmm n.b. this seems to only work if contig itself is 1 line..
+        # this shld solve :
+        # need to substitute a temporary alternative delim to space
+        # (otherwise, will not be considered part of contig name)
+        cat $MAYBE_FILE | sed 's/ /æ/g' | bioawk -c fastx '$name~/'$REGEX'/{print ">"$name"\n"$seq}' | sed 's/æ/ /g'
     }
+
+    contigrename() {
+        FILE="$1"
+        [[ "$2" ]] && NAME="$2" \
+                   || NAME="$( basename $FILE | awk -F'.' '{print $1}' )"
+        cat $FILE | awk -vname="${NAME}" '!/>/{print $0} />/{n++; gsub(">","",$0); print ">"name"_"n" = "$0}'
+        # contigs named >$NAME_1 = $PREVCONTIGNAME1
+        #               >$NAME_2 = $PREVCONTIGNAME2
+        #               ...
+    }
+
+    # alias tabulatePhred='grep -A1 "^+$" | grep -v "^+$" | grep -v "^--$" | tr -d "\n" | sed "s/./\0\n/g" | sort | uniq -c'
+    # sometimes there are two lines + + in a row, followed by a read header (i.e., ONT read files)
+    # grep -A would match read header -- filter these out by filtering out spaces
+    alias tabulatePhred='grep -A1 "^+$" | grep -v "^+$" | grep -v "^--$" | grep -v " " | tr -d "\n" | sed "s/./\0\n/g" | sort | uniq -c'
+
+    # fastq compressed PHRED score to numerical quality
+    # see https://en.wikipedia.org/wiki/Phred_quality_score#Symbols
+    # phred() { math $( printf "%d\n" \'\${1} ) - 33; }
+    # via https://stackoverflow.com/q/890262
+    phred() { math $( echo "${1}" | tr -d "\n" | od -An -t uC ) - 33; }
+    # via https://unix.stackexchange.com/a/92462
+    # note: many symbols -- e.g. " # & ' ( ) ; < > -- need to be escaped when passed:
+    # $ phred \"
 
     # ARBHOME=/Users/miriam/tools/arb;export ARBHOME
     # export LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}
@@ -178,9 +236,10 @@ if ((!$linux)); then
             eval curl $XFLAG -s \"http://localhost:8000/api/${API_PATH}\" $ARGS
         fi
     }
+    export -f kcurl
 
     strainsafety() {
-        strain=$1
+        strain=${1^^}
         aws s3 cp $( env=prod kcurl dereplication/strains/${strain}/safety | sed 's/"//g' ) - | jq | less
     }
 
@@ -322,6 +381,11 @@ if ((!$linux)); then
             awk '{len[i++]=$1;sum+=$1} END {for (j=0;j<i+1;j++) {csum+=len[j]; if (csum>=sum/2) {print sum;print len[j];break}}}'
         # size | N50
     }
+    contiglens() {
+        FASTA=$1
+        cat $FASTA | tr -d '\n' | sed -E 's/(>[^ACGT]*)/\n\1\n/g' |
+            awk '/>/ {print $0} /^[^>]/{print length}'
+    }
 
     quickani() {
         FILES="$@"
@@ -346,7 +410,7 @@ if ((!$linux)); then
     ZOOMROOM="https://us06web.zoom.us/j/${MI_CUARTO}"
     alias zoomroom="echo $ZOOMROOM | cpout"
 
-    alias bkpnb='cd ~/nb && git add *ipynb; git commit -m ∆∆∆ && git push origin master; cd -'
+    alias bkpnb='cd ~/nb && git add *ipynb; git commit -m ∆∆∆ && git push origin master; cd - > /dev/null'
 
 fi
 
@@ -416,6 +480,40 @@ export DELTAS="${DELTA}s"
 export STRFDATE="+%y%m%d"
 
 export CSVPAT='([^,]*)|(\"([^\"]|(\"\"))*\")' # for awk
+# assuming tab-sep..
+
+tblify() {
+    # col1  col2
+    #------ -----
+    awk 'NR==1 {print "# "$0; gsub(/[^ \t]/,"-",$0); gsub(/-\t/, "--\t",$0); print "#-"$0} NR>1';
+}
+
+fieldnumbers() {
+    F=$1
+    [[ "$2" ]] && sep=$2 || sep='\t'
+    head -1 $F | tr $sep '\n' | awk '{print NR, $0}';
+}
+
+tsv2md() {
+    awk -F$'\t' '
+        NR==1 {
+            gsub(/\t/," | ");  print "| "$0" |";
+            gsub(/[^|]/,"-");  print "|-"$0"-|";
+        }
+        NR>1 {
+            gsub(/\|/,"\\|");
+            gsub(/\t/," | ");  print "| "$0" |";
+        }
+    ' |
+    sed -e 's/|-/|:/g' -e 's/-|/:|/g' # centering
+}
+
+
+# clean up inter-paragraph linebreaks
+# via https://unix.stackexchange.com/a/744645
+paragraphs() {
+    awk '{$1=$1; print $0 RT}' RS= ORS=;
+}
 
 lunch()  { python $WKSPACE/mit-lunch/get_menu.py   "$@"; }
 movies() { python $WKSPACE/cinematic/get_movies.py "$@"; }
@@ -827,6 +925,7 @@ day() {
     [[ "${dt,,}" == "tom murphy" ]] && echo "that's my date not *a* date" \
                                     || date -d "$dt" $STRFDATE;
 }
+export -f day
 
 # prepend file with date
 predate() {
@@ -1069,6 +1168,13 @@ t() {
 # python stuff
 (($linux)) && PIPCACHE=$HOME/.cache/pip || PIPCACHE=$HOME/Library/Caches/pip
 alias pip-clean='\rm -r $PIPCACHE/*'
+
+# TODO rm versioning for grep
+versionpkgs() {
+    pip list |
+        grep $( cat requirements.txt  | grep -v '^#' | grep -v '\.' | grep '.' | sed 's/^/-e /' | xargs ) |
+        sed 's/  */>=/';
+}
 
 # alias python=python3
 export PATH="$HOME/.local/venv/bin:$PATH"
@@ -1480,6 +1586,12 @@ if ((!$linux)); then
 	# if [ -f $(brew --prefix)/etc/bash_completion.d/brew ]; then
 	#    . $(brew --prefix)/etc/bash_completion.d/brew
 	# fi
+
+    # curl stuff (macos vs. outdated)
+    export PATH="/usr/local/opt/curl/bin:$PATH"
+    export CPPFLAGS="$CPPFLAGS -I/usr/local/opt/curl/include"
+    export LDFLAGS="$LDFLAGS -L/usr/local/opt/curl/lib"
+    export PKG_CONFIG_PATH="/usr/local/opt/curl/lib/pkgconfig"
 # else
 #     export VIMRUNTIME="$HOME/.bin/usr/bin/vim.basic"
 fi
