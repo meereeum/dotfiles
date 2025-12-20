@@ -1353,6 +1353,7 @@ fi
 export -f pkgs
 
 
+alias gti=git # ynot
 # pretty print git log (via Mary @RC)
 alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(white)"'
 alias gitcontrib='git shortlog -sn'
