@@ -38,6 +38,14 @@ set viminfo='100,<1000,s100,h
 autocmd BufWritePre * %s/\s\+$//e
 " autocmd BufWritePre *.py %s/\s\+$//e # just py files
 
+" folds
+" via https://stackoverflow.com/a/37558470
+augroup remember_folds
+  autocmd!
+  autocmd BufWinLeave * mkview
+  autocmd BufWinEnter * silent! loadview
+augroup END
+
 " colors
 syntax enable
 " colorscheme plan9
