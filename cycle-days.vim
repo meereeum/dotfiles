@@ -3,14 +3,17 @@
 
 
 let g:days = ['M', 'T', 'W', 'R', 'F', 'Sat', 'Sun'] " globally scoped
-" TODO: add ['pm', 'am']
+let g:time = ['am', 'pm']
+
+
+let g:groups = [days, time]
+
 
 
 function! s:Cycle(direction)
 
-    let l:group = g:days " simplify: just define one cycle group
-
-	let match = s:matchInList(l:group)
+    " let l:group = g:days " simplify: just define one cycle group
+	let match = s:matchInList(g:groups)
 
 	if empty(match)
 		if a:direction == 1
@@ -19,7 +22,8 @@ function! s:Cycle(direction)
 			exe "norm! " . v:count1 . "\<C-X>"
 		endif
 	else
-		let [start, end, string] = match
+		" let [start, end, string] = match
+		let [group, start, end, string] = match
 
 		let index = index(group, string) + a:direction
 		let max_index = (len(group) - 1)
@@ -38,21 +42,24 @@ endfunction
 " [start, end, string]
 "
 " returns [] if no match is found
-function! s:matchInList(group)
+function! s:matchInList(list_of_groups)
 
-	" We must iterate each group with the longest values first.
-	" This covers a case like ['else', 'else if'] where the
-	" first will match successfuly even if the second could
-	" be matched. Checking for the longest values first
-	" ensures that the most specific match will be returned
-	for item in sort(copy(a:group), "s:sorterByLength")
-		let match = s:findinline(item)
-		if match[0] >= 0
-			return match
-		endif
-	endfor
+    for group in copy(a:list_of_groups)
+        " We must iterate each group with the longest values first.
+        " This covers a case like ['else', 'else if'] where the
+        " first will match successfuly even if the second could
+        " be matched. Checking for the longest values first
+        " ensures that the most specific match will be returned
+        for item in sort(copy(group), "s:sorterByLength")
+            let match = s:findinline(item)
+            if match[0] >= 0
+                " return match
+                return [group] + match
+            endif
+        endfor
+    endfor
 
-	return []
+    return []
 endfunction
 
 
