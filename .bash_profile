@@ -1281,6 +1281,7 @@ else
         # check outcome
         # cat /etc/resolv.conf
         # nmcli connection show $network | grep "dns"
+        # dig google.com
     }
 
     # via https://unix.stackexchange.com/a/724963
