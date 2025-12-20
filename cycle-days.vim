@@ -2,11 +2,17 @@
 " based on: https://github.com/zef/vim-cycle/blob/master/plugin/cycle.vim
 
 
+" TODO: could incorporate word boundaries w/ \<M\>
+" but then need to sub out regex part during replace step
 let g:days = ['M', 'T', 'W', 'R', 'F', 'Sat', 'Sun'] " globally scoped
 let g:time = ['am', 'pm']
+let g:time_onthehr = ['10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm', '10pm', '11pm', '11:59pm']
+let g:time_halfpast = ['10:30am', '11:30am', '12:30pm', '1:30pm', '2:30pm', '3:30pm', '4:30pm', '5:30pm', '6:30pm', '7:30pm', '8:30pm', '9:30pm', '10:30pm', '11:30pm']
 
 
-let g:groups = [days, time]
+" also the order of priority for matches
+" (e.g. days needs to be last s.t. it is not confused with the "m" in {a,p}m)
+let g:groups = [time, time_onthehr, time_halfpast, days]
 
 
 
@@ -107,8 +113,8 @@ function! s:replaceinline(start,end,new)
 endfunction
 
 
-function! s:match(...)
-    let start   = call("match",a:000)
+function! s:match(...) " ... is like *args
+    let start   = call("match",a:000) " a:000 is all passed args
     let end     = call("matchend",a:000)
     let matches = call("matchlist",a:000)
     if empty(matches)
