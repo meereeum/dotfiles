@@ -1285,6 +1285,7 @@ else
         # check outcome
         # cat /etc/resolv.conf
         # nmcli connection show $network | grep "dns"
+        # dig google.com
     }
 
     # via https://unix.stackexchange.com/a/724963
@@ -1356,6 +1357,7 @@ fi
 export -f pkgs
 
 
+alias gti=git # ynot
 # pretty print git log (via Mary @RC)
 alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(white)"'
 alias gitcontrib='git shortlog -sn'

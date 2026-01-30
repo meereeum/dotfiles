@@ -2,15 +2,24 @@
 " based on: https://github.com/zef/vim-cycle/blob/master/plugin/cycle.vim
 
 
+" TODO: could incorporate word boundaries w/ \<M\>
+" but then need to sub out regex part during replace step
 let g:days = ['M', 'T', 'W', 'R', 'F', 'Sat', 'Sun'] " globally scoped
-" TODO: add ['pm', 'am']
+let g:time = ['am', 'pm']
+let g:time_onthehr = ['10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm', '10pm', '11pm', '11:59pm']
+let g:time_halfpast = ['10:30am', '11:30am', '12:30pm', '1:30pm', '2:30pm', '3:30pm', '4:30pm', '5:30pm', '6:30pm', '7:30pm', '8:30pm', '9:30pm', '10:30pm', '11:30pm']
+
+
+" also the order of priority for matches
+" (e.g. days needs to be last s.t. it is not confused with the "m" in {a,p}m)
+let g:groups = [time, time_onthehr, time_halfpast, days]
+
 
 
 function! s:Cycle(direction)
 
-    let l:group = g:days " simplify: just define one cycle group
-
-	let match = s:matchInList(l:group)
+    " let l:group = g:days " simplify: just define one cycle group
+	let match = s:matchInList(g:groups)
 
 	if empty(match)
 		if a:direction == 1
@@ -19,7 +28,8 @@ function! s:Cycle(direction)
 			exe "norm! " . v:count1 . "\<C-X>"
 		endif
 	else
-		let [start, end, string] = match
+		" let [start, end, string] = match
+		let [group, start, end, string] = match
 
 		let index = index(group, string) + a:direction
 		let max_index = (len(group) - 1)
@@ -38,21 +48,24 @@ endfunction
 " [start, end, string]
 "
 " returns [] if no match is found
-function! s:matchInList(group)
+function! s:matchInList(list_of_groups)
 
-	" We must iterate each group with the longest values first.
-	" This covers a case like ['else', 'else if'] where the
-	" first will match successfuly even if the second could
-	" be matched. Checking for the longest values first
-	" ensures that the most specific match will be returned
-	for item in sort(copy(a:group), "s:sorterByLength")
-		let match = s:findinline(item)
-		if match[0] >= 0
-			return match
-		endif
-	endfor
+    for group in copy(a:list_of_groups)
+        " We must iterate each group with the longest values first.
+        " This covers a case like ['else', 'else if'] where the
+        " first will match successfuly even if the second could
+        " be matched. Checking for the longest values first
+        " ensures that the most specific match will be returned
+        for item in sort(copy(group), "s:sorterByLength")
+            let match = s:findinline(item)
+            if match[0] >= 0
+                " return match
+                return [group] + match
+            endif
+        endfor
+    endfor
 
-	return []
+    return []
 endfunction
 
 
@@ -100,8 +113,8 @@ function! s:replaceinline(start,end,new)
 endfunction
 
 
-function! s:match(...)
-    let start   = call("match",a:000)
+function! s:match(...) " ... is like *args
+    let start   = call("match",a:000) " a:000 is all passed args
     let end     = call("matchend",a:000)
     let matches = call("matchlist",a:000)
     if empty(matches)
