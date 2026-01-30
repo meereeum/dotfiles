@@ -303,7 +303,7 @@ if ((!$linux)); then
     }
 
     s3lsrecenttoplevel() {
-        BUCKET="$@"
+        BUCKET=$1
         top_level_objs=$( aws s3api list-objects-v2 --bucket $BUCKET --delimiter "/" | awk '$2!="None" {print $2}' )
         for obj in $top_level_objs; do
             # via https://repost.aws/questions/QUFpzxAPCEQa6HqYceZ6bRIA/how-to-list-s3-directories-not-objects-by-date-added
@@ -315,6 +315,27 @@ if ((!$linux)); then
             # this is what i used to spot check, so try that:
             s3lsrecent $BUCKET/$obj | head -1
         done
+    }
+
+    s3lssize() {
+        BUCKET=$1
+
+        # aws human-readable, then rm space and change e.g. GiB => GB (close enough)
+
+        {
+            # these are "folders" / files grouped under common key
+            for d in $( aws s3 ls ${BUCKET}/ | awk '$1 == "PRE"{print $4}' ); do
+                # last two lines are total objects + total size
+                bytes=$( aws s3 ls --recursive --summarize --human-readable ${BUCKET}/${d} | tail -1 | awk '{sub(/iB/,"b",$4); sub(/ytes/,"",$4); print $2$3}' )
+                # latest
+                date=$( aws s3 ls --recursive --summarize ${BUCKET}/${d} | tail -4 | head -1 | awk '{print $1}' )
+                echo -e ${date}"\t"${bytes}"\t"${d}
+            done
+
+            # these are files; have size listed
+            aws s3 ls --human-readable ${BUCKET}/ | awk '$1 != "PRE"{OFS="\t"; sub(/iB/,"b",$4); sub(/ytes/,"",$4); print $1,$3$4,$5}'
+
+        } | sort -h -k2,2 --reverse # sort by human-readable bytes
     }
 
     aws_ssm() {
