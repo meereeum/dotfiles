@@ -61,41 +61,24 @@ if ((!$linux)); then
            grep -Hi  "$@" $HOME/gras-lists/*{sv,txt};
     }
 
-    # CIHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/CIHP/Notebook'
-    # somebody changed this for unknown reasons..
-    CIHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/CIHP/Notebook'
-    cihp() {
-        if [[ $# == 0 ]]; then
-            cd "$CIHP"
-        else
-            cd "$CIHP"
-            EXPT="$1"
-            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cihp.*0'$EXPT'' | head -1 ) # first match
+    cdexpt() {
+        PREFIX=$1
+        EXPT=$2
+        ALTPROJECT=$3
+        [[ "$ALTPROJECT" ]] && PROJECT="$ALTPROJECT" \
+                            || PROJECT="${PREFIX^^}"
+
+        PROJDIR='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/'$PROJECT'/Notebook'
+
+        cd "$PROJDIR"
+        if [[ "$EXPT" ]]; then
+            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/'$PREFIX'[^0]*0*'$EXPT'' | sort | head -1 ) # alphabetical first match (e.g. CIHP011 > CIHP211)
             cd "$EXPTDIR"
         fi
     }
-    COHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/COHP/Notebook'
-    cohp() {
-        if [[ $# == 0 ]]; then
-            cd "$COHP"
-        else
-            cd "$COHP"
-            EXPT="$1"
-            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cohp.*0'$EXPT'' | head -1 ) # first match
-            cd "$EXPTDIR"
-        fi
-    }
-    NOBO='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/NOBO/Notebook'
-    nobo() {
-        if [[ $# == 0 ]]; then
-            cd "$NOBO"
-        else
-            cd "$NOBO"
-            EXPT="$1"
-            EXPTDIR=$( find . -type d -maxdepth 3 -iregex '.*/nobo.*0'$EXPT'' | head -1 ) # first match
-            cd "$EXPTDIR"
-        fi
-    }
+    cihp() { cdexpt cihp "$1" "Superculture Pet Immune"; } # <- due to the unfortunate decision
+    cohp() { cdexpt cohp "$1" "Superculture Pet Oral"; }   #    to rename these project directories....
+    nobo() { cdexpt nobo "$1"; }
 
     fasta2seq() {
         # fasta file to contiguous seq
