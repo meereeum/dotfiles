@@ -777,6 +777,8 @@ $( command -v $( echo $_checkip | awk '{print $1}' )  &> /dev/null ) && {
 alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias myip='echo $( MY_IP ) | cpout'
 
+alias pingalingdonna='ping 1.1.1.1'
+
 
 alias sourceopenstack='. ~/*openrc.sh'
 # alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
@@ -898,6 +900,7 @@ lssince() {
     grep -Ev '^\.git$' |                                             # ignore .git
     xargs -I{} ls -d --color=auto 2>&1 "{}" ;                        # pprint
 }
+alias lsrecent='lssince "1 wk"'
 
 
 cdrecent() {
