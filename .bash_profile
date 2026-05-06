@@ -61,41 +61,24 @@ if ((!$linux)); then
            grep -Hi  "$@" $HOME/gras-lists/*{sv,txt};
     }
 
-    # CIHP='/Users/miriam/Google Drive/Shared drives/IngredientDevelopment/1. Active Projects/CIHP/Notebook'
-    # somebody changed this for unknown reasons..
-    CIHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/CIHP/Notebook'
-    cihp() {
-        if [[ $# == 0 ]]; then
-            cd "$CIHP"
-        else
-            cd "$CIHP"
-            EXPT="$1"
-            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cihp.*0'$EXPT'' | head -1 ) # first match
+    cdexpt() {
+        PREFIX=$1
+        EXPT=$2
+        ALTPROJECT=$3
+        [[ "$ALTPROJECT" ]] && PROJECT="$ALTPROJECT" \
+                            || PROJECT="${PREFIX^^}"
+
+        PROJDIR='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/'$PROJECT'/Notebook'
+
+        cd "$PROJDIR"
+        if [[ "$EXPT" ]]; then
+            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/'$PREFIX'[^0]*0*'$EXPT'' | sort | head -1 ) # alphabetical first match (e.g. CIHP011 > CIHP211)
             cd "$EXPTDIR"
         fi
     }
-    COHP='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/COHP/Notebook'
-    cohp() {
-        if [[ $# == 0 ]]; then
-            cd "$COHP"
-        else
-            cd "$COHP"
-            EXPT="$1"
-            EXPTDIR=$( find . -type d -maxdepth 2 -iregex '.*/cohp.*0'$EXPT'' | head -1 ) # first match
-            cd "$EXPTDIR"
-        fi
-    }
-    NOBO='/Users/miriam/Google Drive/Shared drives/Ingredient-Development/1. Active Projects/NOBO/Notebook'
-    nobo() {
-        if [[ $# == 0 ]]; then
-            cd "$NOBO"
-        else
-            cd "$NOBO"
-            EXPT="$1"
-            EXPTDIR=$( find . -type d -maxdepth 3 -iregex '.*/nobo.*0'$EXPT'' | head -1 ) # first match
-            cd "$EXPTDIR"
-        fi
-    }
+    cihp() { cdexpt cihp "$1" "Superculture Pet Immune"; } # <- due to the unfortunate decision
+    cohp() { cdexpt cohp "$1" "Superculture Pet Oral"; }   #    to rename these project directories....
+    nobo() { cdexpt nobo "$1"; }
 
     fasta2seq() {
         # fasta file to contiguous seq
@@ -320,7 +303,7 @@ if ((!$linux)); then
     }
 
     s3lsrecenttoplevel() {
-        BUCKET="$@"
+        BUCKET=$1
         top_level_objs=$( aws s3api list-objects-v2 --bucket $BUCKET --delimiter "/" | awk '$2!="None" {print $2}' )
         for obj in $top_level_objs; do
             # via https://repost.aws/questions/QUFpzxAPCEQa6HqYceZ6bRIA/how-to-list-s3-directories-not-objects-by-date-added
@@ -332,6 +315,27 @@ if ((!$linux)); then
             # this is what i used to spot check, so try that:
             s3lsrecent $BUCKET/$obj | head -1
         done
+    }
+
+    s3lssize() {
+        BUCKET=$1
+
+        # aws human-readable, then rm space and change e.g. GiB => GB (close enough)
+
+        {
+            # these are "folders" / files grouped under common key
+            for d in $( aws s3 ls ${BUCKET}/ | awk '$1 == "PRE"{print $4}' ); do
+                # last two lines are total objects + total size
+                bytes=$( aws s3 ls --recursive --summarize --human-readable ${BUCKET}/${d} | tail -1 | awk '{sub(/iB/,"b",$4); sub(/ytes/,"",$4); print $2$3}' )
+                # latest
+                date=$( aws s3 ls --recursive --summarize ${BUCKET}/${d} | tail -4 | head -1 | awk '{print $1}' )
+                echo -e ${date}"\t"${bytes}"\t"${d}
+            done
+
+            # these are files; have size listed
+            aws s3 ls --human-readable ${BUCKET}/ | awk '$1 != "PRE"{OFS="\t"; sub(/iB/,"b",$4); sub(/ytes/,"",$4); print $1,$3$4,$5}'
+
+        } | sort -h -k2,2 --reverse # sort by human-readable bytes
     }
 
     aws_ssm() {
