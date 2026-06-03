@@ -480,6 +480,7 @@ alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
 export DELTA='Δ'
 export DELTAS="${DELTA}s"
+export ARROW='↳'
 
 export STRFDATE="+%y%m%d"
 
