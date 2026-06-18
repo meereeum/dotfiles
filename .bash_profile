@@ -657,9 +657,25 @@ iterbg256() { _iter256 48 "$@"; }
 iterfg256() { _iter256 38 "$@"; }
 
 pdfsplit() {
-    PDF="$@"
-    pdfseparate $PDF ${PDF%.pdf}.%d.pdf
+    PDF="$1"
+    [[ $2 ]] && argstart="-f $2" \
+             || argstart=""
+    [[ $3 ]] && argend="-l $3" \
+             || argend=""
+    pdfseparate $argstart $argend $PDF ${PDF%.pdf}.%02d.pdf
+    # TODO: update digits as needed based on pgs
 }
+pdfextract() {
+    # PDF="$1"
+    # pdfsplit "$PDF" "$@" # possibly w pgs
+    # SPLITPDFS=$( ls ${PDF/.pdf/*.pdf} )
+    # pdfjoin $SPLITPDFS
+    PDF="$1"
+    start="$2"
+    end="$3"
+    pdftk "$1" cat $start-$end output ${PDF%.pdf}.extract.pdf
+}
+
 pdfurl2txt() { # e.g. for menus
     URL="$@"
     F=/tmp/pdfurl_"$( echo $URL | sha1sum | awk '{print $1}' )" # hash url
@@ -789,6 +805,8 @@ $( command -v $( echo $_checkip | awk '{print $1}' )  &> /dev/null ) && {
 alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias myip='echo $( MY_IP ) | cpout'
 
+alias findportal='arp -a'
+
 
 alias sourceopenstack='. ~/*openrc.sh'
 # alias ip='dig +short myip.opendns.com @resolver1.opendns.com | cpout && open "https://horizon.csail.mit.edu/horizon/project/access_and_security"'
@@ -847,13 +865,13 @@ lsbiggest() {
     FLAG="-n ?" # with optional space
 
     # N.B. need printf b/c echo interprets -n
-    N=$( printf "%s" "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )          # extract $FLAG
-    (( $N )) || N=10                                                    # default
+    N=$( printf "%s " "$@" | sed -rn "s/^.*$FLAG(\w*).*/\1/p" )           # extract $FLAG
+    (( $N )) || N=10                                                      # default
 
-    DIR=$( printf "%s" "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/$//" )   # extract positional, remove trailing /
-    [[ "$DIR" ]] || DIR="."                                             # default
+    DIR=$( printf "%s " "$@" | sed -re"s/ ?$FLAG\w* ?//" -e"s/\/? ?$//" ) # extract positional, remove trailing / &/or " "
+    [[ "$DIR" ]] || DIR="."                                               # default
 
-    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 )) # account for total size
+    du -ah --max-depth 1 "$DIR" | sort -k1,1 -h | tail -n $(( $N + 1 ))   # account for total size
 }
 
 #alias lsbiggest='echo "use du | sort | tail !"'
@@ -1365,6 +1383,12 @@ fi
 export -f pkgs
 
 
+if [ -f ~/.git-completion.bash ]; then
+      . ~/.git-completion.bash
+fi
+if [ -f ~/.git-annex-completion.bash ]; then
+      . ~/.git-annex-completion.bash
+fi
 alias gti=git # ynot
 # pretty print git log (via Mary @RC)
 alias gl='git log --graph --pretty="format:%C(yellow)%h%Cblue%d%Creset %s %C(white)"'
@@ -1374,16 +1398,24 @@ gb() {
     if [[ "$@" ]]; then
         BRANCH="$@" # name of new branch
         BASE=$( git branch | sed 's/^\*//' | grep -e"^ *ma"{ster,in} | head -1 ) # ma{ster,in} branch
-        git stash && \
-            git checkout $BASE && git pull origin $BASE && \
-                git branch $BRANCH && git checkout $BRANCH && \
-                    git stash pop && \
+
+        git branch | grep '^ *'$BRANCH'$' && {
+            # branch already exist; check it out
+            git stash && git checkout $BRANCH && git stash pop;
+        } || {
+            # branch does not yet exist; create it
+            git stash && \
+                git checkout $BASE && git pull origin $BASE && \
+                    git branch $BRANCH && git checkout $BRANCH && \
+                        git stash pop;
+        } && \
         git -c color.ui=always branch --sort=-committerdate | head
     else
         # if no argument, just list most recent
         git -c color.ui=always branch --sort=-committerdate | head
     fi
 }
+__git_complete gb _git_checkout # autocomplete
 # show recent branches
 #  - top n
 # alias gbrecent='git -c color.ui=always branch --sort=-committerdate | head'
@@ -1395,12 +1427,6 @@ gg() { # git grep (of all LoC in git history)
     git rev-list --all | xargs git grep ''$@''
 }
 
-if [ -f ~/.git-completion.bash ]; then
-      . ~/.git-completion.bash
-fi
-if [ -f ~/.git-annex-completion.bash ]; then
-      . ~/.git-annex-completion.bash
-fi
 
 # via https://stackoverflow.com/a/50158675
 gitrmpattern() {
@@ -1588,7 +1614,8 @@ if ((!$linux)); then
 	# latex
 	PATH="/Library/TeX/texbin/:$PATH"
 
-    alias pdfjoin='/System/Library/Automator/Combine\ PDF\ Pages.action/Contents/Resources/join.py'
+    # alias pdfjoin='/System/Library/Automator/Combine\ PDF\ Pages.action/Contents/Resources/join.py'
+    # apple appears to have broken this
 
     # LD stuff
     export CPPFLAGS="-I/usr/local/include"
