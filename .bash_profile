@@ -36,17 +36,23 @@ if ((!$linux)); then
     alias gd='cd ~/Google\ Drive/Shared\ drives/Science'
     mtg() { vi ~/kingdom-supercultures/mtgs/"$@"; }
 
-    VPY=3.10
-    # VPY=3.13 # TODO
-    alias python="python${VPY}"
-    alias pip="pip${VPY}"
-    export PATH="/usr/local/opt/python@${VPY}/bin:$PATH"
+    # _VPY=3.10
+    _VPY=3.13 # TODO
+    # _VPY=3.14
+    alias python="python${_VPY}"
+    # alias python="[[ $( which python ) ]] && $( which python ) || python${_VPY}"
+    # alias pip="pip${_VPY}"
+    alias pip="python -m pip"
+    export PATH="/usr/local/opt/python@${_VPY}/bin:$PATH"
     export PATH="/usr/local/bin:$PATH"
 
-    export R_HOME=/usr/local/bin/R
+    # export R_HOME=/usr/local/bin/R
+    # ^ this actually interferes w/ $ R RHOME -- just make sure it's on path
 
     export JAVA_HOME=$( ls -d /Library/Java/JavaVirtualMachines/adoptopenjdk-*.jdk/Contents/Home )
     export JARDIR=~/tools/jars
+
+    export CHECKM_DATA_PATH=~/db/checkm
 
     alias rdp_classifier='java -Xmx1g -jar ~/tools/jars/rdp_classifier-2.14.jar'
 
@@ -152,6 +158,8 @@ if ((!$linux)); then
     # export PATH=${ARBHOME}/bin:${PATH}
     alias bfg='java -jar ~/tools/bfg*.jar' # $ bfg --delete-files $FILE
 
+    alias ITSx='/usr/local/Caskroom/miniconda/base/pkgs/itsx-1.1.3-hdfd78af_1/bin/ITSx'
+
     alias xlsx2csv='python /usr/local/lib/python3.10/site-packages/xlsx2csv.py'
 
     backup() {
@@ -227,10 +235,10 @@ if ((!$linux)); then
     }
 
     upbastion() {
-        ssh bastion -NfL 5432:${POSTGRES_CLUSTER}:5432
+        ssh bastion -o StrictHostKeyChecking=no -NfL 5432:${POSTGRES_CLUSTER}:5432
     }
     upbastion_staging() {
-        ssh bastion_staging -NfL 5432:${POSTGRES_CLUSTER_STAGING}:5432
+        ssh bastion_staging -o StrictHostKeyChecking=no -NfL 5432:${POSTGRES_CLUSTER_STAGING}:5432
     }
     downbastion() {
         pid=$( ps aux | grep bastion | grep -v "grep" | awk '{print $2}' )
@@ -393,7 +401,7 @@ if ((!$linux)); then
 
     quickani() {
         FILES="$@"
-        fastANI --matrix --ql <( echo $FILES | tr ' ' '\n' ) --rl <( echo $FILES | tr ' ' '\n' ) -o /tmp/ani.txt && \
+        fastANI -t 6 --matrix --ql <( echo $FILES | tr ' ' '\n' ) --rl <( echo $FILES | tr ' ' '\n' ) -o /tmp/ani.txt && \
             cat /tmp/ani.txt | awk '$1 != $2'
     }
 
