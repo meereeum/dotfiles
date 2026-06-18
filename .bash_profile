@@ -488,6 +488,7 @@ alias shrinkpdf='bash ~/dotfiles/shrinkpdf.sh'
 
 export DELTA='Δ'
 export DELTAS="${DELTA}s"
+export ARROW='↳'
 
 export STRFDATE="+%y%m%d"
 
@@ -806,6 +807,7 @@ alias MY_IP='dig -4 +short myip.opendns.com @resolver1.opendns.com'
 alias myip='echo $( MY_IP ) | cpout'
 
 alias findportal='arp -a'
+alias pingalingdonna='ping 1.1.1.1'
 
 
 alias sourceopenstack='. ~/*openrc.sh'
@@ -928,6 +930,7 @@ lssince() {
     grep -Ev '^\.git$' |                                             # ignore .git
     xargs -I{} ls -d --color=auto 2>&1 "{}" ;                        # pprint
 }
+alias lsrecent='lssince "1 wk"'
 
 
 cdrecent() {

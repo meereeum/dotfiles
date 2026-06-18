@@ -13,9 +13,10 @@ FTODAY=${FPREFIX}_${TODAY}
 
     FARAWAY=9999999999
 
-    URL="https://www.americancinematheque.com/wp-json/wp/v2/algolia_get_events?environment=production&startDate=${NOW}&endDate=${FARAWAY}"
+    # URL="https://www.americancinematheque.com/wp-json/wp/v2/algolia_get_events?environment=production&startDate=${NOW}&endDate=${FARAWAY}"
+    URL="https://www.americancinematheque.com/wp-json/wp/v2/algolia_get_events?environment=production_2026&startDate=${NOW}&endDate=${FARAWAY}"
 
-    curl -s "$URL" --user-agent 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1' > $FTODAY
+    curl -s "$URL" --user-agent 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1' | jq > $FTODAY
 }
 
 echo
