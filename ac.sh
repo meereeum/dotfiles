@@ -24,7 +24,8 @@ cat $FTODAY | jq -c '.hits[] |
     select(.post_type=="event") |
     select( (.event_format | index(74)) or
 	        (.event_format | index(79)) or
-            (.event_format | index(80)) ) |
+            (.event_format | index(80)) or
+            (.event_format | index(334)) ) |
     [.event_start_date,.event_start_time,.title,.event_location]' |
     # [.event_start_date,.event_start_time,.title,.event_format,.event_location]' |
     sed 's/:00"/"/' |

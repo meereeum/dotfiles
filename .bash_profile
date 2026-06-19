@@ -472,6 +472,9 @@ alias wip='vi "$HOME/phd/txt/mtgs/wip_$( day )"'
 alias fixscroll='tput rmcup' # via https://unix.stackexchange.com/a/259971
 alias pipoutdated='pip --disable-pip-version-check list --outdated'
 
+# via https://ounapuu.ee/posts/2024/09/02/iphone-media-recovery
+alias imnt='idevicepair pair && idevicepair validate && ifuse ~/mirphone'
+
 if (( $HAS_DISPLAY )); then
     (( $linux )) && alias clipboard='xsel -i --clipboard' \
                  || alias clipboard='pbcopy'
@@ -1413,6 +1416,16 @@ gb() {
                         git stash pop;
         } && \
         git -c color.ui=always branch --sort=-committerdate | head
+
+        # another way of writing --
+        # check for existing branch
+        # [[ $( git branch | grep "^[* ]*${BRANCH}$" | wc -l ) == 0 ]] && git branch $BRANCH
+        # git stash && \
+        #     git checkout $BASE && git pull origin $BASE && \
+        #         git checkout $BRANCH && \
+        #             git stash pop && \
+        # git -c color.ui=always branch --sort=-committerdate | head
+
     else
         # if no argument, just list most recent
         git -c color.ui=always branch --sort=-committerdate | head
